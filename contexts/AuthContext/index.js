@@ -112,9 +112,7 @@ export const AuthProvider = ({ children }) => {
       const result = await createUserWithEmailAndPassword(auth, email, password);
       await result.user.getIdToken(true);
 
-      // Wait a bit for token to propagate
-      await new Promise(resolve => setTimeout(resolve, 500));
-
+      // Create user document in Firestore
       await setDoc(doc(db, 'users', result.user.uid), {
         email: email,
         ...userData,
@@ -122,9 +120,6 @@ export const AuthProvider = ({ children }) => {
         isProfileComplete: false,
         isAdmin: false // Users are not admin by default - use scripts/update-admin-access.js to grant admin access
       });
-
-      // Wait for Firestore write to complete
-      await new Promise(resolve => setTimeout(resolve, 300));
 
       return result.user;
     } catch (error) {

@@ -1,0 +1,149 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper function to check if user is admin
+    function isAdmin() {
+      return request.auth != null &&
+             exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
+    }
+
+    // Users can read/write their own data
+    match /users/{userId} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow write: if request.auth != null && request.auth.uid == userId;
+      allow create: if request.auth != null;
+    }
+
+    // Subjects and PDFs - read for all authenticated users, write for admins
+    match /subjects/{subjectId} {
+      allow read: if request.auth != null;
+      allow write: if isAdmin();
+
+      // PDFs subcollection
+      match /pdfs/{pdfId} {
+        allow read: if request.auth != null;
+        allow write: if isAdmin();
+      }
+    }
+
+    // Notes - users can read/write their own, create new ones
+    match /notes/{noteId} {
+      allow read: if request.auth != null && 
+                   (resource.data.userId == request.auth.uid || isAdmin());
+      allow write: if request.auth != null && 
+                    (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if request.auth != null;
+    }
+
+    // Mock tests - read for all authenticated users, write for admins
+    match /mockTests/{testId} {
+      allow read: if request.auth != null;
+      allow write: if isAdmin();
+    }
+
+    // Mock test activities - users can only access their own
+    match /users/{userId}/mockTests/{testId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // User mock test attempts - users can only access their own
+    match /users/{userId}/mockTestAttempts/{attemptId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // PYQ sessions - users can only access their own
+    match /user_pyq_sessions/{sessionId} {
+      allow read, write: if request.auth != null &&
+        resource.data.userId == request.auth.uid;
+    }
+
+    // PYQ progress - users can only access their own
+    match /user_pyq_progress/{progressId} {
+      allow read, write: if request.auth != null &&
+        request.auth.uid == progressId;
+    }
+
+    // Leaderboard - read for all authenticated users
+    match /leaderboard/{entryId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null &&
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.isAdmin == true;
+    }
+
+    // Admin notifications - read for all authenticated users, write for admins
+    match /adminNotifications/{notificationId} {
+      allow read: if request.auth != null;
+      allow write: if isAdmin();
+    }
+
+    // SSB Test Content - read for all authenticated users, write for admins
+    match /ssb_ppdt_pictures/{pictureId} {
+      allow read: if request.auth != null;
+      allow write: if isAdmin();
+    }
+
+    match /ssb_tat_pictures/{pictureId} {
+      allow read: if request.auth != null;
+      allow write: if isAdmin();
+    }
+
+    match /ssb_wat_words/{wordId} {
+      allow read: if request.auth != null;
+      allow write: if isAdmin();
+    }
+
+    match /ssb_srt_situations/{situationId} {
+      allow read: if request.auth != null;
+      allow write: if isAdmin();
+    }
+
+    match /ssb_oir_images/{imageId} {
+      allow read: if request.auth != null;
+      allow write: if isAdmin();
+    }
+
+    // SSB Test Results - users can access their own
+    match /ssb_test_results/{resultId} {
+      allow read: if request.auth != null && 
+                   (resource.data.userId == request.auth.uid || isAdmin());
+      allow write: if request.auth != null && 
+                    (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if request.auth != null;
+    }
+
+    // Tasks collection - users can access their own
+    match /tasks/{taskId} {
+      allow read: if request.auth != null && 
+                   (resource.data.userId == request.auth.uid || isAdmin());
+      allow write: if request.auth != null && 
+                    (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if request.auth != null;
+    }
+
+    // User logins collection - users can access their own
+    match /userLogins/{loginId} {
+      allow read: if request.auth != null && 
+                   (resource.data.userId == request.auth.uid || isAdmin());
+      allow write: if request.auth != null && 
+                    (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if request.auth != null;
+    }
+
+    // PYQ attempts - users can only access their own
+    match /users/{userId}/pyqAttempts/{attemptId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // PYQ activities - users can only access their own
+    match /users/{userId}/pyqActivities/{activityId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Mock test activities - users can only access their own
+    match /users/{userId}/mockTestActivities/{activityId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+  }
+}

@@ -13,7 +13,11 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (user) {
-      router.push('/student-desk/dashboard');
+      // Add a small delay to ensure auth state is fully settled
+      const timer = setTimeout(() => {
+        router.push('/student-desk/dashboard');
+      }, 100);
+      return () => clearTimeout(timer);
     }
   }, [user, router]);
 

@@ -346,34 +346,34 @@ const AdminDashboard = () => {
                 <div style={{ fontSize: '0.875rem', color: '#a16207' }}>Manage OIR, PPDT, TAT, WAT, SRT content</div>
               </div>
             </Link>
-            <a href="/admin/mock-tests" style={{ textDecoration: 'none' }}>
+            <Link href="/admin/mock-tests" style={{ textDecoration: 'none' }}>
               <div style={{ ...styles.quickActionCard, backgroundColor: '#e0f2fe', border: '1px solid #0284c7' }}>
                 <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>📝</div>
                 <div style={{ fontWeight: '600', color: '#0c4a6e' }}>Mock Test Management</div>
                 <div style={{ fontSize: '0.875rem', color: '#075985' }}>Create and manage mock tests</div>
               </div>
-            </a>
-            <a href="/admin/pyq" style={{ textDecoration: 'none' }}>
+            </Link>
+            <Link href="/admin/pyq" style={{ textDecoration: 'none' }}>
               <div style={{ ...styles.quickActionCard, backgroundColor: '#fef3c7', border: '1px solid #f59e0b' }}>
                 <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>📊</div>
                 <div style={{ fontWeight: '600', color: '#92400e' }}>PYQ Management</div>
                 <div style={{ fontSize: '0.875rem', color: '#a16207' }}>Upload PYQ PDFs and questions</div>
               </div>
-            </a>
-            <a href="/admin/users" style={{ textDecoration: 'none' }}>
+            </Link>
+            <Link href="/admin/users" style={{ textDecoration: 'none' }}>
               <div style={{ ...styles.quickActionCard, backgroundColor: '#fee2e2', border: '1px solid #dc2626' }}>
                 <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>👥</div>
                 <div style={{ fontWeight: '600', color: '#991b1b' }}>User Management</div>
                 <div style={{ fontSize: '0.875rem', color: '#b91c1c' }}>Manage users and permissions</div>
               </div>
-            </a>
-            <a href="/admin" style={{ textDecoration: 'none' }}>
+            </Link>
+            <Link href="/admin" style={{ textDecoration: 'none' }}>
               <div style={{ ...styles.quickActionCard, backgroundColor: '#ede9fe', border: '1px solid #8b5cf6' }}>
                 <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>🛠️</div>
                 <div style={{ fontWeight: '600', color: '#6b21a8' }}>Main Admin Dashboard</div>
                 <div style={{ fontSize: '0.875rem', color: '#7c3aed' }}>SSB management overview</div>
               </div>
-            </a>
+            </Link>
             <div style={{ ...styles.quickActionCard, backgroundColor: '#f0fdf4', border: '1px solid #10b981' }}>
               <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>📚</div>
               <div style={{ fontWeight: '600', color: '#065f46' }}>Study Materials</div>

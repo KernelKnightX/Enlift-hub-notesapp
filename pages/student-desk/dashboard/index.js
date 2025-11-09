@@ -148,7 +148,7 @@ const StudentDashboardComponent = () => {
       try {
         const ref = doc(db, "users", user.uid);
         const snap = await getDoc(ref);
-        if (!snap.exists() || !snap.data()?.isProfileComplete) {
+        if (!snap.exists()) {
           if (!cancelled) router.push("/profile-setup");
           return;
         }
@@ -228,49 +228,66 @@ const StudentDashboardComponent = () => {
   useEffect(() => {
     if (!user?.uid) return;
 
-    const unsubs = [];
+    const unsubscribers = [];
 
-    // Mock Tests count
-    unsubs.push(
-      onSnapshot(collection(db, "users", user.uid, "mockTests"), (snap) => {
-        try {
-          setCardData((p) => ({ ...p, mockTests: snap.size }));
-        } catch (error) {
-          console.error("Error processing mock tests count:", error);
+    try {
+      // Mock Tests count
+      const mockTestsUnsub = onSnapshot(
+        collection(db, "users", user.uid, "mockTests"),
+        (snap) => {
+          try {
+            setCardData((p) => ({ ...p, mockTests: snap.size }));
+          } catch (error) {
+            console.error("Error processing mock tests count:", error);
+          }
+        },
+        (error) => {
+          console.error("Mock tests listener error:", error);
+          // Don't retry automatically
         }
-      }, (error) => {
-        console.error("Error listening to mock tests count:", error);
-      })
-    );
+      );
+      unsubscribers.push(mockTestsUnsub);
 
-    // Study Notes count
-    const qNotes = query(collection(db, "notes"), where("userId", "==", user.uid));
-    unsubs.push(
-      onSnapshot(qNotes, (snap) => {
-        try {
-          setCardData((p) => ({ ...p, studyNotes: snap.size }));
-        } catch (error) {
-          console.error("Error processing study notes count:", error);
+      // Study Notes count
+      const qNotes = query(collection(db, "notes"), where("userId", "==", user.uid));
+      const studyNotesUnsub = onSnapshot(
+        qNotes,
+        (snap) => {
+          try {
+            setCardData((p) => ({ ...p, studyNotes: snap.size }));
+          } catch (error) {
+            console.error("Error processing study notes count:", error);
+          }
+        },
+        (error) => {
+          console.error("Study notes listener error:", error);
+          // Don't retry automatically
         }
-      }, (error) => {
-        console.error("Error listening to study notes count:", error);
-      })
-    );
+      );
+      unsubscribers.push(studyNotesUnsub);
 
-    // PYQ count
-    unsubs.push(
-      onSnapshot(collection(db, "users", user.uid, "pyqAttempts"), (snap) => {
-        try {
-          setCardData((p) => ({ ...p, pyq: snap.size }));
-        } catch (error) {
-          console.error("Error processing PYQ count:", error);
+      // PYQ count
+      const pyqUnsub = onSnapshot(
+        collection(db, "users", user.uid, "pyqAttempts"),
+        (snap) => {
+          try {
+            setCardData((p) => ({ ...p, pyq: snap.size }));
+          } catch (error) {
+            console.error("Error processing PYQ count:", error);
+          }
+        },
+        (error) => {
+          console.error("PYQ listener error:", error);
+          // Don't retry automatically
         }
-      }, (error) => {
-        console.error("Error listening to PYQ count:", error);
-      })
-    );
+      );
+      unsubscribers.push(pyqUnsub);
 
-    return () => unsubs.forEach((u) => u());
+    } catch (error) {
+      console.error("Setup error:", error);
+    }
+
+    return () => unsubscribers.forEach((unsub) => unsub());
   }, [user?.uid]);
 
   // Removed login streak tracking to prevent Fast Refresh issues

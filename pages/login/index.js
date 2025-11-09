@@ -36,8 +36,7 @@ export default function LoginPage() {
         ssbAttempts: formData.ssbAttempts,
         preparingForDefence: formData.preparingForDefence,
         examType: formData.examType,
-        targetYear: formData.targetYear,
-        isProfileComplete: true
+        targetYear: formData.targetYear
       });
       // Don't manually redirect - let the useEffect handle it when user state updates
     } catch (error) {

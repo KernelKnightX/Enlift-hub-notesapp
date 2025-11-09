@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import Image from 'next/image';
 
 export default function PdfCard({ pdf, onSelect, isSelected }) {
   const [imageError, setImageError] = useState(false);
@@ -66,12 +67,12 @@ export default function PdfCard({ pdf, onSelect, isSelected }) {
           position: 'relative'
         }}>
           {pdf.thumbnail && !imageError ? (
-            <img 
+            <Image
               src={pdf.thumbnail}
               alt={pdf.name}
+              width={48}
+              height={60}
               style={{
-                width: '100%',
-                height: '100%',
                 objectFit: 'cover',
                 borderRadius: '4px'
               }}

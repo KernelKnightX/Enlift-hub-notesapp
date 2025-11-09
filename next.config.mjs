@@ -14,6 +14,9 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
 
+  // Disable static optimization for pages that need authentication
+  output: 'standalone',
+  trailingSlash: true,
 
   async headers() {
     return [

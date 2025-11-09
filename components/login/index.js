@@ -145,7 +145,7 @@ export default function PhoneInput({ onSubmit, sending }) {
       {/* Info Alert */}
       <div className="mt-3 alert alert-success alert-dismissible fade show py-2 border-0">
         <small>
-          <strong>💡 Note:</strong> If your number isn't registered with Notes Cafe, you'll be redirected to create an account.
+          <strong>💡 Note:</strong> If your number isn&apos;t registered with Notes Cafe, you&apos;ll be redirected to create an account.
         </small>
       </div>
     </form>

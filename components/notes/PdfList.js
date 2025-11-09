@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { storage } from '../../firebase/config'; // Adjust path to your firebase config
 import { ref, listAll, getDownloadURL, getMetadata } from 'firebase/storage';
 import PdfCard from './PdfCard';
@@ -10,16 +10,16 @@ export default function PdfList({ onSelectPdf, selectedPdfUrl }) {
 
   useEffect(() => {
     fetchPdfsFromFirebase();
-    
+
     // Optional: Set up periodic refresh to check for new uploads
     const interval = setInterval(() => {
       fetchPdfsFromFirebase();
     }, 30000); // Check every 30 seconds
 
     return () => clearInterval(interval);
-  }, []);
+  }, [fetchPdfsFromFirebase]);
 
-  const fetchPdfsFromFirebase = async () => {
+  const fetchPdfsFromFirebase = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -80,7 +80,7 @@ export default function PdfList({ onSelectPdf, selectedPdfUrl }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   const extractSubjectFromFilename = (filename) => {
     const name = filename.toLowerCase();

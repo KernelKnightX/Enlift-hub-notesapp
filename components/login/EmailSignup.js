@@ -1,6 +1,6 @@
-import { useState } from "react";
+import React, { useState, useCallback } from "react";
 
-export default function EmailSignup({ onSignup, onSwitchToLogin }) {
+function EmailSignup({ onSignup, onSwitchToLogin }) {
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -19,18 +19,18 @@ export default function EmailSignup({ onSignup, onSwitchToLogin }) {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-  const handleInputChange = (e) => {
+  const handleInputChange = useCallback((e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
     if (error) setError("");
-  };
+  }, [error]);
 
-  const validateEmail = (email) => {
+  const validateEmail = useCallback((email) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
-  };
+  }, []);
 
-  const validateForm = () => {
+  const validateForm = useCallback(() => {
     if (!formData.fullName.trim()) {
       setError("Please enter your full name");
       return false;
@@ -68,22 +68,22 @@ export default function EmailSignup({ onSignup, onSwitchToLogin }) {
       return false;
     }
     return true;
-  };
+  }, [formData, validateEmail]);
 
-  const handleSubmit = async () => {
+  const handleSubmit = useCallback(async () => {
     if (!validateForm()) return;
 
     setLoading(true);
     try {
       await onSignup(formData);
-    } catch (err) {
+    } catch (error) {
       setError("Failed to create account. Please try again.");
     } finally {
       setLoading(false);
     }
-  };
+  }, [formData, validateForm, onSignup]);
 
-  const inputStyle = {
+  const inputStyle = React.useMemo(() => ({
     width: '100%',
     padding: '10px 12px',
     border: '1px solid #d1d5db',
@@ -93,18 +93,18 @@ export default function EmailSignup({ onSignup, onSwitchToLogin }) {
     background: 'white',
     boxSizing: 'border-box',
     outline: 'none'
-  };
+  }), []);
 
-  const labelStyle = {
+  const labelStyle = React.useMemo(() => ({
     display: 'block',
     fontWeight: '500',
     color: '#374151',
     marginBottom: '6px',
     fontSize: '14px'
-  };
+  }), []);
 
   return (
-    <div style={{
+    <div style={React.useMemo(() => ({
       minHeight: '100vh',
       width: '100%',
       background: '#f3f4f6',
@@ -119,8 +119,8 @@ export default function EmailSignup({ onSignup, onSwitchToLogin }) {
       right: 0,
       bottom: 0,
       overflowY: 'auto'
-    }}>
-      <div style={{
+    }), [])}>
+      <div style={React.useMemo(() => ({
         background: 'white',
         borderRadius: '12px',
         boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
@@ -130,29 +130,29 @@ export default function EmailSignup({ onSignup, onSwitchToLogin }) {
         margin: '20px auto',
         maxHeight: 'calc(100vh - 40px)',
         overflowY: 'auto'
-      }}>
+      }), [])}>
         {/* Header */}
-        <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-          <h1 style={{ 
-            fontSize: '22px', 
-            fontWeight: '600', 
+        <div style={React.useMemo(() => ({ textAlign: 'center', marginBottom: '24px' }), [])}>
+          <h1 style={React.useMemo(() => ({
+            fontSize: '22px',
+            fontWeight: '600',
             color: '#111827',
             margin: '0 0 6px 0'
-          }}>
+          }), [])}>
             Create Account
           </h1>
-          <p style={{
+          <p style={React.useMemo(() => ({
             fontSize: '13px',
             color: '#6b7280',
             margin: 0
-          }}>
+          }), [])}>
             Start your Defence preparation journey
           </p>
         </div>
 
         {/* Error Message */}
         {error && (
-          <div style={{
+          <div style={React.useMemo(() => ({
             background: '#fef2f2',
             border: '1px solid #fecaca',
             borderRadius: '8px',
@@ -160,13 +160,13 @@ export default function EmailSignup({ onSignup, onSwitchToLogin }) {
             marginBottom: '20px',
             color: '#991b1b',
             fontSize: '13px'
-          }}>
+          }), [])}>
             {error}
           </div>
         )}
 
         {/* Full Name */}
-        <div style={{ marginBottom: '16px' }}>
+        <div style={React.useMemo(() => ({ marginBottom: '16px' }), [])}>
           <label style={labelStyle}>Full Name</label>
           <input
             type="text"
@@ -176,13 +176,13 @@ export default function EmailSignup({ onSignup, onSwitchToLogin }) {
             placeholder="Enter your full name"
             disabled={loading}
             style={inputStyle}
-            onFocus={(e) => e.target.style.borderColor = '#3b82f6'}
-            onBlur={(e) => e.target.style.borderColor = '#d1d5db'}
+            onFocus={React.useCallback((e) => e.target.style.borderColor = '#3b82f6', [])}
+            onBlur={React.useCallback((e) => e.target.style.borderColor = '#d1d5db', [])}
           />
         </div>
 
         {/* Email & Phone in Grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
+        <div style={React.useMemo(() => ({ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }), [])}>
           <div>
             <label style={labelStyle}>Email</label>
             <input
@@ -193,8 +193,8 @@ export default function EmailSignup({ onSignup, onSwitchToLogin }) {
               placeholder="you@example.com"
               disabled={loading}
               style={inputStyle}
-              onFocus={(e) => e.target.style.borderColor = '#3b82f6'}
-              onBlur={(e) => e.target.style.borderColor = '#d1d5db'}
+              onFocus={React.useCallback((e) => e.target.style.borderColor = '#3b82f6', [])}
+              onBlur={React.useCallback((e) => e.target.style.borderColor = '#d1d5db', [])}
             />
           </div>
           <div>
@@ -207,14 +207,14 @@ export default function EmailSignup({ onSignup, onSwitchToLogin }) {
               placeholder="9876543210"
               disabled={loading}
               style={inputStyle}
-              onFocus={(e) => e.target.style.borderColor = '#3b82f6'}
-              onBlur={(e) => e.target.style.borderColor = '#d1d5db'}
+              onFocus={React.useCallback((e) => e.target.style.borderColor = '#3b82f6', [])}
+              onBlur={React.useCallback((e) => e.target.style.borderColor = '#d1d5db', [])}
             />
           </div>
         </div>
 
         {/* Date of Birth & City */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
+        <div style={React.useMemo(() => ({ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }), [])}>
           <div>
             <label style={labelStyle}>Date of Birth</label>
             <input
@@ -224,8 +224,8 @@ export default function EmailSignup({ onSignup, onSwitchToLogin }) {
               onChange={handleInputChange}
               disabled={loading}
               style={inputStyle}
-              onFocus={(e) => e.target.style.borderColor = '#3b82f6'}
-              onBlur={(e) => e.target.style.borderColor = '#d1d5db'}
+              onFocus={React.useCallback((e) => e.target.style.borderColor = '#3b82f6', [])}
+              onBlur={React.useCallback((e) => e.target.style.borderColor = '#d1d5db', [])}
             />
           </div>
           <div>
@@ -238,18 +238,18 @@ export default function EmailSignup({ onSignup, onSwitchToLogin }) {
               placeholder="Your city"
               disabled={loading}
               style={inputStyle}
-              onFocus={(e) => e.target.style.borderColor = '#3b82f6'}
-              onBlur={(e) => e.target.style.borderColor = '#d1d5db'}
+              onFocus={React.useCallback((e) => e.target.style.borderColor = '#3b82f6', [])}
+              onBlur={React.useCallback((e) => e.target.style.borderColor = '#d1d5db', [])}
             />
           </div>
         </div>
 
         {/* SSB Experience */}
-        <div style={{ marginBottom: '16px' }}>
+        <div style={React.useMemo(() => ({ marginBottom: '16px' }), [])}>
           <label style={labelStyle}>Have you given SSB before?</label>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+          <div style={React.useMemo(() => ({ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }), [])}>
             {['yes', 'no'].map(option => (
-              <label key={option} style={{
+              <label key={option} style={React.useMemo(() => ({
                 padding: '10px',
                 border: formData.hasGivenSSB === option ? '2px solid #3b82f6' : '1px solid #d1d5db',
                 borderRadius: '6px',
@@ -260,14 +260,14 @@ export default function EmailSignup({ onSignup, onSwitchToLogin }) {
                 textTransform: 'capitalize',
                 fontWeight: '500',
                 fontSize: '13px'
-              }}>
+              }), [formData.hasGivenSSB, option])}>
                 <input
                   type="radio"
                   name="hasGivenSSB"
                   value={option}
                   checked={formData.hasGivenSSB === option}
                   onChange={handleInputChange}
-                  style={{ display: 'none' }}
+                  style={React.useMemo(() => ({ display: 'none' }), [])}
                 />
                 {option}
               </label>
@@ -277,7 +277,7 @@ export default function EmailSignup({ onSignup, onSwitchToLogin }) {
 
         {/* SSB Attempts - Conditional */}
         {formData.hasGivenSSB === 'yes' && (
-          <div style={{ marginBottom: '16px' }}>
+          <div style={React.useMemo(() => ({ marginBottom: '16px' }), [])}>
             <label style={labelStyle}>Number of SSB attempts</label>
             <select
               name="ssbAttempts"
@@ -296,11 +296,11 @@ export default function EmailSignup({ onSignup, onSwitchToLogin }) {
         )}
 
         {/* Preparing for Defence */}
-        <div style={{ marginBottom: '16px' }}>
+        <div style={React.useMemo(() => ({ marginBottom: '16px' }), [])}>
           <label style={labelStyle}>Preparing for defence exam?</label>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+          <div style={React.useMemo(() => ({ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }), [])}>
             {['yes', 'no'].map(option => (
-              <label key={option} style={{
+              <label key={option} style={React.useMemo(() => ({
                 padding: '10px',
                 border: formData.preparingForDefence === option ? '2px solid #3b82f6' : '1px solid #d1d5db',
                 borderRadius: '6px',
@@ -311,14 +311,14 @@ export default function EmailSignup({ onSignup, onSwitchToLogin }) {
                 textTransform: 'capitalize',
                 fontWeight: '500',
                 fontSize: '13px'
-              }}>
+              }), [formData.preparingForDefence, option])}>
                 <input
                   type="radio"
                   name="preparingForDefence"
                   value={option}
                   checked={formData.preparingForDefence === option}
                   onChange={handleInputChange}
-                  style={{ display: 'none' }}
+                  style={React.useMemo(() => ({ display: 'none' }), [])}
                 />
                 {option}
               </label>
@@ -329,7 +329,7 @@ export default function EmailSignup({ onSignup, onSwitchToLogin }) {
         {/* Exam Type - Conditional */}
         {formData.preparingForDefence === 'yes' && (
           <>
-            <div style={{ marginBottom: '16px' }}>
+            <div style={React.useMemo(() => ({ marginBottom: '16px' }), [])}>
               <label style={labelStyle}>Which exam?</label>
               <select
                 name="examType"
@@ -347,7 +347,7 @@ export default function EmailSignup({ onSignup, onSwitchToLogin }) {
             </div>
 
             {formData.examType && (
-              <div style={{ marginBottom: '16px' }}>
+              <div style={React.useMemo(() => ({ marginBottom: '16px' }), [])}>
                 <label style={labelStyle}>Target Year</label>
                 <select
                   name="targetYear"
@@ -367,9 +367,9 @@ export default function EmailSignup({ onSignup, onSwitchToLogin }) {
         )}
 
         {/* Password */}
-        <div style={{ marginBottom: '16px' }}>
+        <div style={React.useMemo(() => ({ marginBottom: '16px' }), [])}>
           <label style={labelStyle}>Password</label>
-          <div style={{ position: 'relative' }}>
+          <div style={React.useMemo(() => ({ position: 'relative' }), [])}>
             <input
               type={showPassword ? "text" : "password"}
               name="password"
@@ -377,14 +377,14 @@ export default function EmailSignup({ onSignup, onSwitchToLogin }) {
               onChange={handleInputChange}
               placeholder="At least 6 characters"
               disabled={loading}
-              style={{...inputStyle, paddingRight: '40px'}}
-              onFocus={(e) => e.target.style.borderColor = '#3b82f6'}
-              onBlur={(e) => e.target.style.borderColor = '#d1d5db'}
+              style={React.useMemo(() => ({...inputStyle, paddingRight: '40px'}), [inputStyle])}
+              onFocus={React.useCallback((e) => e.target.style.borderColor = '#3b82f6', [])}
+              onBlur={React.useCallback((e) => e.target.style.borderColor = '#d1d5db', [])}
             />
             <button
               type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              style={{
+              onClick={React.useCallback(() => setShowPassword(!showPassword), [showPassword])}
+              style={React.useMemo(() => ({
                 position: 'absolute',
                 right: '12px',
                 top: '50%',
@@ -395,7 +395,7 @@ export default function EmailSignup({ onSignup, onSwitchToLogin }) {
                 fontSize: '14px',
                 color: '#6b7280',
                 padding: '4px'
-              }}
+              }), [])}
             >
               {showPassword ? 'Hide' : 'Show'}
             </button>
@@ -403,7 +403,7 @@ export default function EmailSignup({ onSignup, onSwitchToLogin }) {
         </div>
 
         {/* Confirm Password */}
-        <div style={{ marginBottom: '20px' }}>
+        <div style={React.useMemo(() => ({ marginBottom: '20px' }), [])}>
           <label style={labelStyle}>Confirm Password</label>
           <input
             type={showPassword ? "text" : "password"}
@@ -413,8 +413,8 @@ export default function EmailSignup({ onSignup, onSwitchToLogin }) {
             placeholder="Re-enter password"
             disabled={loading}
             style={inputStyle}
-            onFocus={(e) => e.target.style.borderColor = '#3b82f6'}
-            onBlur={(e) => e.target.style.borderColor = '#d1d5db'}
+            onFocus={React.useCallback((e) => e.target.style.borderColor = '#3b82f6', [])}
+            onBlur={React.useCallback((e) => e.target.style.borderColor = '#d1d5db', [])}
           />
         </div>
 
@@ -422,7 +422,7 @@ export default function EmailSignup({ onSignup, onSwitchToLogin }) {
         <button
           onClick={handleSubmit}
           disabled={loading || !formData.fullName || !formData.email || !formData.phoneNumber || !formData.dateOfBirth || !formData.city || !formData.preparingForDefence || (formData.preparingForDefence === 'yes' && !formData.examType) || !formData.password || !formData.confirmPassword}
-          style={{
+          style={React.useMemo(() => ({
             width: '100%',
             padding: '10px',
             background: loading || !formData.fullName || !formData.email || !formData.phoneNumber || !formData.dateOfBirth || !formData.city || !formData.preparingForDefence || (formData.preparingForDefence === 'yes' && !formData.examType) || !formData.password || !formData.confirmPassword ? '#9ca3af' : '#3b82f6',
@@ -434,40 +434,40 @@ export default function EmailSignup({ onSignup, onSwitchToLogin }) {
             cursor: loading || !formData.fullName || !formData.email || !formData.phoneNumber || !formData.dateOfBirth || !formData.city || !formData.preparingForDefence || (formData.preparingForDefence === 'yes' && !formData.examType) || !formData.password || !formData.confirmPassword ? 'not-allowed' : 'pointer',
             transition: 'background 0.2s',
             fontFamily: 'inherit'
-          }}
-          onMouseEnter={(e) => {
+          }), [loading, formData])}
+          onMouseEnter={React.useCallback((e) => {
             if (!loading && formData.fullName && formData.email && formData.phoneNumber && formData.dateOfBirth && formData.city && formData.preparingForDefence && (formData.preparingForDefence === 'no' || formData.examType) && formData.password && formData.confirmPassword) {
               e.target.style.background = '#2563eb';
             }
-          }}
-          onMouseLeave={(e) => {
+          }, [loading, formData])}
+          onMouseLeave={React.useCallback((e) => {
             if (!loading && formData.fullName && formData.email && formData.phoneNumber && formData.dateOfBirth && formData.city && formData.preparingForDefence && (formData.preparingForDefence === 'no' || formData.examType) && formData.password && formData.confirmPassword) {
               e.target.style.background = '#3b82f6';
             }
-          }}
+          }, [loading, formData])}
         >
           {loading ? 'Creating account...' : 'Create account'}
         </button>
 
         {/* Divider */}
-        <div style={{
+        <div style={React.useMemo(() => ({
           display: 'flex',
           alignItems: 'center',
           margin: '24px 0',
           gap: '12px'
-        }}>
-          <div style={{ flex: 1, height: '1px', background: '#e5e7eb' }} />
-          <span style={{ color: '#9ca3af', fontSize: '12px' }}>OR</span>
-          <div style={{ flex: 1, height: '1px', background: '#e5e7eb' }} />
+        }), [])}>
+          <div style={React.useMemo(() => ({ flex: 1, height: '1px', background: '#e5e7eb' }), [])} />
+          <span style={React.useMemo(() => ({ color: '#9ca3af', fontSize: '12px' }), [])}>OR</span>
+          <div style={React.useMemo(() => ({ flex: 1, height: '1px', background: '#e5e7eb' }), [])} />
         </div>
 
         {/* Login Link */}
-        <div style={{ textAlign: 'center', fontSize: '14px', color: '#6b7280' }}>
+        <div style={React.useMemo(() => ({ textAlign: 'center', fontSize: '14px', color: '#6b7280' }), [])}>
           Already have an account?{' '}
           <button
             type="button"
             onClick={onSwitchToLogin}
-            style={{
+            style={React.useMemo(() => ({
               background: 'none',
               border: 'none',
               color: '#3b82f6',
@@ -476,7 +476,7 @@ export default function EmailSignup({ onSignup, onSwitchToLogin }) {
               padding: 0,
               fontFamily: 'inherit',
               fontSize: 'inherit'
-            }}
+            }), [])}
           >
             Sign in
           </button>
@@ -485,3 +485,5 @@ export default function EmailSignup({ onSignup, onSwitchToLogin }) {
     </div>
   );
 }
+
+export default EmailSignup;

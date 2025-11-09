@@ -50,8 +50,8 @@ const AdminPYQ = () => {
   // 🔐 Check admin access
   const checkAdmin = async (uid) => {
     try {
-      const adminDoc = await getDoc(doc(db, 'admins', uid));
-      return adminDoc.exists() && adminDoc.data().isAdmin === true;
+      const userDoc = await getDoc(doc(db, 'users', uid));
+      return userDoc.exists() && userDoc.data().isAdmin === true;
     } catch (err) {
       console.error('Admin check error:', err);
       return false;

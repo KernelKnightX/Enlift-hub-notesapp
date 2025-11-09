@@ -24,7 +24,7 @@ import {
 /* ------------------------------ Helpers ------------------------------ */
 
 const motivationalQuotes = [
-  { text: "The brave may not live forever, but the cautious do not live at all.", author: "Unknown" },
+  { text: "The brave may not live forever, but the cautious do not live at all.", author: "Harsh Joshi" },
   { text: "Courage is not the absence of fear, but the triumph over it.", author: "Nelson Mandela" },
   { text: "Success is not final, failure is not fatal: it is the courage to continue that counts.", author: "Winston Churchill" },
   { text: "Discipline is the bridge between goals and accomplishment.", author: "Jim Rohn" },

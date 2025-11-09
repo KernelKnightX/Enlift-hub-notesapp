@@ -117,7 +117,6 @@ export const AuthProvider = ({ children }) => {
         email: email,
         ...userData,
         createdAt: new Date(),
-        isProfileComplete: false,
         isAdmin: false // Users are not admin by default - use scripts/update-admin-access.js to grant admin access
       });
 

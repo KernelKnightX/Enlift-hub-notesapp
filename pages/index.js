@@ -1,15 +1,10 @@
-// pages/index.js
-'use client';
-
-import Head from "next/head";
 import { useState, useEffect } from "react";
 
 export default function Home() {
-  // State for hero slider and testimonials
   const [currentSlide, setCurrentSlide] = useState(0);
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
 
-  // Hero slides data
   const slides = [
     {
       image: "https://defencedirecteducation.com/wp-content/uploads/2021/12/indian-military-academy-scaled-e1638344518595.jpg",
@@ -37,16 +32,15 @@ export default function Home() {
     }
   ];
 
-  // Features data
   const features = [
     { icon: "📝", title: "Digital Notes", desc: "Create, search & download notes as PDF." },
     { icon: "📊", title: "Practice Tests", desc: "Topic-wise practice with detailed analytics." },
     { icon: "📚", title: "Resource Vault", desc: "CDS syllabus PDFs, PYQs, cheat-sheets & more." },
     { icon: "🎯", title: "SSB Practice", desc: "Comprehensive Services Selection Board preparation." },
-    { icon: "📈", title: "Progress Tracking", desc: "Monitor your preparation with detailed analytics." }
+    { icon: "📈", title: "Progress Tracking", desc: "Monitor your preparation with detailed analytics." },
+    { icon: "💡", title: "Smart Revision", desc: "AI-powered spaced repetition system." }
   ];
 
-  // Testimonials data
   const testimonials = [
     {
       name: "Rahul Kumar",
@@ -65,7 +59,6 @@ export default function Home() {
     }
   ];
 
-  // Branches data
   const branches = [
     {
       name: "Indian Military Academy (IMA)",
@@ -97,94 +90,97 @@ export default function Home() {
     }
   ];
 
-  // Auto-slide effect for hero
+  // Auto-slide with pause capability
   useEffect(() => {
+    if (isPaused) return;
     const interval = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % slides.length);
     }, 6000);
     return () => clearInterval(interval);
-  }, []);
+  }, [isPaused, slides.length]);
 
-  // Auto-rotate testimonials
   useEffect(() => {
+    if (isPaused) return;
     const interval = setInterval(() => {
       setCurrentTestimonial((prev) => (prev + 1) % testimonials.length);
-    }, 4000);
+    }, 5000);
     return () => clearInterval(interval);
-  }, []);
+  }, [isPaused, testimonials.length]);
 
   return (
-    <>
-      <Head>
-        <title>The Enlift Hub – Elevate Your Learning Journey | Premium Education Platform</title>
-        <meta name="description" content="India's premier education platform. Create digital notes, practice tests, and track progress for competitive exams and skill development." />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet" />
-      </Head>
+    <div className="min-vh-100 d-flex flex-column">
+      <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+      <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet" />
 
       {/* NAVBAR */}
-      <nav className="navbar navbar-expand-lg sticky-top" style={{
+      <nav className="navbar navbar-expand-lg sticky-top shadow-lg" style={{
         background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
-        boxShadow: '0 10px 40px rgba(0, 0, 0, 0.3)'
       }}>
         <div className="container">
-          <a className="navbar-brand fw-bold fs-4 d-flex align-items-center" href="#" style={{ color: 'black' }}>
-            <img src="/enlift-hub-logo.jpeg" alt="The Enlift Hub Logo" style={{ height: '40px', marginRight: '10px', borderRadius: '6px' }} />
+          <a className="navbar-brand fw-bold fs-4 d-flex align-items-center gap-2 text-black" href="#">
+            <img
+              src="/enlift-hub-logo.jpeg"
+              alt="Enlift Hub Logo"
+              style={{
+                width: '40px',
+                height: '40px',
+                objectFit: 'contain',
+                borderRadius: '6px'
+              }}
+            />
             The Enlift Hub
           </a>
 
-          <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-            <span className="navbar-toggler-icon"></span>
+          <button className="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <i className="bi bi-list fs-2 text-black"></i>
           </button>
 
           <div className="collapse navbar-collapse" id="navbarNav">
             <ul className="navbar-nav ms-auto me-3">
-              <li className="nav-item"><a className="nav-link fw-semibold" href="#features" style={{ color: 'black' }}>Features</a></li>
-              <li className="nav-item"><a className="nav-link fw-semibold" href="#about" style={{ color: 'black' }}>Who We Are</a></li>
-              <li className="nav-item"><a className="nav-link fw-semibold" href="#cds" style={{ color: 'black' }}>CDS Info</a></li>
-              <li className="nav-item"><a className="nav-link fw-semibold" href="#blogs" style={{ color: 'black' }}>Knowledge</a></li>
-              <li className="nav-item"><a className="nav-link fw-semibold" href="#contact" style={{ color: 'black' }}>Contact</a></li>
+              {['Features', 'About', 'CDS Info', 'Knowledge', 'Contact'].map((item) => (
+                <li key={item} className="nav-item">
+                  <a className="nav-link fw-semibold text-black px-3" href={`#${item.toLowerCase().replace(' ', '-')}`}>
+                    {item}
+                  </a>
+                </li>
+              ))}
             </ul>
 
-            <div className="d-flex align-items-center gap-2">
-              <a href="/login" className="btn fw-bold px-3 py-2 rounded-3" style={{
-                background: 'black',
-                color: '#fbbf24',
-                border: '2px solid black'
-              }}>Login</a>
-              <a href="/register" className="btn fw-bold px-3 py-2 rounded-3" style={{
-                background: 'black',
-                color: '#fbbf24'
-              }}>Register</a>
-            </div>
+            <a href="/login" className="btn fw-bold px-4 py-2 rounded-pill border-2" style={{
+              background: 'black',
+              color: '#fbbf24',
+              border: '2px solid black'
+            }}>
+              Login/Register
+            </a>
           </div>
         </div>
       </nav>
 
       {/* HERO SECTION */}
-      <section className="position-relative overflow-hidden d-flex align-items-center justify-content-center" style={{
-        height: '92vh',
-        background: 'linear-gradient(135deg, #0f172a 0%, #000000 50%, #0f172a 100%)'
-      }}>
-        {/* Background Image */}
+      <section 
+        className="position-relative overflow-hidden d-flex align-items-center justify-content-center" 
+        style={{ minHeight: '600px', height: '92vh', maxHeight: '900px' }}
+        onMouseEnter={() => setIsPaused(true)}
+        onMouseLeave={() => setIsPaused(false)}
+      >
         <div 
           className="position-absolute w-100 h-100"
           style={{
             backgroundImage: `url(${slides[currentSlide].image})`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
-            transition: 'all 3s ease-in-out'
+            transition: 'all 2s ease-in-out'
           }}
-        ></div>
+          role="img"
+          aria-label={slides[currentSlide].heading}
+        />
         
-        {/* Overlay */}
         <div className="position-absolute w-100 h-100" style={{
-          background: 'linear-gradient(135deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.8) 50%, rgba(0,0,0,0.9) 100%)'
-        }}></div>
+          background: 'linear-gradient(135deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.75) 50%, rgba(0,0,0,0.85) 100%)'
+        }} />
 
-        {/* Content */}
-        <div className="position-relative text-center text-white px-4" style={{ maxWidth: '800px', zIndex: 10 }}>
+        <div className="position-relative text-center text-white px-4" style={{ maxWidth: '900px', zIndex: 10 }}>
           <span className="d-block text-warning opacity-75 text-uppercase fw-semibold mb-3" style={{
             fontSize: '0.9rem',
             letterSpacing: '0.2em'
@@ -192,29 +188,42 @@ export default function Home() {
             {slides[currentSlide].tag}
           </span>
           
-          <h1 className="display-3 fw-black mb-4" style={{ lineHeight: '1.1' }}>
+          <h1 className="display-4 fw-bold mb-3" style={{ lineHeight: '1.2' }}>
             {slides[currentSlide].heading}
           </h1>
           
-          <p className="fs-4 text-light mb-5" style={{ lineHeight: '1.5' }}>
+          <p className="fs-5 text-light mb-4" style={{ lineHeight: '1.6' }}>
             {slides[currentSlide].sub}
           </p>
           
-          <div className="d-flex flex-column flex-sm-row gap-3 justify-content-center">
-            <a href="/register" className="btn btn-lg px-4 py-3 fw-bold fs-5 rounded-pill d-inline-flex align-items-center gap-2" style={{
+          <div className="d-flex flex-column flex-sm-row gap-3 justify-content-center mb-4">
+            <a href="/login" className="btn btn-lg px-5 py-3 fw-bold rounded-pill" style={{
               background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
               color: 'black',
-              textDecoration: 'none'
+              textDecoration: 'none',
+              border: 'none'
             }}>
               🚀 Start CDS Preparation
             </a>
-            <a href="#features" className="btn btn-lg px-4 py-3 fw-bold fs-5 rounded-pill d-inline-flex align-items-center gap-2" style={{
-              background: 'rgba(255, 255, 255, 0.9)',
-              color: 'black',
-              textDecoration: 'none'
-            }}>
-              ✨ See How It Works
-            </a>
+          </div>
+
+          {/* Slide Indicators */}
+          <div className="d-flex gap-2 justify-content-center">
+            {slides.map((_, idx) => (
+              <button
+                key={idx}
+                onClick={() => setCurrentSlide(idx)}
+                className="border-0 rounded-pill"
+                style={{
+                  width: currentSlide === idx ? '40px' : '12px',
+                  height: '12px',
+                  background: currentSlide === idx ? '#fbbf24' : 'rgba(255,255,255,0.4)',
+                  transition: 'all 0.3s ease',
+                  cursor: 'pointer'
+                }}
+                aria-label={`Go to slide ${idx + 1}`}
+              />
+            ))}
           </div>
         </div>
       </section>
@@ -224,27 +233,21 @@ export default function Home() {
         background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)'
       }}>
         <div className="container">
-          <h2 className="display-5 fw-bold text-center mb-5 text-warning">
-            Our CDS Preparation Features
+          <h2 className="fs-3 fw-bold text-center mb-4 text-warning">
+            Our Armed Forces Preparation Features
           </h2>
-          <div className="row g-4">
-            {features.map((feature, index) => (
+          <div className="row g-3">
+            {features.slice(0, 5).map((feature, index) => (
               <div key={index} className="col-lg-2 col-md-4 col-sm-6">
-                <div className="p-4 text-center h-100 rounded-4" style={{
-                  background: 'rgba(255, 255, 255, 0.1)',
-                  border: '1px solid rgba(255, 255, 255, 0.15)',
+                <div className="p-3 text-center h-100 rounded-3 hover-card" style={{
+                  background: 'rgba(255, 255, 255, 0.05)',
+                  border: '1px solid rgba(251, 191, 36, 0.2)',
                   backdropFilter: 'blur(10px)',
                   transition: 'all 0.3s ease'
-                }} onMouseEnter={(e) => {
-                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)';
-                  e.currentTarget.style.transform = 'translateY(-5px)';
-                }} onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
-                  e.currentTarget.style.transform = 'translateY(0)';
                 }}>
-                  <div className="fs-1 mb-3">{feature.icon}</div>
-                  <div className="text-warning fw-bold mb-2">{feature.title}</div>
-                  <div className="text-light small">{feature.desc}</div>
+                  <div className="fs-3 mb-2">{feature.icon}</div>
+                  <div className="text-warning fw-semibold mb-1" style={{ fontSize: '0.85rem' }}>{feature.title}</div>
+                  <div className="text-light" style={{ fontSize: '0.7rem' }}>{feature.desc}</div>
                 </div>
               </div>
             ))}
@@ -252,57 +255,29 @@ export default function Home() {
         </div>
       </section>
 
+     
+
       {/* ABOUT SECTION */}
-      <section id="about" className="py-6 bg-white text-black">
+      <section id="about" className="py-4 bg-white text-black">
         <div className="container">
-          <div className="row align-items-center g-5">
-            <div className="col-lg-6">
-              <h2 className="display-5 fw-bold mb-4">Who We Are</h2>
-              <p className="fs-5 text-muted mb-4">
-                We are India's premier CDS-focused web application for defence aspirants to
+          <div className="row align-items-center g-4">
+            <div className="col-lg-12">
+              <h2 className="fs-3 fw-bold mb-3">Who We Are</h2>
+              <p className="mb-3" style={{ fontSize: '0.95rem' }}>
+                We are India's premier Armed Forces Written Preparation web application for defence aspirants to
                 <strong> create digital notes, practice questions, and track progress</strong> — all in one place. We are <strong>not a coaching institute</strong>.
-                Instead, we give you tools to learn faster, revise better, and stay consistent for CDS success.
+                Instead, we give you tools to learn faster, revise better, and stay consistent for Armed Forces success.
               </p>
-              <ul className="list-unstyled">
-                <li className="mb-3">• Keep all your CDS notes synced across devices — download as PDF anytime.</li>
-                <li className="mb-3">• Create organized notes with rich formatting and search functionality.</li>
-                <li className="mb-3">• Practice CDS PYQs with detailed performance analytics.</li>
-                <li className="mb-3">• Track progress with topic mastery & revision reminders for English, GK & Maths.</li>
-                <li className="mb-3">• Built specifically for CDS preparation — focused, distraction-free study environment.</li>
+              <ul className="list-unstyled mb-3">
+                <li className="mb-2" style={{ fontSize: '0.85rem' }}>• Keep all your Armed Forces notes synced across devices — download as PDF anytime.</li>
+                <li className="mb-2" style={{ fontSize: '0.85rem' }}>• Create organized notes with rich formatting and search functionality.</li>
+                <li className="mb-2" style={{ fontSize: '0.85rem' }}>• Practice Armed Forces PYQs with detailed performance analytics.</li>
+                <li className="mb-2" style={{ fontSize: '0.85rem' }}>• Track progress with topic mastery & revision reminders for English, GK & Maths.</li>
+                <li className="mb-2" style={{ fontSize: '0.85rem' }}>• Built specifically for Armed Forces Written Preparation — focused, distraction-free study environment.</li>
               </ul>
-              <div className="d-flex gap-3 mt-4">
-                <a href="/register" className="btn btn-warning btn-lg px-4">Start CDS Prep</a>
-                <a href="#cds" className="btn btn-dark btn-lg px-4">Explore CDS</a>
-              </div>
-            </div>
-            <div className="col-lg-6">
-              <div className="p-4 rounded-4" style={{ background: '#fef3c7', border: '2px solid #fcd34d' }}>
-                <div className="row g-3">
-                  <div className="col-6">
-                    <div className="p-4 bg-white rounded-3 text-center shadow-sm">
-                      <div className="display-6 fw-bold text-warning">25k+</div>
-                      <div className="small text-muted">CDS Notes Created</div>
-                    </div>
-                  </div>
-                  <div className="col-6">
-                    <div className="p-4 bg-white rounded-3 text-center shadow-sm">
-                      <div className="display-6 fw-bold text-warning">2.5M</div>
-                      <div className="small text-muted">CDS Questions Practiced</div>
-                    </div>
-                  </div>
-                  <div className="col-6">
-                    <div className="p-4 bg-white rounded-3 text-center shadow-sm">
-                      <div className="display-6 fw-bold text-warning">89%</div>
-                      <div className="small text-muted">CDS Success Rate</div>
-                    </div>
-                  </div>
-                  <div className="col-6">
-                    <div className="p-4 bg-white rounded-3 text-center shadow-sm">
-                      <div className="display-6 fw-bold text-warning">24x7</div>
-                      <div className="small text-muted">Learning Support</div>
-                    </div>
-                  </div>
-                </div>
+              <div className="d-flex gap-3">
+                <a href="/login" className="btn btn-warning px-4 py-2" style={{ fontSize: '0.9rem' }}>Start CDS Prep</a>
+                <a href="#cds-info" className="btn btn-outline-dark px-4 py-2" style={{ fontSize: '0.9rem' }}>Explore CDS</a>
               </div>
             </div>
           </div>
@@ -310,27 +285,27 @@ export default function Home() {
       </section>
 
       {/* CDS INFO SECTION */}
-      <section id="cds" className="py-6" style={{
+      <section id="cds-info" className="py-4" style={{
         background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)'
       }}>
         <div className="container text-black">
-          <h2 className="display-5 fw-bold text-center mb-3">Master CDS with Smart Preparation</h2>
-          <p className="text-center fs-5 mb-5 opacity-75">Your gateway to Indian Army, Navy & Air Force through Combined Defence Services</p>
+          <h2 className="fs-3 fw-bold text-center mb-2">Master Armed Forces with Smart Preparation</h2>
+          <p className="text-center mb-4" style={{ fontSize: '0.95rem' }}>Your gateway to Indian Army, Navy & Air Force through Combined Defence Services</p>
           
-          <div className="bg-white rounded-4 shadow-lg overflow-hidden mb-5">
-            <div className="p-4 text-center text-white" style={{
+          <div className="bg-white rounded-3 shadow-lg overflow-hidden">
+            <div className="p-3 text-center text-white" style={{
               background: 'linear-gradient(135deg, black 0%, #374151 100%)'
             }}>
-              <div className="fs-2 fw-bold text-warning">CDS</div>
-              <h3 className="display-6 fw-bold mt-2">Combined Defence Services</h3>
-              <p className="text-light mt-2">One exam, multiple opportunities across all three Armed Forces</p>
+              <div className="fs-4 fw-bold text-warning">CDS</div>
+              <h3 className="fs-5 fw-bold mt-1">Combined Defence Services</h3>
+              <p className="text-light mb-0" style={{ fontSize: '0.85rem' }}>One exam, multiple opportunities across all three Armed Forces</p>
             </div>
 
-            <div className="p-4">
+            <div className="p-3 p-md-4">
               {/* Exam Overview */}
-              <div className="mb-5">
-                <h4 className="fs-4 fw-bold mb-4">📋 Exam Overview</h4>
-                <div className="row g-3">
+              <div className="mb-3">
+                <h4 className="fs-6 fw-bold mb-3">📋 Exam Overview</h4>
+                <div className="row g-2">
                   {[
                     "🎯 Conducted twice yearly (February & November)",
                     "📝 Written exam followed by SSB Interview",
@@ -339,8 +314,8 @@ export default function Home() {
                     "👨‍💼 Become a commissioned officer in Armed Forces"
                   ].map((item, idx) => (
                     <div key={idx} className="col-md-6 col-lg-4">
-                      <div className="p-3 rounded-3" style={{ background: 'rgba(251, 191, 36, 0.25)' }}>
-                        <small>{item}</small>
+                      <div className="p-2 rounded" style={{ background: 'rgba(251, 191, 36, 0.25)', fontSize: '0.75rem' }}>
+                        {item}
                       </div>
                     </div>
                   ))}
@@ -348,22 +323,22 @@ export default function Home() {
               </div>
 
               {/* Academies */}
-              <div className="mb-5">
-                <h4 className="fs-4 fw-bold mb-4">🎯 Academies You Can Join</h4>
-                <div className="row g-4">
+              <div className="mb-3">
+                <h4 className="fs-6 fw-bold mb-3">🎯 Academies You Can Join</h4>
+                <div className="row g-3">
                   {branches.map((branch, idx) => (
                     <div key={idx} className="col-lg-6">
-                      <div className="p-4 rounded-3" style={{
+                      <div className="p-3 rounded h-100" style={{
                         background: 'linear-gradient(135deg, #fef3c7 0%, #fed7aa 100%)',
                         border: '2px solid #fcd34d'
                       }}>
-                        <h5 className="fw-bold">{branch.name}</h5>
-                        <p className="small text-muted mb-2">{branch.location}</p>
-                        <div className="badge text-warning fw-bold mb-3" style={{ background: 'black' }}>
+                        <h5 className="fw-bold mb-1" style={{ fontSize: '0.95rem' }}>{branch.name}</h5>
+                        <p className="text-muted mb-2" style={{ fontSize: '0.75rem' }}>{branch.location}</p>
+                        <div className="badge text-warning fw-semibold mb-2" style={{ background: 'black', fontSize: '0.7rem' }}>
                           {branch.service}
                         </div>
-                        <p className="small mt-2">{branch.description}</p>
-                        <div className="small bg-warning text-dark px-3 py-1 rounded fw-semibold">
+                        <p className="mb-2" style={{ fontSize: '0.8rem' }}>{branch.description}</p>
+                        <div className="bg-warning text-dark px-2 py-1 rounded fw-semibold" style={{ fontSize: '0.75rem' }}>
                           📚 {branch.subjects}
                         </div>
                       </div>
@@ -373,10 +348,10 @@ export default function Home() {
               </div>
 
               {/* SSB Process */}
-              <div className="mb-5">
-                <h4 className="fs-4 fw-bold mb-4">🏅 SSB Selection Process</h4>
-                <div className="p-4 bg-light rounded-3">
-                  <div className="row g-3">
+              <div className="mb-3">
+                <h4 className="fs-6 fw-bold mb-3">🏅 SSB Selection Process</h4>
+                <div className="p-3 bg-light rounded">
+                  <div className="row g-2">
                     {[
                       "Stage 1: Officer Intelligence Rating (OIR) & Picture Perception",
                       "Stage 2: Psychological Tests, Group Testing & Personal Interview",
@@ -384,15 +359,16 @@ export default function Home() {
                       "5-day comprehensive assessment of leadership qualities"
                     ].map((step, idx) => (
                       <div key={idx} className="col-md-6">
-                        <div className="d-flex align-items-start gap-3">
+                        <div className="d-flex align-items-start gap-2">
                           <div className="bg-warning text-dark rounded-circle d-flex align-items-center justify-content-center fw-bold" style={{
-                            width: '30px',
-                            height: '30px',
-                            fontSize: '0.8rem'
+                            width: '24px',
+                            height: '24px',
+                            fontSize: '0.7rem',
+                            flexShrink: 0
                           }}>
                             {idx + 1}
                           </div>
-                          <span className="small">{step}</span>
+                          <span style={{ fontSize: '0.75rem' }}>{step}</span>
                         </div>
                       </div>
                     ))}
@@ -402,10 +378,10 @@ export default function Home() {
 
               {/* CTA */}
               <div className="text-center">
-                <a href="/register" className="btn btn-dark btn-lg px-5 py-3 rounded-pill fw-bold">
+                <a href="/login" className="btn btn-dark px-4 py-2 rounded-pill fw-bold" style={{ fontSize: '0.9rem' }}>
                   🚀 Start CDS Preparation Now
                 </a>
-                <p className="small text-muted mt-3">
+                <p className="text-muted mt-2 mb-0" style={{ fontSize: '0.75rem' }}>
                   Digital notes • Practice tests • Study planning
                 </p>
               </div>
@@ -414,35 +390,11 @@ export default function Home() {
         </div>
       </section>
 
-      {/* TESTIMONIALS */}
-      <section className="py-6 bg-black">
-        <div className="container">
-          <h2 className="display-5 fw-bold text-center mb-5 text-warning">CDS Success Stories</h2>
-          <div className="row justify-content-center">
-            <div className="col-lg-8">
-              <div className="p-5 text-center rounded-4" style={{
-                background: 'rgba(255, 255, 255, 0.1)',
-                border: '1px solid rgba(255, 255, 255, 0.2)',
-                backdropFilter: 'blur(10px)',
-                transition: 'all 0.5s ease'
-              }}>
-                <div className="text-warning display-4 mb-4">⭐</div>
-                <p className="fs-4 text-light fst-italic mb-4 lh-base">
-                  "{testimonials[currentTestimonial].text}"
-                </p>
-                <div className="text-warning fw-bold fs-5">{testimonials[currentTestimonial].name}</div>
-                <div className="text-muted">{testimonials[currentTestimonial].rank}</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* BLOG SECTION */}
-      <section id="blogs" className="py-6 bg-white text-black">
+      <section id="knowledge" className="py-4 bg-white text-black">
         <div className="container">
-          <h2 className="display-5 fw-bold text-center mb-5">CDS Knowledge Hub</h2>
-          <div className="row g-4">
+          <h2 className="fs-3 fw-bold text-center mb-4">Armed Forces Knowledge Hub</h2>
+          <div className="row g-3">
             {[
               {
                 title: "CDS in 60 Days — Complete Roadmap",
@@ -458,18 +410,16 @@ export default function Home() {
               }
             ].map((blog, idx) => (
               <div key={idx} className="col-lg-4">
-                <div className="p-4 h-100 rounded-3 shadow-sm" style={{
+                <div className="p-3 h-100 rounded shadow-sm blog-card" style={{
                   background: '#fef3c7',
                   border: '2px solid #fcd34d',
                   transition: 'all 0.3s ease'
-                }} onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-5px)';
-                }} onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0)';
                 }}>
-                  <h3 className="fw-bold fs-5">{blog.title}</h3>
-                  <p className="small text-muted mt-2">{blog.desc}</p>
-                  <a href="#" className="fw-bold text-decoration-none text-warning mt-3 d-inline-block">Read more →</a>
+                  <h3 className="fw-bold mb-2" style={{ fontSize: '0.95rem' }}>{blog.title}</h3>
+                  <p className="text-muted mb-2" style={{ fontSize: '0.75rem' }}>{blog.desc}</p>
+                  <a href="#" className="fw-bold text-decoration-none d-inline-flex align-items-center gap-1" style={{ color: '#f59e0b', fontSize: '0.8rem' }}>
+                    Read more <i className="bi bi-arrow-right"></i>
+                  </a>
                 </div>
               </div>
             ))}
@@ -478,353 +428,106 @@ export default function Home() {
       </section>
 
       {/* CTA STRIP */}
-      <section className="py-4 text-center text-black" style={{
+      <section className="py-3 text-center text-black" style={{
         background: 'linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%)'
       }}>
         <div className="container">
-          <h3 className="fs-2 fw-bold">Ready to crack CDS with smart preparation?</h3>
-          <p className="opacity-75 mt-2 fs-5">Create your free account and start your CDS journey today.</p>
-          <a href="/register" className="btn btn-dark btn-lg px-5 py-3 mt-3 rounded-pill fw-bold">Get Started Free</a>
+          <h3 className="fs-5 fw-bold mb-2">Ready to crack CDS with smart preparation?</h3>
+          <p className="mb-3" style={{ fontSize: '0.9rem' }}>Create your free account and start your CDS journey today.</p>
+          <a href="/login" className="btn btn-dark px-4 py-2 rounded-pill fw-bold" style={{ fontSize: '0.9rem' }}>Get Started Free</a>
         </div>
       </section>
 
       {/* FOOTER */}
-      <footer id="contact" className="py-5 bg-black text-white">
+      <footer id="contact" className="py-4 bg-dark text-white">
         <div className="container">
-          <div className="row g-4">
+          <div className="row g-3">
             <div className="col-lg-3">
-              <div className="text-warning fw-black fs-5 mb-3">🚀 The Enlift Hub</div>
-              <p className="text-muted small">
-                India's premier CDS preparation platform. Digital notes, practice tests, study planning — everything you need to crack CDS and join IMA, INA, AFA, or OTA.
+              <div className="text-warning fw-bold mb-2" style={{ fontSize: '0.95rem' }}>🚀 The Enlift Hub</div>
+              <p className="text-light mb-0" style={{ fontSize: '0.75rem' }}>
+                India's premier Armed Forces Written Preparation platform. Digital notes, practice tests, study planning — everything you need to crack CDS and join IMA, INA, AFA, or OTA.
               </p>
             </div>
             <div className="col-lg-3">
-              <h4 className="text-warning fw-bold mb-3">Product</h4>
+              <h4 className="text-warning fw-bold mb-2" style={{ fontSize: '0.9rem' }}>Product</h4>
               <ul className="list-unstyled">
-                <li className="mb-2"><a href="#features" className="text-muted text-decoration-none small">Features</a></li>
-                <li className="mb-2"><a href="#blogs" className="text-muted text-decoration-none small">Knowledge Hub</a></li>
-                <li className="mb-2"><a href="#cds" className="text-muted text-decoration-none small">CDS Info</a></li>
-                <li className="mb-2"><a href="#" className="text-muted text-decoration-none small">Pricing</a></li>
+                <li className="mb-1"><a href="#features" className="text-light text-decoration-none" style={{ fontSize: '0.75rem' }}>Features</a></li>
+                <li className="mb-1"><a href="#knowledge" className="text-light text-decoration-none" style={{ fontSize: '0.75rem' }}>Knowledge Hub</a></li>
+                <li className="mb-1"><a href="#cds-info" className="text-light text-decoration-none" style={{ fontSize: '0.75rem' }}>CDS Info</a></li>
+                <li className="mb-1"><a href="#" className="text-light text-decoration-none" style={{ fontSize: '0.75rem' }}>Pricing</a></li>
               </ul>
             </div>
             <div className="col-lg-3">
-              <h4 className="text-warning fw-bold mb-3">Company</h4>
+              <h4 className="text-warning fw-bold mb-2" style={{ fontSize: '0.9rem' }}>Company</h4>
               <ul className="list-unstyled">
-                <li className="mb-2"><a href="#about" className="text-muted text-decoration-none small">About Us</a></li>
-                <li className="mb-2"><a href="#" className="text-muted text-decoration-none small">Careers</a></li>
-                <li className="mb-2"><a href="#" className="text-muted text-decoration-none small">Terms</a></li>
-                <li className="mb-2"><a href="#" className="text-muted text-decoration-none small">Privacy</a></li>
+                <li className="mb-1"><a href="#about" className="text-light text-decoration-none" style={{ fontSize: '0.75rem' }}>About Us</a></li>
+                <li className="mb-1"><a href="#" className="text-light text-decoration-none" style={{ fontSize: '0.75rem' }}>Careers</a></li>
+                <li className="mb-1"><a href="#" className="text-light text-decoration-none" style={{ fontSize: '0.75rem' }}>Terms</a></li>
+                <li className="mb-1"><a href="#" className="text-light text-decoration-none" style={{ fontSize: '0.75rem' }}>Privacy</a></li>
               </ul>
             </div>
             <div className="col-lg-3">
-              <h4 className="text-warning fw-bold mb-3">Contact</h4>
+              <h4 className="text-warning fw-bold mb-2" style={{ fontSize: '0.9rem' }}>Contact</h4>
               <ul className="list-unstyled">
-                <li className="text-muted small mb-2">📧 support@cdsai.in</li>
-                <li className="text-muted small mb-2">📞 +91 98765 43210</li>
-                <li className="text-muted small mb-2">📍 Pune, Maharashtra, India</li>
+                <li className="text-light mb-1" style={{ fontSize: '0.75rem' }}>📧 support@cdsai.in</li>
+                <li className="text-light mb-1" style={{ fontSize: '0.75rem' }}>📞 +91 98765 43210</li>
+                <li className="text-light mb-1" style={{ fontSize: '0.75rem' }}>📍 Pune, Maharashtra, India</li>
                 <li className="pt-2">
-                  <a href="#" className="text-muted me-3">𝕏</a>
-                  <a href="#" className="text-muted me-3">IG</a>
-                  <a href="#" className="text-muted">YT</a>
+                  <a href="#" className="text-light me-3" style={{ fontSize: '0.85rem' }}>𝕏</a>
+                  <a href="#" className="text-light me-3" style={{ fontSize: '0.85rem' }}>IG</a>
+                  <a href="#" className="text-light" style={{ fontSize: '0.85rem' }}>YT</a>
                 </li>
               </ul>
             </div>
           </div>
-          <div className="mt-5 pt-4 border-top border-secondary text-center text-muted small">
+          <div className="mt-3 pt-3 border-top border-secondary text-center text-light" style={{ fontSize: '0.7rem' }}>
             © 2025 The Enlift Hub - Elevate Your Learning Journey. All rights reserved.
           </div>
         </div>
       </footer>
 
-
-      {/* Custom Styles */}
       <style jsx>{`
-        .py-6 {
-          padding-top: 4rem !important;
-          padding-bottom: 4rem !important;
-        }
-
-        .fw-black {
-          font-weight: 900 !important;
-        }
-
-        .navbar-custom .nav-link:hover {
-          text-decoration: underline;
-          transform: translateY(-1px);
-          transition: all 0.3s ease;
-        }
-
-        .hero-content {
-          animation: fadeInUp 0.8s ease-out forwards;
-        }
-
-        @keyframes fadeInUp {
-          from {
-            opacity: 0;
-            transform: translateY(30px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        .btn:hover {
-          transform: scale(1.05);
-          transition: all 0.3s ease;
-        }
-
-        .feature-card:hover {
+        .hover-card:hover {
+          background: rgba(255, 255, 255, 0.1) !important;
+          border-color: rgba(251, 191, 36, 0.4) !important;
           transform: translateY(-5px);
-          box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+          box-shadow: 0 10px 30px rgba(251, 191, 36, 0.2);
         }
 
         .blog-card:hover {
           transform: translateY(-5px);
-          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
         }
 
-        .footer-section a:hover {
-          color: #fbbf24 !important;
-          transition: color 0.3s ease;
+        .btn:hover {
+          transform: scale(1.05);
+          box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
         }
 
-        .text-gradient {
-          background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          background-clip: text;
+        .nav-link:hover {
+          transform: translateY(-2px);
         }
 
-        /* Smooth scrolling */
+        @media (max-width: 768px) {
+          .display-3 {
+            font-size: 2rem !important;
+          }
+          .display-5 {
+            font-size: 1.8rem !important;
+          }
+        }
+
         html {
           scroll-behavior: smooth;
         }
 
-        /* Responsive adjustments */
-        @media (max-width: 768px) {
-          .display-3 {
-            font-size: 2.5rem !important;
-          }
-          
-          .fs-4 {
-            font-size: 1.1rem !important;
-          }
-          
-          .hero-buttons {
-            flex-direction: column;
-            align-items: center;
-          }
-        }
-
-        /* Bootstrap overrides */
-        .btn-warning {
-          background-color: #fbbf24 !important;
-          border-color: #fbbf24 !important;
-          color: black !important;
-        }
-
-        .btn-warning:hover {
-          background-color: #f59e0b !important;
-          border-color: #f59e0b !important;
-          color: black !important;
-        }
-
-        .text-warning {
-          color: #fbbf24 !important;
-        }
-
-        .bg-warning {
-          background-color: #fbbf24 !important;
-        }
-
-        .border-warning {
-          border-color: #fbbf24 !important;
-        }
-
-        /* Additional animations */
-        .fade-in {
-          opacity: 0;
-          transform: translateY(20px);
-          animation: fadeIn 0.8s ease forwards;
-        }
-
-        @keyframes fadeIn {
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        /* Hero background transition */
-        .hero-bg-transition {
-          transition: background-image 3s ease-in-out;
-        }
-
-        /* Testimonial transition */
-        .testimonial-fade {
-          transition: opacity 0.5s ease-in-out;
-        }
-
-        /* Hover effects */
-        .hover-lift {
-          transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        .hover-lift:hover {
-          transform: translateY(-5px);
-          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-        }
-
-        /* Chatbot animation */
-        .chatbot-slide-in {
-          animation: slideInUp 0.3s ease forwards;
-        }
-
-        @keyframes slideInUp {
-          from {
-            opacity: 0;
-            transform: translateY(20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        /* Mobile responsive text */
-        @media (max-width: 576px) {
-          .display-3 {
-            font-size: 2rem !important;
-          }
-          
-          .display-5 {
-            font-size: 2rem !important;
-          }
-          
-          .fs-4 {
-            font-size: 1rem !important;
-          }
-          
-          .fs-5 {
-            font-size: 0.9rem !important;
-          }
-        }
-
-        /* Navbar mobile */
-        @media (max-width: 991px) {
-          .navbar-collapse {
-            background: rgba(251, 191, 36, 0.95);
-            border-radius: 10px;
-            margin-top: 10px;
-            padding: 15px;
-          }
-        }
-
-        /* Feature cards responsive */
-        @media (max-width: 768px) {
-          .feature-grid {
-            grid-template-columns: repeat(2, 1fr);
-            gap: 1rem;
-          }
-        }
-
-        /* Stats grid mobile */
-        @media (max-width: 576px) {
-          .stats-grid .row {
-            gap: 0.5rem;
-          }
-        }
-
-        /* Branch cards mobile */
-        @media (max-width: 992px) {
-          .branch-card {
-            margin-bottom: 1.5rem;
-          }
-        }
-
-        /* Chatbot mobile */
-        @media (max-width: 576px) {
-          .chatbot-window {
-            width: 300px !important;
-            height: 400px !important;
-          }
-          
-          .chatbot-float {
-            right: 1rem !important;
-            bottom: 1rem !important;
-          }
-        }
-
-        /* Footer mobile */
-        @media (max-width: 768px) {
-          .footer-section .row {
-            text-align: center;
-          }
-          
-          .footer-section .col-lg-3 {
-            margin-bottom: 2rem;
-          }
-        }
-
-        /* Loading states */
-        .loading {
-          opacity: 0.6;
-          pointer-events: none;
-        }
-
-        /* Accessibility improvements */
-        .btn:focus,
-        .nav-link:focus {
-          outline: 2px solid #fbbf24;
-          outline-offset: 2px;
-        }
-
-        /* High contrast mode support */
-        @media (prefers-contrast: high) {
-          .text-muted {
-            color: #666 !important;
-          }
-          
-          .opacity-75 {
-            opacity: 0.9 !important;
-          }
-        }
-
-        /* Reduced motion support */
         @media (prefers-reduced-motion: reduce) {
-          *,
-          *::before,
-          *::after {
+          *, *::before, *::after {
             animation-duration: 0.01ms !important;
-            animation-iteration-count: 1 !important;
             transition-duration: 0.01ms !important;
           }
         }
-
-        /* Print styles */
-        @media print {
-          .chatbot-float,
-          .btn,
-          .navbar {
-            display: none !important;
-          }
-          
-          .hero-section {
-            height: auto !important;
-            padding: 2rem 0 !important;
-          }
-          
-          .bg-dark,
-          .bg-black {
-            background: white !important;
-            color: black !important;
-          }
-        }
       `}</style>
-
-      {/* Bootstrap JS */}
-      <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" defer></script>
-    </>
+    </div>
   );
 }

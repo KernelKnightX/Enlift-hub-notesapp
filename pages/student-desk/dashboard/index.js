@@ -1,15 +1,11 @@
-// pages/student-desk/dashboard/index.jsx (Armed Forces Exam Preparation Dashboard)
-'use client';
-
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { toast } from "react-toastify";
 
 import { useAuth } from "../../../contexts/AuthContext";
-import Sidebar from "../../../components/common/sidebar";
-
 import { db } from "../../../firebase/config";
+import Sidebar from "../../../components/common/sidebar";
 import {
   collection,
   query,
@@ -19,9 +15,10 @@ import {
   onSnapshot,
   doc,
   getDoc,
+  getDocs,
 } from "firebase/firestore";
 
-/* ------------------------------ Helpers ------------------------------ */
+/* ─── Static constants ──────────────────────────────────────────── */
 
 const motivationalQuotes = [
   { text: "The brave may not live forever, but the cautious do not live at all.", author: "Harsh Joshi" },
@@ -32,596 +29,1051 @@ const motivationalQuotes = [
   { text: "Victory belongs to the most persevering.", author: "Napoleon Bonaparte" },
   { text: "I will prepare and someday my chance will come.", author: "Abraham Lincoln" },
   { text: "Hard work beats talent when talent doesn't work hard.", author: "Tim Notke" },
-  { text: "The more you sweat in peace, the less you bleed in war.", author: "Military Proverb" },
-  { text: "A hero is no braver than an ordinary man, but he is brave five minutes longer.", author: "Ralph Waldo Emerson" },
 ];
 
-// Armed Forces Exam Dates (Update these as per actual exam schedules)
 const EXAM_DATES = {
-  nda: new Date("2026-04-20"),
-  cds: new Date("2026-02-15"),
-  afcat: new Date("2026-08-28"),
+  prelims: new Date("2026-06-20"),
+  mains:   new Date("2026-09-20"),
 };
 
+/* ─── Helpers ───────────────────────────────────────────────────── */
+
 function daysUntil(date) {
-  const today = new Date();
-  const diff = Math.ceil((date.getTime() - today.getTime()) / (1000 * 3600 * 24));
-  return diff > 0 ? diff : 0;
+  return Math.max(0, Math.ceil((date.getTime() - Date.now()) / 86400000));
 }
 
 function formatRelative(ts) {
-  const now = new Date();
-  const diff = now.getTime() - new Date(ts).getTime();
-  const seconds = Math.floor(diff / 1000);
-  const minutes = Math.floor(diff / 60000);
-  const hours = Math.floor(diff / 3600000);
+  const diff = Date.now() - new Date(ts).getTime();
+  const min  = Math.floor(diff / 60000);
+  const hrs  = Math.floor(diff / 3600000);
   const days = Math.floor(diff / 86400000);
-
-  if (seconds < 60) return `Just now`;
-  if (minutes < 60) return `${minutes}m ago`;
-  if (hours < 24) return `${hours}h ago`;
-  if (days < 7) return `${days}d ago`;
-
-  // For older activities, show exact date
-  const date = new Date(ts);
-  return date.toLocaleDateString('en-IN', {
-    day: 'numeric',
-    month: 'short',
-    year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined
-  });
+  if (min  < 1)  return "Just now";
+  if (min  < 60) return `${min}m ago`;
+  if (hrs  < 24) return `${hrs}h ago`;
+  if (days <  7) return `${days}d ago`;
+  return new Date(ts).toLocaleDateString("en-IN", { day: "numeric", month: "short" });
 }
 
-function formatDateTime() {
-  const now = new Date();
-  const options = {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-    hour12: true
+function getGreeting() {
+  const h = new Date().getHours();
+  if (h < 12) return "Good morning";
+  if (h < 17) return "Good afternoon";
+  return "Good evening";
+}
+
+/* ─── Styles ────────────────────────────────────────────────────── */
+
+const css = `
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --ink:        #0f1923;
+    --ink-2:      #2c3e50;
+    --ink-3:      #64748b;
+    --paper:      #f5f2ee;
+    --paper-2:    #ede9e3;
+    --paper-3:    #e2ddd6;
+    --gold:       #c9a84c;
+    --gold-light: #f0d98a;
+    --emerald:    #1a6b4a;
+    --sapphire:   #1a3f6b;
+    --crimson:    #8b1a1a;
+    --sidebar-w:  260px;
+    --radius:     16px;
+    --shadow:     0 4px 24px rgba(15,25,35,.08);
+    --shadow-lg:  0 12px 40px rgba(15,25,35,.14);
+  }
+
+  body { font-family: 'DM Sans', sans-serif; background: var(--paper); color: var(--ink); }
+  .layout { display: flex; min-height: 100vh; }
+
+  /* ── Sidebar ── */
+  .sidebar {
+    width: var(--sidebar-w); background: var(--ink);
+    position: fixed; top: 0; left: 0; bottom: 0;
+    display: flex; flex-direction: column; z-index: 100;
+    transition: transform .3s cubic-bezier(.4,0,.2,1);
+  }
+  .sidebar-logo     { padding: 28px 24px 20px; border-bottom: 1px solid rgba(255,255,255,.08); }
+  .sidebar-logo-text{ font-family:'Playfair Display',serif; font-size:1.35rem; color:#fff; line-height:1.2; }
+  .sidebar-logo-sub { font-size:.72rem; letter-spacing:.12em; text-transform:uppercase; color:var(--gold); margin-top:3px; }
+  .sidebar-nav      { flex:1; padding:16px 12px; overflow-y:auto; }
+  .nav-item {
+    display:flex; align-items:center; gap:12px; padding:10px 14px; border-radius:10px;
+    color:rgba(255,255,255,.55); font-size:.88rem; font-weight:500;
+    cursor:pointer; transition:all .18s; text-decoration:none; margin-bottom:2px;
+  }
+  .nav-item:hover  { background:rgba(255,255,255,.07); color:rgba(255,255,255,.9); }
+  .nav-item.active { background:var(--gold); color:var(--ink); }
+  .nav-icon        { font-size:1.1rem; width:22px; text-align:center; }
+  .sidebar-footer  { padding:16px 12px 20px; border-top:1px solid rgba(255,255,255,.08); }
+  .logout-btn {
+    width:100%; display:flex; align-items:center; gap:10px; padding:10px 14px; border-radius:10px;
+    background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.1);
+    color:rgba(255,255,255,.6); font-size:.85rem; font-weight:500;
+    cursor:pointer; transition:all .18s; font-family:'DM Sans',sans-serif;
+  }
+  .logout-btn:hover { background:rgba(220,50,50,.2); color:#fca5a5; border-color:rgba(220,50,50,.3); }
+  .sidebar-overlay  { display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:99; }
+
+  /* ── Main ── */
+  .main    { margin-left:var(--sidebar-w); flex:1; min-width:0; }
+  .topbar  {
+    position:sticky; top:0; z-index:50;
+    background:rgba(245,242,238,.92); backdrop-filter:blur(12px);
+    border-bottom:1px solid var(--paper-3); padding:0 32px; height:64px;
+    display:flex; align-items:center; justify-content:space-between;
+  }
+  .topbar-left     { display:flex; align-items:center; gap:14px; }
+  .hamburger {
+    display:none; width:36px; height:36px; border-radius:8px;
+    border:1px solid var(--paper-3); background:white;
+    align-items:center; justify-content:center; cursor:pointer; font-size:1.1rem;
+  }
+  .topbar-greeting { font-family:'Playfair Display',serif; font-size:1.05rem; color:var(--ink); }
+  .topbar-date     { font-size:.78rem; color:var(--ink-3); margin-top:1px; }
+  .topbar-right    { display:flex; align-items:center; gap:10px; }
+  .avatar {
+    width:36px; height:36px; border-radius:50%; background:var(--ink); color:var(--gold);
+    display:flex; align-items:center; justify-content:center;
+    font-weight:700; font-size:.9rem; font-family:'Playfair Display',serif;
+  }
+
+  /* ── Content ── */
+  .content { padding:28px 32px; max-width:1200px; }
+  .section-label {
+    font-size:.72rem; font-weight:600; letter-spacing:.1em; text-transform:uppercase;
+    color:var(--ink-3); margin-bottom:14px; display:flex; align-items:center; gap:8px;
+  }
+  .section-label::after { content:''; flex:1; height:1px; background:var(--paper-3); }
+
+  /* ── Hero ── */
+  .hero {
+    border-radius:var(--radius); background:var(--ink);
+    padding:28px 32px; position:relative; overflow:hidden; margin-bottom:28px;
+  }
+  .hero-pattern {
+    position:absolute; inset:0; opacity:.04;
+    background-image:repeating-linear-gradient(45deg,#fff 0,#fff 1px,transparent 0,transparent 50%);
+    background-size:20px 20px;
+  }
+  .hero-accent {
+    position:absolute; right:-40px; top:-40px; width:220px; height:220px; border-radius:50%;
+    background:radial-gradient(circle,var(--gold) 0%,transparent 70%); opacity:.12;
+  }
+  .hero-content      { position:relative; display:flex; align-items:center; justify-content:space-between; gap:24px; flex-wrap:wrap; }
+  .hero-quote        { font-family:'Playfair Display',serif; font-style:italic; font-size:1.15rem; color:rgba(255,255,255,.9); max-width:480px; line-height:1.6; }
+  .hero-quote-author { font-size:.78rem; font-weight:500; letter-spacing:.08em; color:var(--gold); margin-top:10px; text-transform:uppercase; }
+  .hero-badge        { background:rgba(201,168,76,.15); border:1px solid rgba(201,168,76,.3); border-radius:10px; padding:14px 20px; text-align:center; flex-shrink:0; }
+  .hero-badge-num    { font-family:'Playfair Display',serif; font-size:2.2rem; color:var(--gold-light); line-height:1; }
+  .hero-badge-label  { font-size:.72rem; color:rgba(255,255,255,.5); margin-top:4px; text-transform:uppercase; letter-spacing:.08em; }
+
+  /* ── Stats ── */
+  .stats-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:28px; }
+  .stat-card  {
+    background:white; border-radius:var(--radius); padding:20px;
+    box-shadow:var(--shadow); border:1px solid var(--paper-3); transition:transform .2s,box-shadow .2s;
+  }
+  .stat-card:hover { transform:translateY(-2px); box-shadow:var(--shadow-lg); }
+  .stat-icon  { width:44px; height:44px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:1.25rem; margin-bottom:14px; }
+  .stat-value { font-family:'Playfair Display',serif; font-size:2rem; font-weight:700; color:var(--ink); line-height:1; }
+  .stat-label { font-size:.78rem; color:var(--ink-3); margin-top:5px; font-weight:500; }
+
+  /* ── Skeleton ── */
+  @keyframes shimmer { from{background-position:-400px 0} to{background-position:400px 0} }
+  .skeleton {
+    border-radius:6px; display:block;
+    background:linear-gradient(90deg,var(--paper-2) 25%,var(--paper-3) 50%,var(--paper-2) 75%);
+    background-size:400px 100%; animation:shimmer 1.4s infinite;
+  }
+
+  /* ── Two-col / card ── */
+  .two-col    { display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:28px; }
+  .card       { background:white; border-radius:var(--radius); box-shadow:var(--shadow); border:1px solid var(--paper-3); }
+  .card-head  { padding:18px 22px 14px; border-bottom:1px solid var(--paper-2); display:flex; align-items:center; justify-content:space-between; }
+  .card-title { font-family:'Playfair Display',serif; font-size:1rem; color:var(--ink); }
+  .card-body  { padding:18px 22px; }
+
+  /* ── Countdown ── */
+  .countdown-item        { margin-bottom:18px; }
+  .countdown-item:last-child { margin-bottom:0; }
+  .countdown-top         { display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px; }
+  .countdown-name        { font-size:.88rem; font-weight:600; color:var(--ink-2); }
+  .countdown-days        { font-family:'Playfair Display',serif; font-size:1.3rem; color:var(--ink); }
+  .countdown-days span   { font-size:.72rem; font-weight:500; color:var(--ink-3); font-family:'DM Sans',sans-serif; }
+  .progress-track        { height:5px; border-radius:99px; background:var(--paper-3); overflow:hidden; }
+  .progress-fill         { height:100%; border-radius:99px; transition:width .6s cubic-bezier(.4,0,.2,1); }
+  .countdown-meta        { font-size:.72rem; color:var(--ink-3); margin-top:5px; }
+
+  /* ── Notifications ── */
+  .notif-list            { max-height:320px; overflow-y:auto; }
+  .notif-empty           { padding:40px 22px; text-align:center; color:var(--ink-3); font-size:.85rem; }
+  .notif-empty-icon      { font-size:2rem; margin-bottom:8px; }
+  .notif-item            { display:flex; gap:12px; padding:12px 22px; border-bottom:1px solid var(--paper-2); transition:background .15s; }
+  .notif-item:hover      { background:var(--paper); }
+  .notif-item:last-child { border-bottom:none; }
+  .notif-icon            { font-size:1.2rem; flex-shrink:0; margin-top:1px; }
+  .notif-dot             { width:8px; height:8px; border-radius:50%; margin-top:6px; flex-shrink:0; margin-left:auto; }
+  .notif-title           { font-size:.85rem; font-weight:600; color:var(--ink); }
+  .notif-msg             { font-size:.78rem; color:var(--ink-3); margin-top:2px; line-height:1.4; }
+  .notif-time            { font-size:.72rem; color:var(--ink-3); margin-top:4px; }
+  .badge-count           { background:var(--crimson); color:white; font-size:.7rem; font-weight:700; border-radius:99px; padding:2px 7px; }
+
+  /* ── Quick access ── */
+  .quick-grid  { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+  .quick-card  {
+    border-radius:12px; padding:16px; cursor:pointer; transition:all .18s;
+    text-decoration:none; display:block; background:white;
+  }
+  .quick-card:hover { transform:translateY(-3px); box-shadow:var(--shadow-lg); }
+  .quick-icon  { font-size:1.2rem; margin-bottom:8px; width:40px; height:40px; border-radius:10px; display:flex; align-items:center; justify-content:center; }
+  .quick-label { font-size:.82rem; font-weight:600; color:var(--ink); }
+  .quick-sub   { font-size:.72rem; color:var(--ink-3); margin-top:2px; }
+
+  /* ── Enhanced Dashboard Cards ── */
+  .performance-card { padding:18px 22px; }
+  .performance-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; }
+  .performance-title { font-size:.88rem; font-weight:600; color:var(--ink-2); }
+  .performance-badge { font-size:.72rem; padding:4px 10px; border-radius:12px; font-weight:600; }
+  .subject-row { display:flex; align-items:center; justify-content:space-between; padding:10px 0; border-bottom:1px solid var(--paper-2); }
+  .subject-row:last-child { border-bottom:none; }
+  .subject-info { display:flex; align-items:center; gap:10px; }
+  .subject-dot { width:10px; height:10px; border-radius:50%; }
+  .subject-label { font-size:.85rem; font-weight:500; color:var(--ink); }
+  .subject-score { font-family:'Playfair Display',serif; font-size:1.1rem; font-weight:700; }
+  .no-data { text-align:center; padding:20px; color:var(--ink-3); font-size:.85rem; }
+
+  /* Today's Tasks */
+  .tasks-summary { display:flex; align-items:center; justify-content:space-between; }
+  .tasks-count { font-family:'Playfair Display',serif; font-size:2.2rem; color:var(--ink); line-height:1; }
+  .tasks-label { font-size:.72rem; color:var(--ink-3); margin-top:4px; }
+  .tasks-progress { flex:1; margin:0 20px; }
+  .tasks-progress-bar { height:8px; background:var(--paper-3); border-radius:99px; overflow:hidden; }
+  .tasks-progress-fill { height:100%; background:var(--emerald); border-radius:99px; transition:width .4s; }
+  .tasks-stats { display:flex; gap:16px; margin-top:12px; }
+  .tasks-stat { display:flex; align-items:center; gap:6px; font-size:.78rem; }
+  .tasks-stat.completed { color:var(--emerald); }
+  .tasks-stat.pending { color:#f59e0b; }
+
+  /* CA Highlights */
+  .ca-highlights-list { display:flex; flex-direction:column; gap:10px; }
+  .ca-highlight-item { display:flex; align-items:flex-start; gap:12px; padding:12px; border-radius:10px; background:var(--paper); cursor:pointer; transition:all .15s; }
+  .ca-highlight-item:hover { background:var(--paper-2); }
+  .ca-highlight-icon { font-size:1.1rem; flex-shrink:0; }
+  .ca-highlight-content { flex:1; min-width:0; }
+  .ca-highlight-title { font-size:.82rem; font-weight:600; color:var(--ink); line-height:1.4; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+  .ca-highlight-meta { font-size:.7rem; color:var(--ink-3); margin-top:4px; }
+
+  /* Streak & Hours */
+  .streak-row { display:flex; align-items:center; justify-content:space-between; padding:12px 0; }
+  .streak-item { display:flex; align-items:center; gap:10px; }
+  .streak-icon { font-size:1.3rem; }
+  .streak-info { }
+  .streak-count { font-family:'Playfair Display',serif; font-size:1.4rem; font-weight:700; color:var(--ink); }
+  .streak-label { font-size:.7rem; color:var(--ink-3); }
+
+  /* Recent Activity */
+  .activity-list { display:flex; flex-direction:column; }
+  .activity-item { display:flex; align-items:flex-start; gap:12px; padding:12px 0; border-bottom:1px solid var(--paper-2); }
+  .activity-item:last-child { border-bottom:none; }
+  .activity-icon { font-size:1rem; flex-shrink:0; }
+  .activity-content { flex:1; min-width:0; }
+  .activity-title { font-size:.82rem; font-weight:600; color:var(--ink); }
+  .activity-message { font-size:.75rem; color:var(--ink-3); margin-top:2px; }
+  .activity-time { font-size:.7rem; color:var(--ink-3); margin-top:4px; }
+
+  /* ── Scrollbar ── */
+  ::-webkit-scrollbar      { width:4px; }
+  ::-webkit-scrollbar-thumb{ background:var(--paper-3); border-radius:99px; }
+
+  /* ── Animations ── */
+  @keyframes fadeUp { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }
+  .animate  { animation:fadeUp .5s ease both; }
+  .delay-1  { animation-delay:.08s; }
+  .delay-2  { animation-delay:.16s; }
+  .delay-3  { animation-delay:.24s; }
+
+  /* ── Responsive ── */
+  @media (max-width:1024px){ .stats-grid{grid-template-columns:repeat(2,1fr);} }
+  @media (max-width:768px){
+    .sidebar{transform:translateX(-100%);}
+    .sidebar.open{transform:translateX(0);}
+    .sidebar-overlay.open{display:block;}
+    .main{margin-left:0;}
+    .hamburger{display:flex;}
+    .content{padding:20px 18px;}
+    .topbar{padding:0 18px;}
+    .two-col{grid-template-columns:1fr;}
+    .stats-grid{grid-template-columns:repeat(2,1fr);}
+    .quick-grid{grid-template-columns:repeat(2,1fr);}
+    .hero{padding:22px 20px;}
+    .hero-badge{display:none;}
+    .hero-quote{font-size:1rem;}
+    .streak-row{flex-direction:column;gap:16px;align-items:flex-start;}
+  }
+  @media (max-width:480px){
+    .stats-grid{grid-template-columns:repeat(2,1fr);}
+    .quick-grid{grid-template-columns:repeat(2,1fr);}
+  }
+`;
+
+/* ─── CountdownSection ───────────────────────────────────────────── */
+
+function CountdownSection() {
+  const prelDays  = daysUntil(EXAM_DATES.prelims);
+  const mainsDays = daysUntil(EXAM_DATES.mains);
+  const prelPct   = Math.round(((365 - prelDays)  / 365) * 100);
+  const mainsPct  = Math.round(((365 - mainsDays) / 365) * 100);
+
+  return (
+    <div className="card">
+      <div className="card-head">
+        <span className="card-title">Exam Countdown</span>
+        <span style={{ fontSize: ".72rem", color: "var(--ink-3)", fontWeight: 500 }}>UPSC 2026</span>
+      </div>
+      <div className="card-body">
+        {[
+          { label: "📋 Prelims", date: "Jun 20, 2026", days: prelDays,  pct: prelPct,  color: "var(--emerald)"  },
+          { label: "📝 Mains",   date: "Sep 20, 2026", days: mainsDays, pct: mainsPct, color: "var(--sapphire)" },
+        ].map((e) => (
+          <div className="countdown-item" key={e.label}>
+            <div className="countdown-top">
+              <div>
+                <div className="countdown-name">{e.label}</div>
+                <div className="countdown-meta">{e.date}</div>
+              </div>
+              <div className="countdown-days">{e.days}<span> days</span></div>
+            </div>
+            <div className="progress-track">
+              <div className="progress-fill" style={{ width: `${e.pct}%`, background: e.color }} />
+            </div>
+            <div className="countdown-meta" style={{ marginTop: 6 }}>{e.pct}% of prep year elapsed</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ─── NotificationsCard ──────────────────────────────────────────── */
+
+function NotificationsCard({ notifications, loading }) {
+  const dotColor = (t) => {
+    if (t === "success") return "#10b981";
+    if (t === "warning") return "#f59e0b";
+    if (t === "error")   return "#ef4444";
+    return "#3b82f6";
   };
-  return now.toLocaleString('en-IN', options);
+
+  return (
+    <div className="card">
+      <div className="card-head">
+        <span className="card-title">Notifications</span>
+        {notifications.length > 0 && (
+          <span className="badge-count">{notifications.length}</span>
+        )}
+      </div>
+      <div className="notif-list">
+        {loading ? (
+          [1, 2, 3].map((i) => (
+            <div className="notif-item" key={i} style={{ gap: 10 }}>
+              <span className="skeleton" style={{ width: 28, height: 28, borderRadius: 8, flexShrink: 0 }} />
+              <div style={{ flex: 1 }}>
+                <span className="skeleton" style={{ height: 12, width: "60%", marginBottom: 6, display: "block" }} />
+                <span className="skeleton" style={{ height: 10, width: "85%", display: "block" }} />
+              </div>
+            </div>
+          ))
+        ) : notifications.length === 0 ? (
+          <div className="notif-empty">
+            <div className="notif-empty-icon">🔕</div>
+            <div>No notifications — you're all caught up!</div>
+          </div>
+        ) : (
+          notifications.map((n) => (
+            <div className="notif-item" key={n.id}>
+              <span className="notif-icon">{n.icon}</span>
+              <div style={{ minWidth: 0 }}>
+                <div className="notif-title">{n.title}</div>
+                <div className="notif-msg">{n.message}</div>
+                <div className="notif-time">{formatRelative(n.timestamp)}</div>
+              </div>
+              <div className="notif-dot" style={{ background: dotColor(n.type) }} />
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  );
 }
 
-/* ---------------------------- Main Component ---------------------------- */
+/* ─── Main Dashboard ─────────────────────────────────────────────── */
 
-const StudentDashboardComponent = () => {
+export default function StudentDashboard() {
   const router = useRouter();
   const { user, authLoading, logout } = useAuth();
 
-  const [loading, setLoading] = useState(true);
-  const [profile, setProfile] = useState(null);
-  const [currentDateTime, setCurrentDateTime] = useState(formatDateTime());
+  const [pageLoading,   setPageLoading]   = useState(true);
+  const [notifsLoading, setNotifsLoading] = useState(true);
+  const [profile,       setProfile]       = useState(null);
+  const [quote,         setQuote]         = useState(motivationalQuotes[0]);
+  const [time,          setTime]          = useState(new Date());
+  const [notifications, setNotifications] = useState([]);
+  const [sidebarOpen,   setSidebarOpen]   = useState(false);
+  const [cardData,      setCardData]      = useState({
+    studyNotes: null, mockTests: null, mockTestAvg: null, mockTestBest: null, 
+    mockTestWeekly: null, mockTestQuestions: null, mockTestStrongest: null, mockTestWeakest: null,
+    pyq: null, currentAffairs: null,
+  });
+  
+  // New state for enhanced dashboard
+  const [todayTasks, setTodayTasks] = useState({ total: 0, completed: 0, pending: 0 });
+  const [caStreak, setCaStreak] = useState(0);
+  const [caHighlights, setCaHighlights] = useState([]);
+  const [weeklyStudyHours, setWeeklyStudyHours] = useState(0);
+  const [recentActivity, setRecentActivity] = useState([]);
 
-  // Authentication guard
+  /* Auth guard */
   useEffect(() => {
-    if (!authLoading && !user) {
-      router.replace('/login');
-    }
+    if (!authLoading && !user) router.replace("/login");
   }, [user, authLoading, router]);
 
-  // Cards / counts
-  const [cardData, setCardData] = useState({
-    mockTests: 0,
-    studyNotes: 0,
-    pyq: 0,
-    syllabus: 0,
-    ssb: 0,
-    currentAffairs: 0,
-  });
-
-  // Notifications from admin
-  const [notifications, setNotifications] = useState([]);
-
-  // Quote rotation
-  const [currentQuote, setCurrentQuote] = useState(motivationalQuotes[0]);
-
-  /* ------------------------- Update Date/Time & Live Timestamps ------------------------- */
+  /* Clock */
   useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentDateTime(formatDateTime());
-    }, 60000); // Update every minute instead of every second to prevent excessive re-renders
-    return () => clearInterval(interval);
+    const id = setInterval(() => setTime(new Date()), 60000);
+    return () => clearInterval(id);
   }, []);
 
-  /* ------------------------- Rotate Quotes Every 2 Minutes ------------------------- */
+  /* Quote rotation */
   useEffect(() => {
-    const rotateQuote = () => {
-      const randomIndex = Math.floor(Math.random() * motivationalQuotes.length);
-      setCurrentQuote(motivationalQuotes[randomIndex]);
-    };
-
-    rotateQuote(); // Set initial random quote
-
-    const interval = setInterval(rotateQuote, 120000); // 2 minutes = 120000ms
-    return () => clearInterval(interval);
+    const rotate = () =>
+      setQuote(motivationalQuotes[Math.floor(Math.random() * motivationalQuotes.length)]);
+    rotate();
+    const id = setInterval(rotate, 120000);
+    return () => clearInterval(id);
   }, []);
 
-  /* ------------------------- Load profile & guard ------------------------- */
+  /* Load profile from Firestore */
   useEffect(() => {
     if (!user) return;
-
     let cancelled = false;
     (async () => {
       try {
-        const ref = doc(db, "users", user.uid);
-        const snap = await getDoc(ref);
-        if (!snap.exists()) {
-          if (!cancelled) router.push("/profile-setup");
-          return;
-        }
+        const snap = await getDoc(doc(db, "users", user.uid));
+        if (!snap.exists()) { if (!cancelled) router.push("/profile-setup"); return; }
         if (!cancelled) setProfile(snap.data());
       } catch (e) {
         console.error("Profile fetch error:", e);
-        if (!cancelled) setProfile({ name: "Officer" });
+        if (!cancelled) setProfile({});
       } finally {
-        if (!cancelled) setLoading(false);
+        if (!cancelled) setPageLoading(false);
       }
     })();
-
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, [user, router]);
 
-  const handleLogout = async () => {
-    try {
-      await logout();
-      toast.success("Logged out successfully!");
-      router.push("/login");
-    } catch (e) {
-      console.error("Logout error:", e);
-      toast.error("Error logging out. Please try again.");
-    }
-  };
-
-  /* -------------------------- Real-time listeners ------------------------- */
-
-  // Admin Notifications (from admin panel)
+  /* Live notifications from adminNotifications */
   useEffect(() => {
     if (!user?.uid) return;
-    
-    // Listen to global notifications from admin
-    const qRef = query(
+    setNotifsLoading(true);
+    const q = query(
       collection(db, "adminNotifications"),
       where("isActive", "==", true),
       orderBy("createdAt", "desc"),
-      limit(5)
+      limit(6)
     );
-    
     const unsub = onSnapshot(
-      qRef,
+      q,
       (snap) => {
-        try {
-          const arr = [];
-          snap.forEach((d) => {
-            const n = d.data();
-            arr.push({
-              id: d.id,
-              title: n.title,
-              message: n.message,
-              type: n.type || "info",
-              timestamp: n.createdAt?.toDate?.() || new Date(),
-              icon: n.icon || "🔔",
-            });
-          });
-          setNotifications(arr);
-        } catch (error) {
-          console.error("Error processing notifications:", error);
-          setNotifications([]);
-        }
+        setNotifications(
+          snap.docs.map((d) => ({
+            id:        d.id,
+            ...d.data(),
+            icon:      d.data().icon      || "🔔",
+            type:      d.data().type      || "info",
+            timestamp: d.data().createdAt?.toDate?.() || new Date(),
+          }))
+        );
+        setNotifsLoading(false);
       },
       (err) => {
-        console.error("Notifications listener error:", err);
+        console.error("Notifications error:", err);
         setNotifications([]);
+        setNotifsLoading(false);
       }
     );
     return () => unsub();
   }, [user?.uid]);
 
-  // Removed activity tracking completely to prevent Fast Refresh issues
-  // Activities can be tracked in production based on actual user actions
-
-  // Card counts
+  /* Live counts from Firestore */
   useEffect(() => {
     if (!user?.uid) return;
+    const unsubs = [];
 
-    const unsubscribers = [];
+    // User's study notes
+    unsubs.push(onSnapshot(
+      query(collection(db, "notes"), where("userId", "==", user.uid)),
+      (s) => setCardData((p) => ({ ...p, studyNotes: s.size })),
+      ()  => setCardData((p) => ({ ...p, studyNotes: 0 }))
+    ));
 
-    try {
-      // Mock Tests count
-      const mockTestsUnsub = onSnapshot(
-        collection(db, "users", user.uid, "mockTests"),
-        (snap) => {
-          try {
-            setCardData((p) => ({ ...p, mockTests: snap.size }));
-          } catch (error) {
-            console.error("Error processing mock tests count:", error);
+    // Mock tests - get from mockTestAttempts subcollection
+    unsubs.push(onSnapshot(
+      collection(db, "users", user.uid, "mockTestAttempts"),
+      (s) => {
+        const attempts = s.docs.map(d => d.data());
+        const totalAttempts = attempts.length;
+        
+        // Calculate weekly progress
+        const now = new Date();
+        const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        const thisWeekCount = attempts.filter(a => {
+          const completedAt = a.completedAt?.toDate?.();
+          return completedAt && completedAt >= oneWeekAgo;
+        }).length;
+        
+        // Get questions attempted (sum of total questions across all attempts)
+        const totalQuestionsAttempted = attempts.reduce((sum, a) => sum + (a.total || 0), 0);
+        
+        // Calculate subject-wise performance
+        const subjectScores = {};
+        attempts.forEach(attempt => {
+          if (attempt.answers) {
+            attempt.answers.forEach(ans => {
+              const topic = ans.topic || 'General';
+              if (!subjectScores[topic]) {
+                subjectScores[topic] = { correct: 0, total: 0 };
+              }
+              subjectScores[topic].total++;
+              if (ans.isCorrect) {
+                subjectScores[topic].correct++;
+              }
+            });
           }
-        },
-        (error) => {
-          console.error("Mock tests listener error:", error);
-          // Don't retry automatically
+        });
+        
+        // Find strongest and weakest subjects
+        let strongest = null, weakest = null;
+        const subjects = Object.entries(subjectScores).filter(([_, data]) => data.total >= 5);
+        if (subjects.length > 0) {
+          subjects.sort((a, b) => (b[1].correct/b[1].total) - (a[1].correct/a[1].total));
+          strongest = { name: subjects[0][0], score: Math.round((subjects[0][1].correct/subjects[0][1].total) * 100) };
+          weakest = { name: subjects[subjects.length-1][0], score: Math.round((subjects[subjects.length-1][1].correct/subjects[subjects.length-1][1].total) * 100) };
         }
-      );
-      unsubscribers.push(mockTestsUnsub);
+        
+        const avgScore = totalAttempts > 0 
+          ? Math.round(attempts.reduce((sum, a) => sum + (a.score || 0), 0) / totalAttempts) 
+          : 0;
+        const bestScore = totalAttempts > 0 ? Math.max(...attempts.map(a => a.score || 0)) : 0;
+        
+        setCardData((p) => ({ 
+          ...p, 
+          mockTests: totalAttempts,
+          mockTestAvg: avgScore,
+          mockTestBest: bestScore,
+          mockTestWeekly: thisWeekCount,
+          mockTestQuestions: totalQuestionsAttempted,
+          mockTestStrongest: strongest,
+          mockTestWeakest: weakest
+        }));
+      },
+      (error) => {
+        console.error('Error fetching mock test attempts:', error);
+        setCardData((p) => ({ ...p, mockTests: 0, mockTestAvg: 0, mockTestBest: 0, mockTestWeekly: 0, mockTestQuestions: 0 }));
+      }
+    ));
 
-      // Study Notes count
-      const qNotes = query(collection(db, "notes"), where("userId", "==", user.uid));
-      const studyNotesUnsub = onSnapshot(
-        qNotes,
-        (snap) => {
-          try {
-            setCardData((p) => ({ ...p, studyNotes: snap.size }));
-          } catch (error) {
-            console.error("Error processing study notes count:", error);
-          }
-        },
-        (error) => {
-          console.error("Study notes listener error:", error);
-          // Don't retry automatically
-        }
-      );
-      unsubscribers.push(studyNotesUnsub);
+    // PYQ attempts (user subcollection)
+    unsubs.push(onSnapshot(
+      collection(db, "users", user.uid, "pyqAttempts"),
+      (s) => setCardData((p) => ({ ...p, pyq: s.size })),
+      ()  => setCardData((p) => ({ ...p, pyq: 0 }))
+    ));
 
-      // PYQ count
-      const pyqUnsub = onSnapshot(
-        collection(db, "users", user.uid, "pyqAttempts"),
-        (snap) => {
-          try {
-            setCardData((p) => ({ ...p, pyq: snap.size }));
-          } catch (error) {
-            console.error("Error processing PYQ count:", error);
-          }
-        },
-        (error) => {
-          console.error("PYQ listener error:", error);
-          // Don't retry automatically
-        }
-      );
-      unsubscribers.push(pyqUnsub);
+    // Active current affairs (global)
+    unsubs.push(onSnapshot(
+      query(collection(db, "currentAffairs"), where("isActive", "==", true)),
+      (s) => setCardData((p) => ({ ...p, currentAffairs: s.size })),
+      ()  => setCardData((p) => ({ ...p, currentAffairs: 0 }))
+    ));
 
-    } catch (error) {
-      console.error("Setup error:", error);
-    }
-
-    return () => unsubscribers.forEach((unsub) => unsub());
+    return () => unsubs.forEach((u) => u());
   }, [user?.uid]);
 
-  // Removed login streak tracking to prevent Fast Refresh issues
-  // Can be added back as a separate feature if needed
+  /* Fetch today's planner tasks */
+  useEffect(() => {
+    if (!user?.uid) return;
+    
+    const today = new Date();
+    const todayKey = today.toISOString().slice(0, 10);
+    
+    const unsub = onSnapshot(
+      query(
+        collection(db, "users", user.uid, "plannerTasks"),
+        where("dateKey", "==", todayKey)
+      ),
+      (snap) => {
+        const tasks = snap.docs.map(d => d.data());
+        const completed = tasks.filter(t => t.done).length;
+        setTodayTasks({
+          total: tasks.length,
+          completed,
+          pending: tasks.length - completed
+        });
+        
+        // Calculate weekly study hours
+        const oneWeekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+        const weekKey = oneWeekAgo.toISOString().slice(0, 10);
+      },
+      (err) => console.error("Error fetching today's tasks:", err)
+    );
+    
+    return () => unsub();
+  }, [user?.uid]);
 
-  /* -------------------------------- Render -------------------------------- */
+  /* Fetch weekly study hours from planner */
+  useEffect(() => {
+    if (!user?.uid) return;
+    
+    const fetchWeeklyHours = async () => {
+      const today = new Date();
+      const oneWeekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+      
+      try {
+        const q = query(
+          collection(db, "users", user.uid, "plannerTasks"),
+          where("dateKey", ">=", oneWeekAgo.toISOString().slice(0, 10))
+        );
+        const snap = await getDocs(q);
+        const tasks = snap.docs.map(d => d.data());
+        const totalMinutes = tasks.reduce((sum, t) => sum + (t.duration || 0), 0);
+        setWeeklyStudyHours((totalMinutes / 60).toFixed(1));
+      } catch (err) {
+        console.error("Error fetching weekly hours:", err);
+      }
+    };
+    
+    fetchWeeklyHours();
+  }, [user?.uid]);
 
-  if (authLoading || loading) {
+  /* Fetch CA streak and highlights */
+  useEffect(() => {
+    if (!user?.uid) return;
+    
+    const fetchCAData = async () => {
+      try {
+        // Get all CA-related tasks to calculate streak
+        const tasksQ = query(
+          collection(db, "users", user.uid, "plannerTasks"),
+          where("taskType", "==", "ca"),
+          orderBy("dateKey", "desc")
+        );
+        const tasksSnap = await getDocs(tasksQ);
+        const caTasks = tasksSnap.docs.map(d => d.data());
+        
+        // Calculate CA streak
+        if (caTasks.length > 0) {
+          const completedDates = new Set(
+            caTasks.filter(t => t.done).map(t => t.dateKey)
+          );
+          
+          let streak = 0;
+          const checkDate = new Date();
+          checkDate.setHours(0, 0, 0, 0);
+          
+          while (true) {
+            const key = checkDate.toISOString().slice(0, 10);
+            if (completedDates.has(key)) {
+              streak++;
+              checkDate.setDate(checkDate.getDate() - 1);
+            } else {
+              break;
+            }
+          }
+          setCaStreak(streak);
+        }
+        
+        // Get today's CA highlights (top 3 recent CA articles marked important)
+        const caQ = query(
+          collection(db, "currentAffairs"),
+          where("isActive", "==", true),
+          orderBy("createdAt", "desc"),
+          limit(3)
+        );
+        const caSnap = await getDocs(caQ);
+        const caArticles = caSnap.docs.map(d => ({
+          id: d.id,
+          title: d.data().title,
+          category: d.data().category,
+          date: d.data().date
+        }));
+        setCaHighlights(caArticles);
+        
+      } catch (err) {
+        console.error("Error fetching CA data:", err);
+      }
+    };
+    
+    fetchCAData();
+  }, [user?.uid]);
+
+  /* Fetch recent activity from multiple sources */
+  useEffect(() => {
+    if (!user?.uid) return;
+    
+    const fetchRecentActivity = async () => {
+      const activities = [];
+      
+      try {
+        // Get recent planner tasks
+        const tasksQ = query(
+          collection(db, "users", user.uid, "plannerTasks"),
+          orderBy("createdAt", "desc"),
+          limit(3)
+        );
+        const tasksSnap = await getDocs(tasksQ);
+        tasksSnap.docs.forEach(d => {
+          const data = d.data();
+          activities.push({
+            type: 'task',
+            icon: data.done ? '✅' : '⏳',
+            title: data.done ? 'Task completed' : 'Task added',
+            message: data.title,
+            time: data.createdAt?.toDate?.() || new Date(),
+            color: data.done ? '#10b981' : '#3b82f6'
+          });
+        });
+        
+        // Get recent mock test attempts
+        const testsQ = query(
+          collection(db, "users", user.uid, "mockTestAttempts"),
+          orderBy("completedAt", "desc"),
+          limit(2)
+        );
+        const testsSnap = await getDocs(testsQ);
+        testsSnap.docs.forEach(d => {
+          const data = d.data();
+          activities.push({
+            type: 'test',
+            icon: '📝',
+            title: 'Test attempted',
+            message: `${data.score || 0}% score`,
+            time: data.completedAt?.toDate?.() || new Date(),
+            color: '#8b5cf6'
+          });
+        });
+        
+        // Sort by time and take top 5
+        activities.sort((a, b) => b.time - a.time);
+        setRecentActivity(activities.slice(0, 5));
+        
+      } catch (err) {
+        console.error("Error fetching recent activity:", err);
+      }
+    };
+    
+    fetchRecentActivity();
+  }, [user?.uid]);
+
+  /* Logout */
+  const handleLogout = async () => {
+    try { await logout(); toast.success("Logged out!"); router.push("/login"); }
+    catch { toast.error("Error logging out."); }
+  };
+
+  /* ── Loading screen ── */
+  if (authLoading || pageLoading) {
     return (
-      <div className="min-vh-100 d-flex align-items-center justify-content-center" style={{ background: "#f8f9fa" }}>
-        <div className="text-center">
-          <div className="spinner-border text-success" role="status" style={{ width: '3rem', height: '3rem' }} />
-          <div className="mt-3 text-muted fw-semibold">Loading your dashboard...</div>
+      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#f5f2ee" }}>
+        <style>{`@keyframes spin { to { transform:rotate(360deg); } }`}</style>
+        <div style={{ textAlign: "center" }}>
+          <div style={{ width: 40, height: 40, border: "3px solid #e2ddd6", borderTopColor: "#c9a84c", borderRadius: "50%", animation: "spin .8s linear infinite", margin: "0 auto" }} />
+          <div style={{ marginTop: 16, fontSize: ".88rem", color: "#64748b", fontFamily: "'DM Sans',sans-serif" }}>
+            Loading your dashboard…
+          </div>
         </div>
       </div>
     );
   }
 
-  if (!user) {
-    return null;
-  }
+  if (!user) return null;
+
+  /* ── Derived values ── */
+  const displayName = profile?.fullName || profile?.name || user.email?.split("@")[0] || "Aspirant";
+  const prelDays    = daysUntil(EXAM_DATES.prelims);
+  const dateStr     = time.toLocaleDateString("en-IN", {
+    weekday: "long", day: "numeric", month: "long", year: "numeric",
+  });
+
+  const stats = [
+    { icon: "✎", label: "Study Notes",     value: cardData.studyNotes,     bg: "#f0fdf4", color: "var(--emerald)"  },
+    { icon: "📝", label: "Tests Practiced", value: cardData.mockTests != null ? `${cardData.mockTests}` : null, bg: "#eff6ff", color: "var(--sapphire)" },
+    { icon: "📅", label: "This Week",     value: cardData.mockTestWeekly != null ? `${cardData.mockTestWeekly}` : null,   bg: "#fefce8", color: "#92400e" },
+    { icon: "❓", label: "Questions",     value: cardData.mockTestQuestions != null ? `${cardData.mockTestQuestions}` : null, bg: "#f5f3ff", color: "#7c3aed" },
+    { icon: "◈", label: "Current Affairs", value: cardData.currentAffairs, bg: "#fff1f2", color: "var(--crimson)"  },
+  ];
+
+  const quickLinks = [
+    { icon: "◈", label: "Current Affairs", sub: cardData.currentAffairs != null ? `${cardData.currentAffairs} articles` : "Loading…", bg: "#f0fdf4", href: "/student-desk/current-affairs" },
+    { icon: "◎", label: "PYQ Papers",      sub: cardData.pyq            != null ? `${cardData.pyq} solved`            : "Loading…", bg: "#eff6ff", href: "/student-desk/pyq"              },
+    { icon: "≡", label: "Syllabus",        sub: "GS I–IV",                                                                           bg: "#f5f3ff", href: "/student-desk/syllabus"          },
+    { icon: "◷", label: "Mock Tests",      sub: cardData.mockTests != null ? `${cardData.mockTests} tests | ${cardData.mockTestQuestions || 0} Qs` : "Loading…", bg: "#fff1f2", href: "/student-desk/mock-tests"         },
+    { icon: "✎", label: "Study Notes",     sub: cardData.studyNotes != null ? `${cardData.studyNotes} notes` : "Loading…",   bg: "#fefce8", href: "/student-desk/notes"              },
+    { icon: "⊞", label: "Planner",         sub: "Plan your week",                                                                    bg: "#fdf4ff", href: "/student-desk/planner"            },
+  ];
 
   return (
-    <div className="d-flex">
-      <Sidebar />
-      <div className="flex-grow-1" style={{ marginLeft: '280px' }}>
-        <div className="container-fluid py-3 px-2 px-md-4" style={{ background: "#f8f9fa", minHeight: "100vh" }}>
-          {/* Header - Mobile Optimized */}
-          <div className="card shadow-sm border-0 mb-3" style={{ background: "white" }}>
-            <div className="card-body p-3">
-              <div className="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3">
-                <div className="w-100 w-md-auto">
-                  <h1 className="h5 mb-2 fw-bold" style={{ color: "#2d3748" }}>
-                    Welcome to Defense Aspirant! 🎖️
-                  </h1>
-                  <div className="d-flex flex-wrap align-items-center gap-2 small">
-                    <span className="badge" style={{ background: "#10b981", color: "white" }}>Defense Aspirant</span>
-                  </div>
-                </div>
-                <div className="d-flex flex-column flex-sm-row align-items-start align-items-sm-center gap-2 w-100 w-md-auto">
-                  <div className="text-start text-sm-end flex-grow-1">
-                    <div className="small text-muted mb-1">📅 Current Date & Time</div>
-                    <div className="small fw-bold" style={{ color: "#10b981", lineHeight: 1.3 }}>
-                      {currentDateTime}
-                    </div>
-                  </div>
-                  <button
-                    className="btn btn-sm fw-semibold d-flex align-items-center gap-1"
-                    style={{
-                      background: "#ef4444",
-                      color: "white",
-                      border: "none",
-                      padding: "6px 16px"
-                    }}
-                    onClick={handleLogout}
-                  >
-                    <span>🚪</span>
-                    <span>Logout</span>
-                  </button>
-                </div>
+    <>
+      <style dangerouslySetInnerHTML={{ __html: css }} />
+      <div className="layout">
+        <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} onLogout={handleLogout} />
+
+        <main className="main">
+
+          {/* Topbar */}
+          <header className="topbar">
+            <div className="topbar-left">
+              <button className="hamburger" onClick={() => setSidebarOpen(true)}>☰</button>
+              <div>
+                <div className="topbar-greeting">{getGreeting()}, {displayName}</div>
+                <div className="topbar-date">{dateStr}</div>
               </div>
             </div>
-          </div>
+            <div className="topbar-right">
+              <div className="avatar">{displayName[0].toUpperCase()}</div>
+            </div>
+          </header>
 
-          {/* Exam Countdown & Motivation Row */}
-          <div className="row g-2 g-md-3 mb-3">
-            {/* Armed Forces Exam Countdown */}
-            <div className="col-12 col-lg-8">
-              <div className="card border-0 shadow-sm" style={{ background: "white" }}>
-                <div className="card-body p-3">
-                  <h3 className="h6 fw-bold mb-3" style={{ color: "#2d3748" }}>
-                    🎯 Armed Forces Exam Countdown
-                  </h3>
-                  <div className="row g-3">
-                    <div className="col-12 col-md-4">
-                      <div className="d-flex align-items-center gap-2 p-2 rounded" style={{ background: "#f0fdf4" }}>
-                        <div className="rounded d-flex align-items-center justify-content-center" style={{ width: 40, height: 40, background: "#10b981", color: "white" }}>
-                          <span style={{ fontSize: '1.2rem' }}>🎖️</span>
-                        </div>
-                        <div>
-                          <div className="fw-semibold small" style={{ color: "#2d3748" }}>NDA Exam</div>
-                          <div className="small" style={{ color: "#10b981" }}>{daysUntil(EXAM_DATES.nda)} days left</div>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="col-12 col-md-4">
-                      <div className="d-flex align-items-center gap-2 p-2 rounded" style={{ background: "#f0f9ff" }}>
-                        <div className="rounded d-flex align-items-center justify-content-center" style={{ width: 40, height: 40, background: "#3b82f6", color: "white" }}>
-                          <span style={{ fontSize: '1.2rem' }}>🪖</span>
-                        </div>
-                        <div>
-                          <div className="fw-semibold small" style={{ color: "#2d3748" }}>CDS Exam</div>
-                          <div className="small" style={{ color: "#3b82f6" }}>{daysUntil(EXAM_DATES.cds)} days left</div>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="col-12 col-md-4">
-                      <div className="d-flex align-items-center gap-2 p-2 rounded" style={{ background: "#fef3c7" }}>
-                        <div className="rounded d-flex align-items-center justify-content-center" style={{ width: 40, height: 40, background: "#f59e0b", color: "white" }}>
-                          <span style={{ fontSize: '1.2rem' }}>✈️</span>
-                        </div>
-                        <div>
-                          <div className="fw-semibold small" style={{ color: "#2d3748" }}>AFCAT Exam</div>
-                          <div className="small" style={{ color: "#f59e0b" }}>{daysUntil(EXAM_DATES.afcat)} days left</div>
-                        </div>
-                      </div>
-                    </div>
+          <div className="content">
+
+            {/* Hero */}
+            <div className="hero animate">
+              <div className="hero-pattern" />
+              <div className="hero-accent"  />
+              <div className="hero-content">
+                <div>
+                  <div style={{ fontSize: ".72rem", letterSpacing: ".1em", textTransform: "uppercase", color: "var(--gold)", marginBottom: 10, fontWeight: 600 }}>
+                    Daily Inspiration
                   </div>
+                  <p className="hero-quote">"{quote.text}"</p>
+                  <div className="hero-quote-author">— {quote.author}</div>
+                </div>
+                <div className="hero-badge">
+                  <div className="hero-badge-num">{prelDays}</div>
+                  <div className="hero-badge-label">Days to Prelims</div>
                 </div>
               </div>
             </div>
 
-            {/* Daily Motivation */}
-            <div className="col-12 col-lg-4">
-              <div className="card border-0 shadow-sm h-100" style={{ background: "white" }}>
-                <div className="card-body text-center p-3 d-flex flex-column justify-content-center">
-                  <div className="mb-2" style={{ fontSize: '2.5rem' }}>💡</div>
-                  <h3 className="h6 mb-2" style={{ color: "#2d3748" }}>Daily Motivation</h3>
-                  <p className="fst-italic small mb-1" style={{ color: "#6b7280" }}>"{currentQuote.text}"</p>
-                  <div className="small fw-semibold" style={{ color: "#10b981" }}>— {currentQuote.author}</div>
+            {/* Stats */}
+            <div className="section-label animate delay-1">Overview</div>
+            <div className="stats-grid animate delay-1">
+              {stats.map((s) => (
+                <div className="stat-card" key={s.label}>
+                  <div className="stat-icon" style={{ background: s.bg, color: s.color }}>{s.icon}</div>
+                  {s.value === null
+                    ? <span className="skeleton" style={{ height: 32, width: 60, marginBottom: 8, display: "block" }} />
+                    : <div className="stat-value">{s.value}</div>
+                  }
+                  <div className="stat-label">{s.label}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* Preparation */}
+            <div className="section-label animate delay-2">Preparation</div>
+            <div className="two-col animate delay-2">
+              <CountdownSection />
+              <NotificationsCard notifications={notifications} loading={notifsLoading} />
+            </div>
+
+            {/* Today's Tasks & Study Stats */}
+            <div className="section-label animate delay-2">Today's Progress</div>
+            <div className="two-col animate delay-2" style={{ marginBottom: 28 }}>
+              {/* Today's Tasks */}
+              <div className="card">
+                <div className="card-head">
+                  <span className="card-title">📋 Today's Tasks</span>
+                  <Link href="/student-desk/planner" style={{ fontSize: '.75rem', color: 'var(--gold)', textDecoration: 'none', fontWeight: 600 }}>View Planner →</Link>
+                </div>
+                <div className="card-body">
+                  {todayTasks.total === 0 ? (
+                    <div className="no-data">
+                      <div style={{ fontSize: '2rem', marginBottom: 8 }}>🎯</div>
+                      No tasks for today<br />
+                      <Link href="/student-desk/planner" style={{ color: 'var(--gold)', fontSize: '.82rem', fontWeight: 600, marginTop: 8, display: 'inline-block' }}>Add your first task</Link>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="tasks-summary">
+                        <div>
+                          <div className="tasks-count">{todayTasks.completed}/{todayTasks.total}</div>
+                          <div className="tasks-label">tasks completed</div>
+                        </div>
+                        <div className="tasks-progress">
+                          <div className="tasks-progress-bar">
+                            <div 
+                              className="tasks-progress-fill" 
+                              style={{ width: `${todayTasks.total > 0 ? (todayTasks.completed / todayTasks.total) * 100 : 0}%` }} 
+                            />
+                          </div>
+                        </div>
+                      </div>
+                      <div className="tasks-stats">
+                        <div className="tasks-stat completed">
+                          ✓ {todayTasks.completed} done
+                        </div>
+                        <div className="tasks-stat pending">
+                          ⏳ {todayTasks.pending} pending
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              {/* Study Streak & Hours */}
+              <div className="card">
+                <div className="card-head">
+                  <span className="card-title">🔥 Study Streak</span>
+                </div>
+                <div className="card-body">
+                  <div className="streak-row">
+                    <div className="streak-item">
+                      <span className="streak-icon">📅</span>
+                      <div className="streak-info">
+                        <div className="streak-count">{weeklyStudyHours}h</div>
+                        <div className="streak-label">This week</div>
+                      </div>
+                    </div>
+                    <div className="streak-item">
+                      <span className="streak-icon">🔥</span>
+                      <div className="streak-info">
+                        <div className="streak-count">{caStreak}</div>
+                        <div className="streak-label">CA streak</div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          {/* Navigation Cards */}
-          <div className="row g-2 g-md-3 mb-3">
-            <div className="col-6 col-md-4 col-lg-2">
-              <NavCard
-                title="Study Notes"
-                icon="📝"
-                count={cardData.studyNotes}
-                href="/student-desk/notes"
-                bgColor="#f0fdf4"
-                iconBg="#10b981"
-              />
+            {/* Subject Performance & CA Highlights */}
+            <div className="section-label animate delay-2">Performance</div>
+            <div className="two-col animate delay-2" style={{ marginBottom: 28 }}>
+              {/* Subject Performance */}
+              <div className="card">
+                <div className="card-head">
+                  <span className="card-title">📊 Subject Performance</span>
+                </div>
+                <div className="card-body performance-card">
+                  {cardData.mockTestStrongest || cardData.mockTestWeakest ? (
+                    <>
+                      {cardData.mockTestStrongest && (
+                        <div className="subject-row">
+                          <div className="subject-info">
+                            <div className="subject-dot" style={{ background: '#10b981' }} />
+                            <span className="subject-label">Strongest</span>
+                          </div>
+                          <span className="subject-score" style={{ color: '#10b981' }}>{cardData.mockTestStrongest.name}: {cardData.mockTestStrongest.score}%</span>
+                        </div>
+                      )}
+                      {cardData.mockTestWeakest && (
+                        <div className="subject-row">
+                          <div className="subject-info">
+                            <div className="subject-dot" style={{ background: '#ef4444' }} />
+                            <span className="subject-label">Needs Work</span>
+                          </div>
+                          <span className="subject-score" style={{ color: '#ef4444' }}>{cardData.mockTestWeakest.name}: {cardData.mockTestWeakest.score}%</span>
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <div className="no-data">
+                      Take mock tests to see your subject performance
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Daily CA Highlights */}
+              <div className="card">
+                <div className="card-head">
+                  <span className="card-title">📰 Today's CA</span>
+                  <Link href="/student-desk/current-affairs" style={{ fontSize: '.75rem', color: 'var(--gold)', textDecoration: 'none', fontWeight: 600 }}>View All →</Link>
+                </div>
+                <div className="card-body">
+                  {caHighlights.length === 0 ? (
+                    <div className="no-data">No CA articles available</div>
+                  ) : (
+                    <div className="ca-highlights-list">
+                      {caHighlights.map((article) => (
+                        <Link 
+                          key={article.id} 
+                          href="/student-desk/current-affairs"
+                          className="ca-highlight-item"
+                        >
+                          <span className="ca-highlight-icon">📄</span>
+                          <div className="ca-highlight-content">
+                            <div className="ca-highlight-title">{article.title}</div>
+                            <div className="ca-highlight-meta">{article.category} · {article.date || 'Today'}</div>
+                          </div>
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
-            <div className="col-6 col-md-4 col-lg-2">
-              <NavCard
-                title="Mock Tests"
-                icon="📋"
-                href="/student-desk/mock-tests"
-                bgColor="#fef3c7"
-                iconBg="#f59e0b"
-              />
+
+            {/* Recent Activity */}
+            <div className="section-label animate delay-3">Recent Activity</div>
+            <div className="card animate delay-3" style={{ marginBottom: 28 }}>
+              <div className="card-body">
+                {recentActivity.length === 0 ? (
+                  <div className="no-data">No recent activity. Start by adding tasks or taking a test!</div>
+                ) : (
+                  <div className="activity-list">
+                    {recentActivity.map((activity, index) => (
+                      <div key={index} className="activity-item">
+                        <span className="activity-icon">{activity.icon}</span>
+                        <div className="activity-content">
+                          <div className="activity-title">{activity.title}</div>
+                          <div className="activity-message">{activity.message}</div>
+                          <div className="activity-time">{formatRelative(activity.time)}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
-            <div className="col-6 col-md-4 col-lg-2">
-              <NavCard
-                title="PYQ's"
-                icon="📊"
-                href="/student-desk/pyq"
-                bgColor="#f0f9ff"
-                iconBg="#3b82f6"
-              />
-            </div>
-            <div className="col-6 col-md-4 col-lg-2">
-              <NavCard
-                title="Syllabus"
-                icon="📚"
-                href="/student-desk/syllabus"
-                bgColor="#f3e8ff"
-                iconBg="#a855f7"
-              />
-            </div>
-            <div className="col-6 col-md-4 col-lg-2">
-              <NavCard
-                title="SSB Practice"
-                icon="🎯"
-                href="/student-desk/ssb-practice"
-                bgColor="#ede9fe"
-                iconBg="#8b5cf6"
-              />
-            </div>
-            <div className="col-6 col-md-4 col-lg-2">
-              <NavCard
-                title="SSB Repetition"
-                icon="🔄"
-                href="/student-desk/ssb-repetition"
-                bgColor="#fee2e2"
-                iconBg="#ef4444"
-              />
-            </div>
-          </div>
 
-          {/* Notifications */}
-          <div className="row g-2 g-md-3">
-            <div className="col-12">
-              <NotificationsCard notifications={notifications} />
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* ---------------------------- Child Components --------------------------- */
-
-const NavCard = ({ title, icon, count, href, bgColor, iconBg, external = false }) => {
-  const handleClick = (e) => {
-    if (external) {
-      e.preventDefault();
-      window.open(href, '_blank', 'noopener,noreferrer');
-    }
-  };
-
-  const CardContent = () => (
-    <div
-      className="card h-100 border-0 shadow-sm text-center"
-      style={{
-        background: "white",
-        transition: 'transform 0.2s, box-shadow 0.2s',
-        cursor: 'pointer'
-      }}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.transform = 'translateY(-2px)';
-        e.currentTarget.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.1)';
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.transform = 'translateY(0)';
-        e.currentTarget.style.boxShadow = '0 1px 3px 0 rgba(0, 0, 0, 0.1)';
-      }}
-    >
-      <div className="card-body p-3">
-        <div
-          className="mx-auto d-flex align-items-center justify-content-center rounded mb-2"
-          style={{ width: 50, height: 50, background: bgColor }}
-        >
-          <div
-            className="rounded d-flex align-items-center justify-content-center"
-            style={{ width: 36, height: 36, background: iconBg, color: "white" }}
-          >
-            <span style={{ fontSize: '1.2rem' }}>{icon}</span>
-          </div>
-        </div>
-        <div className="fw-semibold small" style={{ color: "#2d3748" }}>{title}</div>
-        {title === "Study Notes" && <div className="small fw-bold" style={{ color: iconBg }}>{count || 0}</div>}
-        {external && (
-          <div className="small" style={{ color: "#6b7280", marginTop: '2px' }}>
-            <span style={{ fontSize: '0.7rem' }}>🔗 External</span>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-
-  if (external) {
-    return (
-      <div className="text-decoration-none" onClick={handleClick}>
-        <CardContent />
-      </div>
-    );
-  }
-
-  return (
-    <Link href={href} className="text-decoration-none">
-      <CardContent />
-    </Link>
-  );
-}
-
-
-const NotificationsCard = ({ notifications }) => {
-  const getColorScheme = (type) => {
-    switch(type) {
-      case "success": return { bg: "#f0fdf4", border: "#10b981", icon: "#10b981" };
-      case "warning": return { bg: "#fef3c7", border: "#f59e0b", icon: "#f59e0b" };
-      case "error": return { bg: "#fee2e2", border: "#ef4444", icon: "#ef4444" };
-      default: return { bg: "#f0f9ff", border: "#3b82f6", icon: "#3b82f6" };
-    }
-  };
-
-  return (
-    <div className="card border-0 shadow-sm" style={{ background: "white" }}>
-      <div className="card-header border-0 p-3 d-flex align-items-center justify-content-between" style={{ background: "white" }}>
-        <h3 className="h6 m-0 fw-bold" style={{ color: "#2d3748" }}>
-          🔔 Admin Notifications
-        </h3>
-        {notifications.length > 0 && (
-          <span className="badge" style={{ background: "#ef4444", color: "white" }}>
-            {notifications.length}
-          </span>
-        )}
-      </div>
-      <div className="card-body p-0" style={{ maxHeight: '400px', overflowY: "auto" }}>
-        {notifications.length === 0 ? (
-          <div className="text-center text-muted py-5 px-3">
-            <div style={{ fontSize: '3rem' }} className="mb-2">🔕</div>
-            <div className="fw-semibold" style={{ color: "#6b7280" }}>No notifications</div>
-            <div className="small" style={{ color: "#9ca3af" }}>You're all caught up!</div>
-          </div>
-        ) : (
-          <ul className="list-group list-group-flush">
-            {notifications.map((n) => {
-              const colors = getColorScheme(n.type);
-              return (
-                <li 
-                  key={n.id} 
-                  className="list-group-item p-3 border-0" 
-                  style={{ 
-                    borderLeft: `4px solid ${colors.border}`,
-                    background: colors.bg,
-                    borderBottom: "1px solid #f3f4f6"
+            {/* Quick access */}
+            <div className="section-label animate delay-3">Quick Access</div>
+            <div className="quick-grid animate delay-3">
+              {quickLinks.map((q) => (
+                <Link
+                  href={q.href}
+                  className="quick-card"
+                  key={q.label}
+                  style={{
+                    background: `linear-gradient(white,white) padding-box, linear-gradient(135deg,${q.bg},var(--paper-3)) border-box`,
+                    border: "1px solid transparent",
                   }}
                 >
-                  <div className="d-flex align-items-start gap-2">
-                    <div
-                      className="rounded d-flex align-items-center justify-content-center flex-shrink-0"
-                      style={{ width: 36, height: 36, background: "white" }}
-                    >
-                      <span style={{ fontSize: '1.2rem' }}>{n.icon}</span>
-                    </div>
-                    <div className="flex-grow-1" style={{ minWidth: 0 }}>
-                      <div className="small fw-semibold" style={{ color: "#2d3748" }}>
-                        {n.title}
-                      </div>
-                      <div className="small" style={{ color: "#6b7280" }}>
-                        {n.message}
-                      </div>
-                      <div className="small" style={{ color: colors.icon }}>
-                        {formatRelative(n.timestamp)}
-                      </div>
-                    </div>
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
-        )}
-      </div>
-    </div>
-  );
-}
+                  <div className="quick-icon" style={{ background: q.bg }}>{q.icon}</div>
+                  <div className="quick-label">{q.label}</div>
+                  <div className="quick-sub">{q.sub}</div>
+                </Link>
+              ))}
+            </div>
 
-export default function StudentDashboard() {
-  return <StudentDashboardComponent />;
+          </div>
+        </main>
+      </div>
+    </>
+  );
 }

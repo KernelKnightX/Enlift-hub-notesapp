@@ -1,291 +1,285 @@
-// pages/admin/index.jsx
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { toast } from "react-toastify";
 
 import { useAuth } from "../../contexts/AuthContext";
-
+import { auth } from "../../firebase/config";
 import { db } from "../../firebase/config";
 import {
-  collection,
-  query,
-  where,
-  orderBy,
-  onSnapshot,
-  doc,
-  getDoc,
-  addDoc,
-  updateDoc,
-  deleteDoc,
-  serverTimestamp,
+  collection, query, where, onSnapshot, doc, getDoc, orderBy, limit,
 } from "firebase/firestore";
 
-function AdminDashboard() {
+const QUICK_ACTIONS = [
+  { href: "/admin/notes", icon: "📝", label: "Notes & PDFs", desc: "Manage study notes subjects & PDFs", color: "#7c3aed", bg: "#f5f3ff" },
+  { href: "/admin/current-affairs", icon: "📰", label: "Current Affairs", desc: "Publish & manage news articles", color: "#10b981", bg: "#f0fdf4" },
+  { href: "/admin/notifications",   icon: "📢", label: "Notifications",   desc: "Send alerts to all students",   color: "#3b82f6", bg: "#eff6ff" },
+  { href: "/admin/mock-tests",      icon: "📋", label: "Mock Tests",      desc: "Create & manage practice tests", color: "#8b5cf6", bg: "#f5f3ff" },
+  { href: "/admin/pyq",             icon: "📄", label: "PYQ Papers",      desc: "Upload previous year questions", color: "#f59e0b", bg: "#fefce8" },
+  { href: "/admin/users",           icon: "👥", label: "Users",           desc: "Manage user accounts & roles",   color: "#ef4444", bg: "#fff1f2" },
+];
+
+export default function AdminDashboard() {
   const router = useRouter();
-  const { user, logout } = useAuth();
+  const { user, authLoading, logout } = useAuth();
 
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
 
-  /* ------------------------- Auth guard ------------------------- */
-  useEffect(() => {
-    if (!user) {
-      router.replace("/");
-      return;
+  // Real stats
+  const [stats, setStats] = useState({
+    users: 0,
+    currentAffairs: 0,
+    mockTests: 0,
+    pyqs: 0,
+    notifications: 0,
+    pdfSubjects: 0,
+  });
+
+  // Server-side admin verification
+  const verifyAdminServerSide = useCallback(async (user) => {
+    try {
+      // The `user` from our AuthContext is a plain object (no methods).
+      // Prefer using the real Firebase Auth currentUser to get a token.
+      let idToken = null;
+
+      if (user && typeof user.getIdToken === 'function') {
+        idToken = await user.getIdToken();
+      } else if (auth?.currentUser && typeof auth.currentUser.getIdToken === 'function') {
+        idToken = await auth.currentUser.getIdToken();
+      } else {
+        // No token available
+        return { isAdmin: null, profile: null, error: 'no_token_available' };
+      }
+
+      const response = await fetch('/api/auth/verify-admin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ idToken }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.isAdmin) {
+        return { isAdmin: true, profile: data.userData };
+      } else {
+        return { isAdmin: false, profile: null, error: data.error };
+      }
+    } catch (error) {
+      console.error('Server-side admin verification failed:', error);
+      // Fall back to client-side check
+      return { isAdmin: null, profile: null, error: 'verification_error' };
     }
+  }, []);
+
+  /* ── Auth + admin guard (with server-side verification) ── */
+  useEffect(() => {
+    if (!authLoading && !user) { router.replace("/login"); return; }
+    if (!user) return;
 
     let cancelled = false;
     (async () => {
       try {
-        // Check admin access using the same method as /admin/dashboard
-        const adminDoc = await getDoc(doc(db, 'admins', user.uid));
-        const isAdmin = adminDoc.exists() && adminDoc.data().isAdmin === true;
+        // First try server-side verification
+        const serverResult = await verifyAdminServerSide(user);
+        
+        if (!cancelled) {
+          if (serverResult.isAdmin === true) {
+            setProfile(serverResult.profile);
+            setIsAdmin(true);
+            setLoading(false);
+            return;
+          } else if (serverResult.isAdmin === false) {
+            toast.error("Admin access required.");
+            router.replace("/");
+            return;
+          }
+          // If serverResult.isAdmin === null, fall back to client-side
+        }
 
-        if (!isAdmin) {
-          toast.error("Access denied. Admin privileges required.");
+        // Fallback to client-side check
+        const snap = await getDoc(doc(db, "users", user.uid));
+        if (!snap.exists() || !snap.data().isAdmin) {
+          toast.error("Admin access required.");
           if (!cancelled) router.replace("/");
           return;
         }
-
-        // Get user profile data
-        const ref = doc(db, "users", user.uid);
-        const snap = await getDoc(ref);
-        const userData = snap.exists() ? snap.data() : {};
-
-        if (!cancelled) {
-          setProfile(userData);
-          setIsAdmin(true);
-        }
+        if (!cancelled) { setProfile(snap.data()); setIsAdmin(true); }
       } catch (e) {
-        console.error("Admin check error:", e);
+        console.error(e);
         if (!cancelled) router.replace("/");
       } finally {
         if (!cancelled) setLoading(false);
       }
     })();
+    return () => { cancelled = true; };
+  }, [user, authLoading, router, verifyAdminServerSide]);
 
-    return () => {
-      cancelled = true;
-    };
-  }, [user, router]);
+  /* ── Real-time stats ── */
+  useEffect(() => {
+    if (!isAdmin) return;
+    const unsubs = [];
+
+    unsubs.push(onSnapshot(collection(db, "users"),
+      s => setStats(p => ({ ...p, users: s.size })), () => {}));
+
+    unsubs.push(onSnapshot(query(collection(db, "currentAffairs"), where("isActive", "==", true)),
+      s => setStats(p => ({ ...p, currentAffairs: s.size })), () => {}));
+
+    unsubs.push(onSnapshot(collection(db, "mockTests"),
+      s => setStats(p => ({ ...p, mockTests: s.size })), () => {}));
+
+    unsubs.push(onSnapshot(collection(db, "pyqs"),
+      s => setStats(p => ({ ...p, pyqs: s.size })), () => {}));
+
+    unsubs.push(onSnapshot(query(collection(db, "adminNotifications"), where("isActive", "==", true)),
+      s => setStats(p => ({ ...p, notifications: s.size })), () => {}));
+
+    unsubs.push(onSnapshot(collection(db, "pdfSubjects"),
+      s => setStats(p => ({ ...p, pdfSubjects: s.size })), () => {}));
+
+    return () => unsubs.forEach(u => u());
+  }, [isAdmin]);
 
   const handleLogout = async () => {
-    try {
-      await logout();
-      toast.success("Logged out successfully!");
-      router.push("/");
-    } catch (e) {
-      console.error("Logout error:", e);
-      toast.error("Error logging out. Please try again.");
-    }
+    try { await logout(); toast.success("Logged out!"); router.push("/login"); }
+    catch { toast.error("Error logging out."); }
   };
 
-  if (loading) {
+  if (loading || authLoading) {
     return (
-      <div className="min-vh-100 d-flex align-items-center justify-content-center" style={{ background: "#f8f9fa" }}>
-        <div className="text-center">
-          <div className="spinner-border text-success" role="status" style={{ width: '3rem', height: '3rem' }} />
-          <div className="mt-3 text-muted fw-semibold">Loading Admin Dashboard...</div>
-        </div>
+      <div className="min-vh-100 d-flex align-items-center justify-content-center" style={{ background: "#f0f4f8" }}>
+        <div className="spinner-border text-primary" role="status" style={{ width: "3rem", height: "3rem" }} />
       </div>
     );
   }
+  if (!isAdmin) return null;
 
-  if (!isAdmin) {
-    return null; // Will redirect
-  }
+  const displayName = profile?.fullName || profile?.name || user?.email?.split("@")[0] || "Admin";
 
   return (
-    <div className="container-fluid py-3 px-2 px-md-4" style={{ background: "#f8f9fa", minHeight: "100vh" }}>
+    <div style={{ background: "#f0f4f8", minHeight: "100vh" }}>
+
       {/* Header */}
-      <div className="card shadow-sm border-0 mb-3" style={{ background: "white" }}>
-        <div className="card-body p-3">
-          <div className="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3">
-            <div className="w-100 w-md-auto">
-              <h1 className="h5 mb-2 fw-bold" style={{ color: "#2d3748" }}>
-                🛠️ Admin Dashboard - The Enlift Hub
-              </h1>
-              <div className="d-flex flex-wrap align-items-center gap-2 small">
-                <span className="badge bg-danger text-white">Administrator</span>
-                <span className="d-none d-sm-inline text-muted">•</span>
-                <span style={{ color: "#10b981" }}>Welcome, Admin {profile?.name || "User"}!</span>
+      <div
+        className="px-4 py-3 d-flex flex-wrap align-items-center justify-content-between gap-3"
+        style={{ background: "linear-gradient(135deg, #1e3a5f 0%, #2d5a87 100%)", boxShadow: "0 2px 12px rgba(30,58,95,.3)" }}
+      >
+        <div>
+          <h1 className="h5 fw-bold mb-1 text-white">🎯 Admin Panel</h1>
+          <div className="small" style={{ color: "rgba(255,255,255,.7)" }}>
+            Welcome back, {displayName}
+          </div>
+        </div>
+        <div className="d-flex gap-2">
+          <Link
+            href="/student-desk/dashboard"
+            className="btn btn-sm"
+            style={{ background: "rgba(255,255,255,.15)", color: "white", border: "1px solid rgba(255,255,255,.3)" }}
+          >
+            🏠 View Site
+          </Link>
+          <button
+            className="btn btn-sm"
+            style={{ background: "rgba(255,255,255,.15)", color: "white", border: "1px solid rgba(255,255,255,.3)" }}
+            onClick={handleLogout}
+          >
+            🚪 Logout
+          </button>
+        </div>
+      </div>
+
+      <div className="container-fluid px-3 px-md-4 py-4">
+
+        {/* Live Stats */}
+        <div className="row g-3 mb-4">
+          {[
+            { label: "Total Users",      value: stats.users,         color: "#3b82f6", icon: "👥" },
+            { label: "Notes Subjects",  value: stats.pdfSubjects,   color: "#7c3aed", icon: "📝" },
+            { label: "Current Affairs",  value: stats.currentAffairs, color: "#10b981", icon: "📰" },
+            { label: "Mock Tests",       value: stats.mockTests,      color: "#8b5cf6", icon: "📋" },
+            { label: "PYQ Papers",       value: stats.pyqs,           color: "#f59e0b", icon: "📄" },
+          ].map((s) => (
+            <div key={s.label} className="col-6 col-md-4 col-lg">
+              <div className="card border-0 shadow-sm h-100" style={{ background: "white" }}>
+                <div className="card-body p-3 d-flex align-items-center gap-3">
+                  <div
+                    className="rounded-3 d-flex align-items-center justify-content-center flex-shrink-0"
+                    style={{ width: 46, height: 46, background: s.color + "18", fontSize: "1.4rem" }}
+                  >
+                    {s.icon}
+                  </div>
+                  <div>
+                    <div className="h5 fw-bold mb-0" style={{ color: s.color }}>{s.value}</div>
+                    <div className="small text-muted">{s.label}</div>
+                  </div>
+                </div>
               </div>
             </div>
-            <div className="d-flex align-items-center gap-2">
-              <Link href="/" className="btn btn-sm fw-semibold d-flex align-items-center gap-1" style={{ background: "#6b7280", color: "white", border: "none", padding: "6px 16px" }}>
-                <span>🏠</span>
-                <span>View Site</span>
+          ))}
+        </div>
+
+        {/* Quick Actions */}
+        <h3 className="h6 fw-bold mb-3" style={{ color: "#1e3a5f" }}>⚡ Quick Actions</h3>
+        <div className="row g-3 mb-4">
+          {QUICK_ACTIONS.map((action) => (
+            <div key={action.href} className="col-12 col-sm-6 col-lg-4">
+              <Link href={action.href} className="text-decoration-none">
+                <div
+                  className="card border-0 shadow-sm h-100"
+                  style={{ background: "white", transition: "transform .18s, box-shadow .18s", cursor: "pointer" }}
+                  onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = "0 8px 24px rgba(0,0,0,.12)"; }}
+                  onMouseLeave={e => { e.currentTarget.style.transform = ""; e.currentTarget.style.boxShadow = ""; }}
+                >
+                  <div className="card-body p-4 d-flex align-items-center gap-3">
+                    <div
+                      className="rounded-3 d-flex align-items-center justify-content-center flex-shrink-0"
+                      style={{ width: 56, height: 56, background: action.bg, fontSize: "1.8rem" }}
+                    >
+                      {action.icon}
+                    </div>
+                    <div>
+                      <div className="fw-bold mb-1" style={{ color: "#1f2937" }}>{action.label}</div>
+                      <div className="small text-muted">{action.desc}</div>
+                    </div>
+                    <div className="ms-auto">
+                      <i className="bi bi-chevron-right text-muted" />
+                    </div>
+                  </div>
+                </div>
               </Link>
-              <button
-                className="btn btn-sm fw-semibold d-flex align-items-center gap-1"
-                style={{
-                  background: "#ef4444",
-                  color: "white",
-                  border: "none",
-                  padding: "6px 16px"
-                }}
-                onClick={handleLogout}
-              >
-                <span>🚪</span>
-                <span>Logout</span>
-              </button>
+            </div>
+          ))}
+        </div>
+
+        {/* Info Banner */}
+        <div className="card border-0 shadow-sm" style={{ background: "linear-gradient(135deg, #1e3a5f 0%, #2d5a87 100%)" }}>
+          <div className="card-body p-4 text-white">
+            <h5 className="fw-bold mb-2">📋 Content Management Guide</h5>
+            <div className="row g-3">
+              {[
+                { icon: "📝", title: "Notes & PDFs",  desc: "Go to Notes → Add Subject. Create subjects then add PDFs with titles and URLs." },
+                { icon: "📰", title: "Current Affairs", desc: "Go to Current Affairs → New Article. Fill title, category, summary, tags and publish." },
+                { icon: "📢", title: "Notifications",  desc: "Go to Notifications → New Notification. Choose type and icon, write message and activate." },
+                { icon: "📋", title: "Mock Tests",     desc: "Go to Mock Tests → Create Test. Add questions manually or import from CSV." },
+                { icon: "📄", title: "PYQ Papers",     desc: "Go to PYQ → Upload PYQ. Select exam type, year and upload PDF file." },
+              ].map((g) => (
+                <div key={g.title} className="col-12 col-sm-6 col-lg-3">
+                  <div className="d-flex gap-2">
+                    <span style={{ fontSize: "1.2rem", flexShrink: 0 }}>{g.icon}</span>
+                    <div>
+                      <div className="fw-semibold small">{g.title}</div>
+                      <div className="small" style={{ color: "rgba(255,255,255,.7)", fontSize: "0.75rem" }}>{g.desc}</div>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Admin Management Sections */}
-      <div className="row g-2 g-md-3 mb-3">
-        <div className="col-12 col-md-6 col-lg-4">
-          <AdminCard
-            title="TAT Management"
-            description="Upload & manage TAT pictures"
-            icon="🎭"
-            bgColor="#f0fdf4"
-            iconBg="#10b981"
-            href="/admin/tat"
-          />
-        </div>
-        <div className="col-12 col-md-6 col-lg-4">
-          <AdminCard
-            title="SRT Management"
-            description="Upload & manage SRT questions"
-            icon="💭"
-            bgColor="#fef3c7"
-            iconBg="#f59e0b"
-            href="/admin/srt"
-          />
-        </div>
-        <div className="col-12 col-md-6 col-lg-4">
-          <AdminCard
-            title="OIR Management"
-            description="Upload & manage OIR questions"
-            icon="👁️"
-            bgColor="#f0f9ff"
-            iconBg="#3b82f6"
-            href="/admin/oir"
-          />
-        </div>
-        <div className="col-12 col-md-6 col-lg-4">
-          <AdminCard
-            title="WAT Management"
-            description="Upload & manage WAT questions"
-            icon="📝"
-            bgColor="#fce7f3"
-            iconBg="#ec4899"
-            href="/admin/wat"
-          />
-        </div>
-        <div className="col-12 col-md-6 col-lg-4">
-          <AdminCard
-            title="PPDT Management"
-            description="Upload & manage PPDT pictures"
-            icon="🖼️"
-            bgColor="#ede9fe"
-            iconBg="#8b5cf6"
-            href="/admin/ppdt"
-          />
-        </div>
-        <div className="col-12 col-md-6 col-lg-4">
-          <AdminCard
-            title="User Management"
-            description="Manage users & permissions"
-            icon="👥"
-            bgColor="#fee2e2"
-            iconBg="#ef4444"
-            href="/admin/users"
-          />
-        </div>
-      </div>
-
-      {/* Quick Stats */}
-      <div className="row g-2 g-md-3">
-        <div className="col-12">
-          <div className="card shadow-sm border-0" style={{ background: "white" }}>
-            <div className="card-header bg-primary text-white">
-              <h5 className="mb-0 fw-bold">📊 System Overview</h5>
-            </div>
-            <div className="card-body p-4">
-              <div className="row g-4">
-                <div className="col-md-3">
-                  <div className="text-center">
-                    <div className="h3 fw-bold text-primary mb-2">--</div>
-                    <div className="small text-muted">Total Users</div>
-                  </div>
-                </div>
-                <div className="col-md-3">
-                  <div className="text-center">
-                    <div className="h3 fw-bold text-success mb-2">--</div>
-                    <div className="small text-muted">Active Tests</div>
-                  </div>
-                </div>
-                <div className="col-md-3">
-                  <div className="text-center">
-                    <div className="h3 fw-bold text-warning mb-2">--</div>
-                    <div className="small text-muted">TAT Images</div>
-                  </div>
-                </div>
-                <div className="col-md-3">
-                  <div className="text-center">
-                    <div className="h3 fw-bold text-info mb-2">--</div>
-                    <div className="small text-muted">SRT Questions</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   );
 }
-
-/* ---------------------------- Child Components --------------------------- */
-
-function AdminCard({ title, description, icon, count, href, bgColor, iconBg }) {
-  return (
-    <Link href={href} className="text-decoration-none">
-      <div
-        className="card h-100 border-0 shadow-sm"
-        style={{
-          background: "white",
-          transition: 'transform 0.2s, box-shadow 0.2s',
-          cursor: 'pointer'
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.transform = 'translateY(-2px)';
-          e.currentTarget.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.1)';
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.transform = 'translateY(0)';
-          e.currentTarget.style.boxShadow = '0 1px 3px 0 rgba(0, 0, 0, 0.1)';
-        }}
-      >
-        <div className="card-body p-3">
-          <div
-            className="mx-auto d-flex align-items-center justify-content-center rounded mb-3"
-            style={{ width: 60, height: 60, background: bgColor }}
-          >
-            <div
-              className="rounded d-flex align-items-center justify-content-center"
-              style={{ width: 44, height: 44, background: iconBg, color: "white" }}
-            >
-              <span style={{ fontSize: '1.5rem' }}>{icon}</span>
-            </div>
-          </div>
-          <div className="text-center">
-            <div className="fw-semibold mb-1" style={{ color: "#2d3748" }}>{title}</div>
-            <div className="small mb-2" style={{ color: "#6b7280" }}>{description}</div>
-            {count !== undefined && (
-              <div className="small fw-bold" style={{ color: iconBg }}>{count} Items</div>
-            )}
-          </div>
-        </div>
-      </div>
-    </Link>
-  );
-}
-
-export default AdminDashboard;

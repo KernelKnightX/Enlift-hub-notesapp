@@ -1,533 +1,404 @@
 import { useState, useEffect } from "react";
 
+const COLORS = {
+  ink: "#1C1208",
+  saffron: "#E8871A",
+  saffronLight: "#F5A84E",
+  cream: "#FDFAF5",
+  border: "#EDE8DF",
+  muted: "#A88A5A",
+  white: "#fff",
+};
+
+const slides = [
+  {
+    tag: "UPSC CSE · IAS · IPS · IRS",
+    title: ["Your ", "smarter", " path to civil services."],
+    sub: "Notes, PYQs, Mock Tests & Daily Current Affairs — built for serious aspirants.",
+  },
+  {
+    tag: "Indian Administrative Service",
+    title: ["Your IAS journey ", "starts", " here."],
+    sub: "Access 10 years of PYQs, customizable mock tests & daily updates.",
+  },
+  {
+    tag: "Current Affairs & Notifications",
+    title: ["Stay updated.", " Stay", " ahead."],
+    sub: "Daily current affairs, job notifications & exam reminders — all in one place.",
+  },
+];
+
+const features = [
+  { icon: "📝", name: "Smart Notes", desc: "Write, organize & download notes as PDF", bg: "#FEF3E2" },
+  { icon: "📰", name: "Current Affairs", desc: "Daily updates curated for Prelims & Mains", bg: "#E8F5E9" },
+  { icon: "🧪", name: "Mock Tests", desc: "Subject-wise & year-wise customizable tests", bg: "#EDE7F6" },
+  { icon: "📚", name: "PYQ Papers", desc: "Last 10 years of previous year questions", bg: "#E3F2FD" },
+  { icon: "💼", name: "Job Updates", desc: "Latest UPSC & government recruitment news", bg: "#FCE4EC" },
+  { icon: "📅", name: "Exam Calendar", desc: "Smart reminders for all important dates", bg: "#FFF8E1" },
+  { icon: "📥", name: "PDF Library", desc: "Download study material & resources offline", bg: "#E8F5E9" },
+  { icon: "📈", name: "Analytics", desc: "Track your progress & improve scores", bg: "#EDE7F6" },
+];
+
+const quickLinks = [
+  { icon: "📚", name: "Previous Year Papers", sub: "Last 10 years · Filter by topic", bg: "#FEF3E2" },
+  { icon: "📰", name: "Today's Current Affairs", sub: "Updated for Prelims & Mains", bg: "#E8F5E9" },
+  { icon: "📅", name: "Exam Calendar", sub: "Upcoming deadlines & alerts", bg: "#EDE7F6" },
+  { icon: "💼", name: "Job Notifications", sub: "Latest UPSC recruitment news", bg: "#FCE4EC" },
+];
+
+const tabs = [
+  { icon: "🏠", label: "Home" },
+  { icon: "📰", label: "Affairs" },
+  { icon: "🧪", label: "Tests" },
+  { icon: "📚", label: "PYQs" },
+  { icon: "👤", label: "Profile" },
+];
+
 export default function Home() {
-  const [currentSlide, setCurrentSlide] = useState(0);
-  const [currentTestimonial, setCurrentTestimonial] = useState(0);
-  const [isPaused, setIsPaused] = useState(false);
-
-  const slides = [
-    {
-      image: "https://defencedirecteducation.com/wp-content/uploads/2021/12/indian-military-academy-scaled-e1638344518595.jpg",
-      heading: "Crack CDS with Smart Preparation",
-      sub: "Smart notes, practice tests, study planning — built for results.",
-      tag: "CDS • OTA • AFA"
-    },
-    {
-      image: "https://wandersky.in/wp-content/uploads/2023/08/pxfuel-scaled.jpg",
-      heading: "Join IMA — Serve with Honour",
-      sub: "Lead with courage. Train for excellence. Wear the uniform with pride.",
-      tag: "IMA, Dehradun"
-    },
-    {
-      image: "https://c4.wallpaperflare.com/wallpaper/782/230/429/indian-air-force-sukhoi-su-30mki-aircraft-wallpaper-preview.jpg",
-      heading: "Aim High. Fly Higher.",
-      sub: "CDS strategy, sectional practice & performance analytics for AFA.",
-      tag: "Air Force Academy"
-    },
-    {
-      image: "https://images.unsplash.com/photo-1719553946838-1190abdeee92?fm=jpg&q=60&w=3000&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8bmF2eSUyMHdhbGxwYXBlcnxlbnwwfHwwfHx8MA%3D%3D",
-      heading: "Command the Seas",
-      sub: "Crack CDS and join Indian Naval Academy, Ezhimala.",
-      tag: "Indian Navy"
-    }
-  ];
-
-  const features = [
-    { icon: "📝", title: "Digital Notes", desc: "Create, search & download notes as PDF." },
-    { icon: "📊", title: "Practice Tests", desc: "Topic-wise practice with detailed analytics." },
-    { icon: "📚", title: "Resource Vault", desc: "CDS syllabus PDFs, PYQs, cheat-sheets & more." },
-    { icon: "🎯", title: "SSB Practice", desc: "Comprehensive Services Selection Board preparation." },
-    { icon: "📈", title: "Progress Tracking", desc: "Monitor your preparation with detailed analytics." },
-    { icon: "💡", title: "Smart Revision", desc: "AI-powered spaced repetition system." }
-  ];
-
-  const testimonials = [
-    {
-      name: "Rahul Kumar",
-      rank: "Lieutenant (IMA Graduate)",
-      text: "Your AI notes + mocks combo helped me crack CDS on first attempt. The subject-wise preparation was perfect!"
-    },
-    {
-      name: "Priya Sharma",
-      rank: "Flying Officer (AFA Graduate)",
-      text: "The instant summaries and planner made CDS preparation so much easier. Highly recommend for Air Force aspirants!"
-    },
-    {
-      name: "Arjun Singh",
-      rank: "Sub Lieutenant (INA Graduate)",
-      text: "Clean UI, powerful CDS-focused features, zero distractions. Best platform for naval academy preparation."
-    }
-  ];
-
-  const branches = [
-    {
-      name: "Indian Military Academy (IMA)",
-      location: "Dehradun, Uttarakhand",
-      service: "Indian Army",
-      subjects: "English + GK + Mathematics (100 marks each)",
-      description: "Train to become an Army Officer and lead with honor"
-    },
-    {
-      name: "Officers Training Academy (OTA)",
-      location: "Chennai, Tamil Nadu",
-      service: "Indian Army",
-      subjects: "English + GK only (No Mathematics)",
-      description: "Direct entry for graduates into Army commissioned ranks"
-    },
-    {
-      name: "Indian Naval Academy (INA)",
-      location: "Ezhimala, Kerala",
-      service: "Indian Navy",
-      subjects: "English + GK + Mathematics (100 marks each)",
-      description: "Command the seas as a Naval Officer"
-    },
-    {
-      name: "Air Force Academy (AFA)",
-      location: "Dundigal, Hyderabad",
-      service: "Indian Air Force",
-      subjects: "English + GK + Mathematics (100 marks each)",
-      description: "Soar high as an Air Force Officer"
-    }
-  ];
-
-  // Auto-slide with pause capability
-  useEffect(() => {
-    if (isPaused) return;
-    const interval = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % slides.length);
-    }, 6000);
-    return () => clearInterval(interval);
-  }, [isPaused, slides.length]);
+  const [slide, setSlide] = useState(0);
+  const [activeTab, setActiveTab] = useState(0);
+  const [scrolled, setScrolled] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
-    if (isPaused) return;
-    const interval = setInterval(() => {
-      setCurrentTestimonial((prev) => (prev + 1) % testimonials.length);
-    }, 5000);
-    return () => clearInterval(interval);
-  }, [isPaused, testimonials.length]);
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
+  useEffect(() => {
+    const t = setInterval(() => setSlide(s => (s + 1) % slides.length), 4500);
+    return () => clearInterval(t);
+  }, []);
+
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 20);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  const s = slides[slide];
+
+  /* ─────────────────────────────────────────
+     MOBILE PWA LAYOUT
+  ───────────────────────────────────────── */
+  if (isMobile) {
+    return (
+      <div style={{
+        minHeight: "100vh",
+        background: COLORS.cream,
+        fontFamily: "-apple-system, 'Inter', sans-serif",
+        display: "flex",
+        flexDirection: "column",
+        maxWidth: 430,
+        margin: "0 auto",
+      }}>
+        {/* Hero (dark ink) */}
+        <div style={{ background: COLORS.ink, paddingBottom: 28 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px 24px 0", color: "rgba(255,255,255,0.45)", fontSize: 12 }}>
+            <span style={{ color: "#fff", fontSize: 15, fontWeight: 700 }}>9:41</span>
+            <span>●●● WiFi 🔋</span>
+          </div>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 20px 0" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
+              <div style={{ width: 34, height: 34, background: COLORS.saffron, borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 17 }}>📚</div>
+              <span style={{ color: "#fff", fontSize: 19, fontWeight: 800, letterSpacing: "-0.4px" }}>NotesCafe</span>
+            </div>
+            <a href="/login" style={{ background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.2)", color: "#fff", padding: "7px 18px", borderRadius: 50, fontSize: 13, fontWeight: 600, textDecoration: "none" }}>Login</a>
+          </div>
+
+          <div style={{ padding: "24px 20px 0" }}>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(232,135,26,0.2)", border: "1px solid rgba(232,135,26,0.35)", color: COLORS.saffronLight, padding: "5px 13px", borderRadius: 50, fontSize: 11, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", marginBottom: 16 }}>
+              <div style={{ width: 6, height: 6, borderRadius: "50%", background: COLORS.saffron }} />
+              {s.tag}
+            </div>
+            <h1 style={{ color: "#fff", fontSize: 25, fontWeight: 800, lineHeight: 1.22, marginBottom: 10, letterSpacing: "-0.5px" }}>
+              {s.title[0]}<span style={{ color: COLORS.saffronLight }}>{s.title[1]}</span>{s.title[2]}
+            </h1>
+            <p style={{ color: "rgba(255,255,255,0.55)", fontSize: 13.5, lineHeight: 1.65, marginBottom: 22 }}>{s.sub}</p>
+            <div style={{ display: "flex", gap: 10, marginBottom: 20 }}>
+              <a href="/login" style={{ flex: 1, background: COLORS.saffron, color: COLORS.ink, padding: 14, borderRadius: 14, fontSize: 14, fontWeight: 800, textDecoration: "none", textAlign: "center" }}>Start Free Prep →</a>
+              <button style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", color: "#fff", padding: "14px 18px", borderRadius: 14, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Browse</button>
+            </div>
+            <div style={{ display: "flex", gap: 6, marginBottom: 20 }}>
+              {slides.map((_, i) => (
+                <button key={i} onClick={() => setSlide(i)} style={{ height: 6, width: i === slide ? 24 : 6, borderRadius: 50, background: i === slide ? COLORS.saffron : "rgba(255,255,255,0.2)", border: "none", cursor: "pointer", padding: 0, transition: "all 0.3s ease" }} />
+              ))}
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", background: "rgba(255,255,255,0.04)", borderRadius: 16, overflow: "hidden", border: "1px solid rgba(255,255,255,0.07)" }}>
+              {[{ n: "10+", l: "Yrs PYQs" }, { n: "500+", l: "Tests" }, { n: "Daily", l: "Updates" }, { n: "Free", l: "To Start" }].map((st, i) => (
+                <div key={i} style={{ padding: "13px 6px", textAlign: "center", borderRight: i < 3 ? "1px solid rgba(255,255,255,0.06)" : "none" }}>
+                  <div style={{ color: COLORS.saffronLight, fontSize: 16, fontWeight: 800 }}>{st.n}</div>
+                  <div style={{ color: "rgba(255,255,255,0.35)", fontSize: 10, fontWeight: 500, marginTop: 2 }}>{st.l}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Body */}
+        <div style={{ background: COLORS.cream, padding: "22px 20px 0", flex: 1 }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: COLORS.muted, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 14 }}>Explore features</div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 22 }}>
+            {features.slice(0, 4).map((f, i) => (
+              <div key={i} style={{ background: COLORS.white, border: `1px solid ${COLORS.border}`, borderRadius: 16, padding: 14, cursor: "pointer" }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+                  <div style={{ width: 36, height: 36, borderRadius: 10, background: f.bg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>{f.icon}</div>
+                  <span style={{ color: COLORS.border, fontSize: 18 }}>›</span>
+                </div>
+                <div style={{ fontSize: 13, fontWeight: 700, color: COLORS.ink, marginBottom: 3 }}>{f.name}</div>
+                <div style={{ fontSize: 11, color: COLORS.muted, lineHeight: 1.45 }}>{f.desc}</div>
+              </div>
+            ))}
+          </div>
+          <div style={{ height: 1, background: COLORS.border, marginBottom: 20 }} />
+          <div style={{ fontSize: 16, fontWeight: 800, color: COLORS.ink, marginBottom: 12 }}>Quick access</div>
+          {quickLinks.map((q, i) => (
+            <div key={i} style={{ display: "flex", alignItems: "center", gap: 13, background: COLORS.white, border: `1px solid ${COLORS.border}`, borderRadius: 14, padding: "13px 14px", marginBottom: 9, cursor: "pointer" }}>
+              <div style={{ width: 40, height: 40, borderRadius: 12, background: q.bg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 19, flexShrink: 0 }}>{q.icon}</div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 13.5, fontWeight: 700, color: COLORS.ink }}>{q.name}</div>
+                <div style={{ fontSize: 11, color: COLORS.muted, marginTop: 2 }}>{q.sub}</div>
+              </div>
+              <span style={{ color: COLORS.border, fontSize: 20 }}>›</span>
+            </div>
+          ))}
+        </div>
+
+        {/* Bottom tab bar */}
+        <div style={{ background: COLORS.white, borderTop: `1px solid ${COLORS.border}`, display: "flex", padding: "12px 0 28px", position: "sticky", bottom: 0 }}>
+          {tabs.map((t, i) => (
+            <button key={i} onClick={() => setActiveTab(i)} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 4, border: "none", background: "none", cursor: "pointer", color: i === activeTab ? COLORS.saffron : "#C8B99A" }}>
+              <span style={{ fontSize: 21 }}>{t.icon}</span>
+              <span style={{ fontSize: 10, fontWeight: 600 }}>{t.label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  /* ─────────────────────────────────────────
+     DESKTOP WEB LAYOUT
+  ───────────────────────────────────────── */
   return (
-    <div className="min-vh-100 d-flex flex-column">
-      <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
-      <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet" />
+    <div style={{ fontFamily: "'Inter', -apple-system, sans-serif", color: COLORS.ink, overflowX: "hidden", background: COLORS.cream }}>
 
       {/* NAVBAR */}
-      <nav className="navbar navbar-expand-lg sticky-top shadow-lg" style={{
-        background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
+      <nav style={{
+        position: "fixed", top: 0, left: 0, right: 0, zIndex: 1000,
+        padding: "0 40px", height: 64,
+        display: "flex", alignItems: "center", justifyContent: "space-between",
+        background: scrolled ? "rgba(253,250,245,0.95)" : "transparent",
+        backdropFilter: scrolled ? "blur(12px)" : "none",
+        boxShadow: scrolled ? `0 1px 0 ${COLORS.border}` : "none",
+        transition: "all 0.3s ease",
       }}>
-        <div className="container">
-          <a className="navbar-brand fw-bold fs-4 d-flex align-items-center gap-2 text-black" href="#">
-            <img
-              src="/enlift-hub-logo.jpeg"
-              alt="Enlift Hub Logo"
-              style={{
-                width: '40px',
-                height: '40px',
-                objectFit: 'contain',
-                borderRadius: '6px'
-              }}
-            />
-            The Enlift Hub
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <div style={{ width: 36, height: 36, background: COLORS.saffron, borderRadius: 9, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>📚</div>
+          <span style={{ fontWeight: 800, fontSize: 20, color: scrolled ? COLORS.ink : "#fff", letterSpacing: "-0.4px" }}>NotesCafe</span>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 36 }}>
+          {["Features", "About", "Resources"].map(item => (
+            <a key={item} href={`#${item.toLowerCase()}`} style={{ color: scrolled ? COLORS.muted : "rgba(255,255,255,0.75)", textDecoration: "none", fontSize: 14, fontWeight: 500 }}>{item}</a>
+          ))}
+          <a href="/login" style={{ background: COLORS.saffron, color: COLORS.ink, padding: "8px 22px", borderRadius: 50, textDecoration: "none", fontSize: 14, fontWeight: 700 }}>
+            Login / Register
           </a>
-
-          <button className="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-            <i className="bi bi-list fs-2 text-black"></i>
-          </button>
-
-          <div className="collapse navbar-collapse" id="navbarNav">
-            <ul className="navbar-nav ms-auto me-3">
-              {['Features', 'About', 'CDS Info', 'Knowledge', 'Contact'].map((item) => (
-                <li key={item} className="nav-item">
-                  <a className="nav-link fw-semibold text-black px-3" href={`#${item.toLowerCase().replace(' ', '-')}`}>
-                    {item}
-                  </a>
-                </li>
-              ))}
-            </ul>
-
-            <a href="/login" className="btn fw-bold px-4 py-2 rounded-pill border-2" style={{
-              background: 'black',
-              color: '#fbbf24',
-              border: '2px solid black'
-            }}>
-              Login/Register
-            </a>
-          </div>
         </div>
       </nav>
 
-      {/* HERO SECTION */}
-      <section 
-        className="position-relative overflow-hidden d-flex align-items-center justify-content-center" 
-        style={{ minHeight: '600px', height: '92vh', maxHeight: '900px' }}
-        onMouseEnter={() => setIsPaused(true)}
-        onMouseLeave={() => setIsPaused(false)}
-      >
-        <div 
-          className="position-absolute w-100 h-100"
-          style={{
-            backgroundImage: `url(${slides[currentSlide].image})`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            transition: 'all 2s ease-in-out'
-          }}
-          role="img"
-          aria-label={slides[currentSlide].heading}
-        />
-        
-        <div className="position-absolute w-100 h-100" style={{
-          background: 'linear-gradient(135deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.75) 50%, rgba(0,0,0,0.85) 100%)'
-        }} />
+      {/* HERO */}
+      <section style={{
+        minHeight: "100vh", background: COLORS.ink,
+        display: "flex", flexDirection: "column", alignItems: "center",
+        justifyContent: "center", textAlign: "center",
+        padding: "120px 40px 80px", position: "relative", overflow: "hidden",
+      }}>
+        {/* Subtle bg texture circles */}
+        <div style={{ position: "absolute", top: "8%", left: "4%", width: 500, height: 500, borderRadius: "50%", background: "rgba(232,135,26,0.06)", filter: "blur(80px)", pointerEvents: "none" }} />
+        <div style={{ position: "absolute", bottom: "8%", right: "4%", width: 600, height: 600, borderRadius: "50%", background: "rgba(232,135,26,0.04)", filter: "blur(100px)", pointerEvents: "none" }} />
 
-        <div className="position-relative text-center text-white px-4" style={{ maxWidth: '900px', zIndex: 10 }}>
-          <span className="d-block text-warning opacity-75 text-uppercase fw-semibold mb-3" style={{
-            fontSize: '0.9rem',
-            letterSpacing: '0.2em'
-          }}>
-            {slides[currentSlide].tag}
-          </span>
-          
-          <h1 className="display-4 fw-bold mb-3" style={{ lineHeight: '1.2' }}>
-            {slides[currentSlide].heading}
-          </h1>
-          
-          <p className="fs-5 text-light mb-4" style={{ lineHeight: '1.6' }}>
-            {slides[currentSlide].sub}
-          </p>
-          
-          <div className="d-flex flex-column flex-sm-row gap-3 justify-content-center mb-4">
-            <a href="/login" className="btn btn-lg px-5 py-3 fw-bold rounded-pill" style={{
-              background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
-              color: 'black',
-              textDecoration: 'none',
-              border: 'none'
-            }}>
-              🚀 Start CDS Preparation
+        {/* Pill tag */}
+        <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(232,135,26,0.15)", border: "1px solid rgba(232,135,26,0.3)", color: COLORS.saffronLight, padding: "6px 18px", borderRadius: 50, fontSize: 12, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 28 }}>
+          <div style={{ width: 6, height: 6, borderRadius: "50%", background: COLORS.saffron }} />
+          {s.tag}
+        </div>
+
+        <h1 style={{ fontSize: "clamp(36px, 5vw, 64px)", fontWeight: 800, color: "#fff", lineHeight: 1.12, maxWidth: 860, marginBottom: 22, letterSpacing: "-1px", transition: "all 0.5s ease" }}>
+          {s.title[0]}<span style={{ color: COLORS.saffronLight }}>{s.title[1]}</span>{s.title[2]}
+        </h1>
+
+        <p style={{ fontSize: "clamp(15px, 1.6vw, 20px)", color: "rgba(255,255,255,0.55)", maxWidth: 560, lineHeight: 1.75, marginBottom: 40 }}>
+          {s.sub}
+        </p>
+
+        <div style={{ display: "flex", gap: 14, marginBottom: 48, alignItems: "center" }}>
+          <a href="/login" style={{ background: COLORS.saffron, color: COLORS.ink, padding: "16px 40px", borderRadius: 50, textDecoration: "none", fontSize: 16, fontWeight: 800, letterSpacing: "-0.3px" }}>
+            🚀 Start UPSC Prep — Free
+          </a>
+          <a href="#features" style={{ border: "1px solid rgba(255,255,255,0.2)", color: "rgba(255,255,255,0.75)", padding: "16px 32px", borderRadius: 50, textDecoration: "none", fontSize: 15, fontWeight: 600 }}>
+            Explore features ↓
+          </a>
+        </div>
+
+        {/* Slide dots */}
+        <div style={{ display: "flex", gap: 8, marginBottom: 52 }}>
+          {slides.map((_, i) => (
+            <button key={i} onClick={() => setSlide(i)} style={{ height: 7, width: i === slide ? 32 : 7, borderRadius: 50, background: i === slide ? COLORS.saffron : "rgba(255,255,255,0.2)", border: "none", cursor: "pointer", padding: 0, transition: "all 0.3s ease" }} />
+          ))}
+        </div>
+
+        {/* Stats strip */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 1, background: "rgba(255,255,255,0.08)", borderRadius: 20, overflow: "hidden", maxWidth: 720, width: "100%" }}>
+          {[{ n: "10+", l: "Years of PYQs" }, { n: "500+", l: "Mock Tests" }, { n: "Daily", l: "Current Affairs" }, { n: "Free", l: "To Get Started" }].map((st, i) => (
+            <div key={i} style={{ background: "rgba(255,255,255,0.04)", padding: "22px 12px", textAlign: "center" }}>
+              <div style={{ fontSize: 26, fontWeight: 800, color: COLORS.saffronLight }}>{st.n}</div>
+              <div style={{ fontSize: 12, color: "rgba(255,255,255,0.4)", fontWeight: 500, marginTop: 4 }}>{st.l}</div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* FEATURES */}
+      <section id="features" style={{ padding: "100px 40px", background: COLORS.cream }}>
+        <div style={{ maxWidth: 1140, margin: "0 auto" }}>
+          <div style={{ textAlign: "center", marginBottom: 60 }}>
+            <div style={{ display: "inline-block", background: "#FEF3E2", color: COLORS.saffron, padding: "4px 14px", borderRadius: 50, fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 16 }}>Features</div>
+            <h2 style={{ fontSize: 38, fontWeight: 800, marginBottom: 14, color: COLORS.ink, letterSpacing: "-0.5px" }}>Everything you need to crack UPSC</h2>
+            <p style={{ color: COLORS.muted, fontSize: 17, maxWidth: 480, margin: "0 auto", lineHeight: 1.7 }}>One platform. All tools. Built specifically for UPSC Civil Services aspirants.</p>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16 }}>
+            {features.map((f, i) => (
+              <div key={i} style={{ background: COLORS.white, borderRadius: 20, padding: 24, border: `1px solid ${COLORS.border}`, cursor: "pointer", transition: "all 0.2s" }}
+                onMouseEnter={e => e.currentTarget.style.transform = "translateY(-3px)"}
+                onMouseLeave={e => e.currentTarget.style.transform = "translateY(0)"}>
+                <div style={{ width: 48, height: 48, borderRadius: 14, background: f.bg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, marginBottom: 14 }}>{f.icon}</div>
+                <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 7, color: COLORS.ink }}>{f.name}</div>
+                <div style={{ color: COLORS.muted, fontSize: 13, lineHeight: 1.6 }}>{f.desc}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ABOUT */}
+      <section id="about" style={{ padding: "100px 40px", background: COLORS.white }}>
+        <div style={{ maxWidth: 1140, margin: "0 auto", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 80, alignItems: "center" }}>
+          <div>
+            <div style={{ display: "inline-block", background: "#FEF3E2", color: COLORS.saffron, padding: "4px 14px", borderRadius: 50, fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 18 }}>About NotesCafe</div>
+            <h2 style={{ fontSize: 36, fontWeight: 800, marginBottom: 18, color: COLORS.ink, letterSpacing: "-0.5px", lineHeight: 1.2 }}>Not a coaching.<br />A smarter way to prepare.</h2>
+            <p style={{ color: COLORS.muted, lineHeight: 1.85, marginBottom: 28, fontSize: 15 }}>
+              NotesCafe is India's premier UPSC preparation platform. We give you the tools — smart notes, current affairs, mock tests, PYQs — so you stay in control of your own preparation.
+            </p>
+            <div style={{ display: "flex", flexDirection: "column", gap: 13, marginBottom: 36 }}>
+              {[
+                "Create & sync notes across all devices, download as PDF",
+                "Daily current affairs curated for Prelims & Mains",
+                "10 years of PYQs filtered by year, subject & topic",
+                "Mock tests customized to your target exam & year",
+                "Calendar reminders for all important UPSC dates",
+              ].map((item, i) => (
+                <div key={i} style={{ display: "flex", gap: 12, alignItems: "flex-start", fontSize: 14, color: COLORS.ink }}>
+                  <div style={{ width: 20, height: 20, borderRadius: "50%", background: "#E8F5E9", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, flexShrink: 0, marginTop: 1 }}>✓</div>
+                  {item}
+                </div>
+              ))}
+            </div>
+            <a href="/login" style={{ background: COLORS.saffron, color: COLORS.ink, padding: "13px 32px", borderRadius: 50, textDecoration: "none", fontSize: 15, fontWeight: 800, display: "inline-block" }}>
+              Start Preparation →
             </a>
           </div>
 
-          {/* Slide Indicators */}
-          <div className="d-flex gap-2 justify-content-center">
-            {slides.map((_, idx) => (
-              <button
-                key={idx}
-                onClick={() => setCurrentSlide(idx)}
-                className="border-0 rounded-pill"
-                style={{
-                  width: currentSlide === idx ? '40px' : '12px',
-                  height: '12px',
-                  background: currentSlide === idx ? '#fbbf24' : 'rgba(255,255,255,0.4)',
-                  transition: 'all 0.3s ease',
-                  cursor: 'pointer'
-                }}
-                aria-label={`Go to slide ${idx + 1}`}
-              />
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* FEATURES SECTION */}
-      <section id="features" className="py-5" style={{
-        background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)'
-      }}>
-        <div className="container">
-          <h2 className="fs-3 fw-bold text-center mb-4 text-warning">
-            Our Armed Forces Preparation Features
-          </h2>
-          <div className="row g-3">
-            {features.slice(0, 5).map((feature, index) => (
-              <div key={index} className="col-lg-2 col-md-4 col-sm-6">
-                <div className="p-3 text-center h-100 rounded-3 hover-card" style={{
-                  background: 'rgba(255, 255, 255, 0.05)',
-                  border: '1px solid rgba(251, 191, 36, 0.2)',
-                  backdropFilter: 'blur(10px)',
-                  transition: 'all 0.3s ease'
-                }}>
-                  <div className="fs-3 mb-2">{feature.icon}</div>
-                  <div className="text-warning fw-semibold mb-1" style={{ fontSize: '0.85rem' }}>{feature.title}</div>
-                  <div className="text-light" style={{ fontSize: '0.7rem' }}>{feature.desc}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-     
-
-      {/* ABOUT SECTION */}
-      <section id="about" className="py-4 bg-white text-black">
-        <div className="container">
-          <div className="row align-items-center g-4">
-            <div className="col-lg-12">
-              <h2 className="fs-3 fw-bold mb-3">Who We Are</h2>
-              <p className="mb-3" style={{ fontSize: '0.95rem' }}>
-                We are India's premier Armed Forces Written Preparation web application for defence aspirants to
-                <strong> create digital notes, practice questions, and track progress</strong> — all in one place. We are <strong>not a coaching institute</strong>.
-                Instead, we give you tools to learn faster, revise better, and stay consistent for Armed Forces success.
-              </p>
-              <ul className="list-unstyled mb-3">
-                <li className="mb-2" style={{ fontSize: '0.85rem' }}>• Keep all your Armed Forces notes synced across devices — download as PDF anytime.</li>
-                <li className="mb-2" style={{ fontSize: '0.85rem' }}>• Create organized notes with rich formatting and search functionality.</li>
-                <li className="mb-2" style={{ fontSize: '0.85rem' }}>• Practice Armed Forces PYQs with detailed performance analytics.</li>
-                <li className="mb-2" style={{ fontSize: '0.85rem' }}>• Track progress with topic mastery & revision reminders for English, GK & Maths.</li>
-                <li className="mb-2" style={{ fontSize: '0.85rem' }}>• Built specifically for Armed Forces Written Preparation — focused, distraction-free study environment.</li>
-              </ul>
-              <div className="d-flex gap-3">
-                <a href="/login" className="btn btn-warning px-4 py-2" style={{ fontSize: '0.9rem' }}>Start CDS Prep</a>
-                <a href="#cds-info" className="btn btn-outline-dark px-4 py-2" style={{ fontSize: '0.9rem' }}>Explore CDS</a>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* CDS INFO SECTION */}
-      <section id="cds-info" className="py-4" style={{
-        background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)'
-      }}>
-        <div className="container text-black">
-          <h2 className="fs-3 fw-bold text-center mb-2">Master Armed Forces with Smart Preparation</h2>
-          <p className="text-center mb-4" style={{ fontSize: '0.95rem' }}>Your gateway to Indian Army, Navy & Air Force through Combined Defence Services</p>
-          
-          <div className="bg-white rounded-3 shadow-lg overflow-hidden">
-            <div className="p-3 text-center text-white" style={{
-              background: 'linear-gradient(135deg, black 0%, #374151 100%)'
-            }}>
-              <div className="fs-4 fw-bold text-warning">CDS</div>
-              <h3 className="fs-5 fw-bold mt-1">Combined Defence Services</h3>
-              <p className="text-light mb-0" style={{ fontSize: '0.85rem' }}>One exam, multiple opportunities across all three Armed Forces</p>
-            </div>
-
-            <div className="p-3 p-md-4">
-              {/* Exam Overview */}
-              <div className="mb-3">
-                <h4 className="fs-6 fw-bold mb-3">📋 Exam Overview</h4>
-                <div className="row g-2">
-                  {[
-                    "🎯 Conducted twice yearly (February & November)",
-                    "📝 Written exam followed by SSB Interview",
-                    "⏰ 2 hours duration for each paper",
-                    "🏆 Join prestigious defence academies",
-                    "👨‍💼 Become a commissioned officer in Armed Forces"
-                  ].map((item, idx) => (
-                    <div key={idx} className="col-md-6 col-lg-4">
-                      <div className="p-2 rounded" style={{ background: 'rgba(251, 191, 36, 0.25)', fontSize: '0.75rem' }}>
-                        {item}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Academies */}
-              <div className="mb-3">
-                <h4 className="fs-6 fw-bold mb-3">🎯 Academies You Can Join</h4>
-                <div className="row g-3">
-                  {branches.map((branch, idx) => (
-                    <div key={idx} className="col-lg-6">
-                      <div className="p-3 rounded h-100" style={{
-                        background: 'linear-gradient(135deg, #fef3c7 0%, #fed7aa 100%)',
-                        border: '2px solid #fcd34d'
-                      }}>
-                        <h5 className="fw-bold mb-1" style={{ fontSize: '0.95rem' }}>{branch.name}</h5>
-                        <p className="text-muted mb-2" style={{ fontSize: '0.75rem' }}>{branch.location}</p>
-                        <div className="badge text-warning fw-semibold mb-2" style={{ background: 'black', fontSize: '0.7rem' }}>
-                          {branch.service}
-                        </div>
-                        <p className="mb-2" style={{ fontSize: '0.8rem' }}>{branch.description}</p>
-                        <div className="bg-warning text-dark px-2 py-1 rounded fw-semibold" style={{ fontSize: '0.75rem' }}>
-                          📚 {branch.subjects}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* SSB Process */}
-              <div className="mb-3">
-                <h4 className="fs-6 fw-bold mb-3">🏅 SSB Selection Process</h4>
-                <div className="p-3 bg-light rounded">
-                  <div className="row g-2">
-                    {[
-                      "Stage 1: Officer Intelligence Rating (OIR) & Picture Perception",
-                      "Stage 2: Psychological Tests, Group Testing & Personal Interview",
-                      "Medical Examination & Final Merit List",
-                      "5-day comprehensive assessment of leadership qualities"
-                    ].map((step, idx) => (
-                      <div key={idx} className="col-md-6">
-                        <div className="d-flex align-items-start gap-2">
-                          <div className="bg-warning text-dark rounded-circle d-flex align-items-center justify-content-center fw-bold" style={{
-                            width: '24px',
-                            height: '24px',
-                            fontSize: '0.7rem',
-                            flexShrink: 0
-                          }}>
-                            {idx + 1}
-                          </div>
-                          <span style={{ fontSize: '0.75rem' }}>{step}</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              {/* CTA */}
-              <div className="text-center">
-                <a href="/login" className="btn btn-dark px-4 py-2 rounded-pill fw-bold" style={{ fontSize: '0.9rem' }}>
-                  🚀 Start CDS Preparation Now
-                </a>
-                <p className="text-muted mt-2 mb-0" style={{ fontSize: '0.75rem' }}>
-                  Digital notes • Practice tests • Study planning
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* BLOG SECTION */}
-      <section id="knowledge" className="py-4 bg-white text-black">
-        <div className="container">
-          <h2 className="fs-3 fw-bold text-center mb-4">Armed Forces Knowledge Hub</h2>
-          <div className="row g-3">
+          {/* UPSC info card */}
+          <div style={{ background: COLORS.ink, borderRadius: 28, padding: 36, color: "#fff" }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.4)", marginBottom: 24, textTransform: "uppercase", letterSpacing: "0.1em" }}>UPSC Civil Services — At a Glance</div>
             {[
-              {
-                title: "CDS in 60 Days — Complete Roadmap",
-                desc: "Subject-wise daily tasks, weekly targets, revision strategy & mock tests for IMA/INA/AFA/OTA."
-              },
-              {
-                title: "SSB Interview Success Guide",
-                desc: "Psychology tests, GTO tasks, PI preparation & what assessors look for in candidates."
-              },
-              {
-                title: "CDS Mathematics Made Easy",
-                desc: "Quick formulas, shortcuts & topic-wise practice for scoring high in Maths section."
-              }
-            ].map((blog, idx) => (
-              <div key={idx} className="col-lg-4">
-                <div className="p-3 h-100 rounded shadow-sm blog-card" style={{
-                  background: '#fef3c7',
-                  border: '2px solid #fcd34d',
-                  transition: 'all 0.3s ease'
-                }}>
-                  <h3 className="fw-bold mb-2" style={{ fontSize: '0.95rem' }}>{blog.title}</h3>
-                  <p className="text-muted mb-2" style={{ fontSize: '0.75rem' }}>{blog.desc}</p>
-                  <a href="#" className="fw-bold text-decoration-none d-inline-flex align-items-center gap-1" style={{ color: '#f59e0b', fontSize: '0.8rem' }}>
-                    Read more <i className="bi bi-arrow-right"></i>
-                  </a>
-                </div>
+              { stage: "Stage 1", name: "Prelims", detail: "GS Paper I + CSAT · Objective MCQ · 400 marks" },
+              { stage: "Stage 2", name: "Mains", detail: "9 Papers · Descriptive · 1750 marks" },
+              { stage: "Stage 3", name: "Interview", detail: "Personality Test · 275 marks" },
+            ].map((st, i) => (
+              <div key={i} style={{ background: "rgba(255,255,255,0.06)", borderRadius: 14, padding: "16px 18px", marginBottom: 10, borderLeft: `3px solid ${COLORS.saffron}`, borderRadius: "0 14px 14px 0" }}>
+                <div style={{ fontSize: 11, color: COLORS.saffronLight, fontWeight: 600, marginBottom: 4 }}>{st.stage}</div>
+                <div style={{ fontWeight: 700, marginBottom: 4, fontSize: 15 }}>{st.name}</div>
+                <div style={{ fontSize: 13, color: "rgba(255,255,255,0.5)" }}>{st.detail}</div>
+              </div>
+            ))}
+            <div style={{ marginTop: 16, padding: "13px", background: "rgba(232,135,26,0.12)", border: "1px solid rgba(232,135,26,0.2)", borderRadius: 12, fontSize: 13, color: COLORS.saffronLight, textAlign: "center", fontWeight: 600 }}>
+              Services: IAS · IPS · IRS · IFS · IFoS
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* RESOURCES */}
+      <section id="resources" style={{ padding: "100px 40px", background: COLORS.ink }}>
+        <div style={{ maxWidth: 1140, margin: "0 auto" }}>
+          <div style={{ textAlign: "center", marginBottom: 60 }}>
+            <div style={{ display: "inline-block", background: "rgba(232,135,26,0.15)", color: COLORS.saffronLight, padding: "4px 14px", borderRadius: 50, fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 16 }}>Resources</div>
+            <h2 style={{ fontSize: 38, fontWeight: 800, color: "#fff", marginBottom: 14, letterSpacing: "-0.5px" }}>All your resources. One platform.</h2>
+            <p style={{ color: "rgba(255,255,255,0.4)", fontSize: 16 }}>Built for UPSC aspirants who want to stay ahead.</p>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}>
+            {[
+              { icon: "📰", title: "Daily Current Affairs", desc: "Day-by-day news coverage curated for Prelims & Mains with PYQ relevance mapping.", bg: "#FEF3E2" },
+              { icon: "📚", title: "Previous Year Papers", desc: "10 years of UPSC PYQs with solutions. Filter by year, subject & topic.", bg: "#E8F5E9" },
+              { icon: "🧪", title: "Mock Tests", desc: "Customizable tests by exam type (Prelims/Mains/State PCS) and year of attempt.", bg: "#EDE7F6" },
+              { icon: "📥", title: "PDF Library", desc: "Download notes, cheat sheets & summary docs for all subjects. Study offline.", bg: "#FFF8E1" },
+              { icon: "💼", title: "Job Notifications", desc: "Latest UPSC & government recruitment announcements — never miss a deadline.", bg: "#FCE4EC" },
+              { icon: "📅", title: "Exam Calendar", desc: "Smart reminders for application deadlines, exam dates and result announcements.", bg: "#E3F2FD" },
+            ].map((r, i) => (
+              <div key={i} style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 20, padding: 26, cursor: "pointer", transition: "all 0.2s" }}
+                onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,0.07)"}
+                onMouseLeave={e => e.currentTarget.style.background = "rgba(255,255,255,0.04)"}>
+                <div style={{ width: 46, height: 46, borderRadius: 13, background: r.bg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, marginBottom: 14 }}>{r.icon}</div>
+                <div style={{ fontWeight: 700, fontSize: 15, color: "#fff", marginBottom: 8 }}>{r.title}</div>
+                <div style={{ color: "rgba(255,255,255,0.4)", fontSize: 13, lineHeight: 1.65 }}>{r.desc}</div>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* CTA STRIP */}
-      <section className="py-3 text-center text-black" style={{
-        background: 'linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%)'
-      }}>
-        <div className="container">
-          <h3 className="fs-5 fw-bold mb-2">Ready to crack CDS with smart preparation?</h3>
-          <p className="mb-3" style={{ fontSize: '0.9rem' }}>Create your free account and start your CDS journey today.</p>
-          <a href="/login" className="btn btn-dark px-4 py-2 rounded-pill fw-bold" style={{ fontSize: '0.9rem' }}>Get Started Free</a>
-        </div>
+      {/* CTA BANNER */}
+      <section style={{ padding: "90px 40px", background: COLORS.saffron, textAlign: "center" }}>
+        <h2 style={{ fontSize: 42, fontWeight: 800, color: COLORS.ink, marginBottom: 14, letterSpacing: "-0.5px" }}>Ready to start your UPSC journey?</h2>
+        <p style={{ color: "rgba(28,18,8,0.65)", fontSize: 17, marginBottom: 36 }}>Join thousands of aspirants preparing smarter with NotesCafe.</p>
+        <a href="/login" style={{ background: COLORS.ink, color: COLORS.saffronLight, padding: "16px 44px", borderRadius: 50, textDecoration: "none", fontSize: 16, fontWeight: 800, display: "inline-block" }}>
+          Get Started — It's Free
+        </a>
       </section>
 
       {/* FOOTER */}
-      <footer id="contact" className="py-4 bg-dark text-white">
-        <div className="container">
-          <div className="row g-3">
-            <div className="col-lg-3">
-              <div className="text-warning fw-bold mb-2" style={{ fontSize: '0.95rem' }}>🚀 The Enlift Hub</div>
-              <p className="text-light mb-0" style={{ fontSize: '0.75rem' }}>
-                India's premier Armed Forces Written Preparation platform. Digital notes, practice tests, study planning — everything you need to crack CDS and join IMA, INA, AFA, or OTA.
-              </p>
+      <footer style={{ background: "#0A0804", padding: "56px 40px 28px", color: "rgba(255,255,255,0.4)" }}>
+        <div style={{ maxWidth: 1140, margin: "0 auto" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr", gap: 48, marginBottom: 48 }}>
+            <div>
+              <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 14 }}>
+                <div style={{ width: 32, height: 32, background: COLORS.saffron, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16 }}>📚</div>
+                <span style={{ fontWeight: 800, fontSize: 17, color: "#fff" }}>NotesCafe</span>
+              </div>
+              <p style={{ fontSize: 13, lineHeight: 1.75, maxWidth: 240 }}>India's premier UPSC preparation platform. Smart notes, current affairs, mock tests & PYQs.</p>
             </div>
-            <div className="col-lg-3">
-              <h4 className="text-warning fw-bold mb-2" style={{ fontSize: '0.9rem' }}>Product</h4>
-              <ul className="list-unstyled">
-                <li className="mb-1"><a href="#features" className="text-light text-decoration-none" style={{ fontSize: '0.75rem' }}>Features</a></li>
-                <li className="mb-1"><a href="#knowledge" className="text-light text-decoration-none" style={{ fontSize: '0.75rem' }}>Knowledge Hub</a></li>
-                <li className="mb-1"><a href="#cds-info" className="text-light text-decoration-none" style={{ fontSize: '0.75rem' }}>CDS Info</a></li>
-                <li className="mb-1"><a href="#" className="text-light text-decoration-none" style={{ fontSize: '0.75rem' }}>Pricing</a></li>
-              </ul>
-            </div>
-            <div className="col-lg-3">
-              <h4 className="text-warning fw-bold mb-2" style={{ fontSize: '0.9rem' }}>Company</h4>
-              <ul className="list-unstyled">
-                <li className="mb-1"><a href="#about" className="text-light text-decoration-none" style={{ fontSize: '0.75rem' }}>About Us</a></li>
-                <li className="mb-1"><a href="#" className="text-light text-decoration-none" style={{ fontSize: '0.75rem' }}>Careers</a></li>
-                <li className="mb-1"><a href="#" className="text-light text-decoration-none" style={{ fontSize: '0.75rem' }}>Terms</a></li>
-                <li className="mb-1"><a href="#" className="text-light text-decoration-none" style={{ fontSize: '0.75rem' }}>Privacy</a></li>
-              </ul>
-            </div>
-            <div className="col-lg-3">
-              <h4 className="text-warning fw-bold mb-2" style={{ fontSize: '0.9rem' }}>Contact</h4>
-              <ul className="list-unstyled">
-                <li className="text-light mb-1" style={{ fontSize: '0.75rem' }}>📧 support@cdsai.in</li>
-                <li className="text-light mb-1" style={{ fontSize: '0.75rem' }}>📞 +91 98765 43210</li>
-                <li className="text-light mb-1" style={{ fontSize: '0.75rem' }}>📍 Pune, Maharashtra, India</li>
-                <li className="pt-2">
-                  <a href="#" className="text-light me-3" style={{ fontSize: '0.85rem' }}>𝕏</a>
-                  <a href="#" className="text-light me-3" style={{ fontSize: '0.85rem' }}>IG</a>
-                  <a href="#" className="text-light" style={{ fontSize: '0.85rem' }}>YT</a>
-                </li>
-              </ul>
-            </div>
+            {[
+              { title: "Product", links: ["Features", "Resources", "UPSC Info", "Pricing"] },
+              { title: "Company", links: ["About", "Careers", "Terms", "Privacy"] },
+              { title: "Support", links: ["Contact Us", "Help Center", "Feedback"] },
+            ].map((col, i) => (
+              <div key={i}>
+                <div style={{ fontWeight: 700, fontSize: 12, color: "#fff", marginBottom: 14, textTransform: "uppercase", letterSpacing: "0.08em" }}>{col.title}</div>
+                {col.links.map(link => (
+                  <a key={link} href="#" style={{ display: "block", fontSize: 13, color: "rgba(255,255,255,0.35)", textDecoration: "none", marginBottom: 10 }}>{link}</a>
+                ))}
+              </div>
+            ))}
           </div>
-          <div className="mt-3 pt-3 border-top border-secondary text-center text-light" style={{ fontSize: '0.7rem' }}>
-            © 2025 The Enlift Hub - Elevate Your Learning Journey. All rights reserved.
+          <div style={{ borderTop: "1px solid rgba(255,255,255,0.07)", paddingTop: 24, textAlign: "center", fontSize: 12 }}>
+            © 2025 NotesCafe — Your UPSC Preparation Companion. All rights reserved.
           </div>
         </div>
       </footer>
-
-      <style jsx>{`
-        .hover-card:hover {
-          background: rgba(255, 255, 255, 0.1) !important;
-          border-color: rgba(251, 191, 36, 0.4) !important;
-          transform: translateY(-5px);
-          box-shadow: 0 10px 30px rgba(251, 191, 36, 0.2);
-        }
-
-        .blog-card:hover {
-          transform: translateY(-5px);
-          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-        }
-
-        .btn:hover {
-          transform: scale(1.05);
-          box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
-        }
-
-        .nav-link:hover {
-          transform: translateY(-2px);
-        }
-
-        @media (max-width: 768px) {
-          .display-3 {
-            font-size: 2rem !important;
-          }
-          .display-5 {
-            font-size: 1.8rem !important;
-          }
-        }
-
-        html {
-          scroll-behavior: smooth;
-        }
-
-        @media (prefers-reduced-motion: reduce) {
-          *, *::before, *::after {
-            animation-duration: 0.01ms !important;
-            transition-duration: 0.01ms !important;
-          }
-        }
-      `}</style>
     </div>
   );
 }

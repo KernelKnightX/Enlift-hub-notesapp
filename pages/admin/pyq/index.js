@@ -42,10 +42,45 @@ const AdminPYQ = () => {
   const [uploadForm, setUploadForm] = useState({
     title: '',
     description: '',
-    examType: '',
+    examType: 'prelims',
+    paper: 'gs1',
+    subject: 'general',
     year: '',
     file: null
   });
+
+  // UPSC Categories
+  const EXAM_TYPES = [
+    { id: 'prelims', label: 'Prelims' },
+    { id: 'mains', label: 'Mains' }
+  ];
+
+  const PAPER_TYPES = [
+    { id: 'gs1', label: 'GS Paper 1', exam: 'prelims' },
+    { id: 'gs2', label: 'GS Paper 2', exam: 'prelims' },
+    { id: 'csat', label: 'CSAT Paper 2', exam: 'prelims' },
+    { id: 'essay', label: 'Essay', exam: 'mains' },
+    { id: 'gs1_mains', label: 'GS Paper 1', exam: 'mains' },
+    { id: 'gs2_mains', label: 'GS Paper 2', exam: 'mains' },
+    { id: 'gs3_mains', label: 'GS Paper 3', exam: 'mains' },
+    { id: 'gs4_mains', label: 'GS Paper 4', exam: 'mains' },
+  ];
+
+  const SUBJECTS = [
+    { id: 'history', label: 'History' },
+    { id: 'geography', label: 'Geography' },
+    { id: 'polity', label: 'Polity' },
+    { id: 'economy', label: 'Economy' },
+    { id: 'science', label: 'Science & Tech' },
+    { id: 'environment', label: 'Environment' },
+    { id: 'current_affairs', label: 'Current Affairs' },
+    { id: 'ethics', label: 'Ethics' },
+    { id: 'international', label: 'International Relations' },
+    { id: 'csat_quant', label: 'CSAT - Quantitative' },
+    { id: 'csat_reasoning', label: 'CSAT - Reasoning' },
+    { id: 'csat_comprehension', label: 'CSAT - Comprehension' },
+    { id: 'general', label: 'General' },
+  ];
 
   // 🔐 Check admin access
   const checkAdmin = async (uid) => {
@@ -117,7 +152,7 @@ const AdminPYQ = () => {
   // 📤 Upload PYQ
   const uploadPyq = async (e) => {
     e.preventDefault();
-    if (!uploadForm.title.trim() || !uploadForm.examType.trim() || !uploadForm.file) {
+    if (!uploadForm.title.trim() || !uploadForm.examType || !uploadForm.file) {
       alert('Please fill all required fields and select a PDF file.');
       return;
     }
@@ -133,7 +168,9 @@ const AdminPYQ = () => {
       const pyqData = {
         title: uploadForm.title.trim(),
         description: uploadForm.description.trim(),
-        examType: uploadForm.examType.trim(),
+        examType: uploadForm.examType,
+        paper: uploadForm.paper,
+        subject: uploadForm.subject,
         year: uploadForm.year.trim(),
         fileName: uploadForm.file.name,
         fileSize: uploadForm.file.size,
@@ -167,7 +204,9 @@ const AdminPYQ = () => {
     setUploadForm({
       title: pyq.title || '',
       description: pyq.description || '',
-      examType: pyq.examType || '',
+      examType: pyq.examType || 'prelims',
+      paper: pyq.paper || 'gs1',
+      subject: pyq.subject || 'general',
       year: pyq.year || '',
       file: null
     });
@@ -200,7 +239,9 @@ const AdminPYQ = () => {
     setUploadForm({
       title: '',
       description: '',
-      examType: '',
+      examType: 'prelims',
+      paper: 'gs1',
+      subject: 'general',
       year: '',
       file: null
     });
@@ -339,7 +380,7 @@ const AdminPYQ = () => {
                       value={uploadForm.title}
                       onChange={(e) => setUploadForm(prev => ({ ...prev, title: e.target.value }))}
                       style={styles.input}
-                      placeholder="e.g., CDS 2023 Paper I"
+                      placeholder="e.g., UPSC Prelims 2023 GS Paper I"
                       required
                     />
                   </div>
@@ -352,14 +393,62 @@ const AdminPYQ = () => {
                       required
                     >
                       <option value="">Select Exam Type</option>
+                      <option value="prelims">UPSC Prelims</option>
+                      <option value="mains">UPSC Mains</option>
                       <option value="CDS">CDS (Combined Defence Services)</option>
                       <option value="AFCAT">AFCAT (Air Force Common Admission Test)</option>
                       <option value="NDA">NDA (National Defence Academy)</option>
-                      <option value="SSB">SSB (Services Selection Board)</option>
+                      <option value="CAPF">CAPF (Central Armed Police Forces)</option>
                       <option value="Other">Other</option>
                     </select>
                   </div>
                 </div>
+                
+                {/* Paper and Subject Selection */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+                  <div>
+                    <label style={styles.label}>Paper *</label>
+                    <select
+                      value={uploadForm.paper}
+                      onChange={(e) => setUploadForm(prev => ({ ...prev, paper: e.target.value }))}
+                      style={styles.input}
+                      required
+                    >
+                      <option value="gs1">GS Paper I (History, Geography, Polity, Economy)</option>
+                      <option value="gs2">GS Paper II (Governance, International Relations)</option>
+                      <option value="gs3">GS Paper III (Science, Technology, Security)</option>
+                      <option value="gs4">GS Paper IV (Ethics, Integrity, Aptitude)</option>
+                      <option value="csat">CSAT (Comprehension, Reasoning, Quantitative)</option>
+                      <option value="essay">Essay Paper</option>
+                      <option value="eng">English (Compulsory)</option>
+                      <option value="hindi">Hindi (Compulsory)</option>
+                      <option value="general">General</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label style={styles.label}>Subject *</label>
+                    <select
+                      value={uploadForm.subject}
+                      onChange={(e) => setUploadForm(prev => ({ ...prev, subject: e.target.value }))}
+                      style={styles.input}
+                      required
+                    >
+                      <option value="history">History</option>
+                      <option value="geography">Geography</option>
+                      <option value="polity">Polity & Governance</option>
+                      <option value="economy">Economy</option>
+                      <option value="science">Science & Technology</option>
+                      <option value="environment">Environment & Ecology</option>
+                      <option value="international">International Relations</option>
+                      <option value="security">Internal Security</option>
+                      <option value="ethics">Ethics</option>
+                      <option value="csat">CSAT</option>
+                      <option value="current">Current Affairs</option>
+                      <option value="general">General</option>
+                    </select>
+                  </div>
+                </div>
+                
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
                   <div>
                     <label style={styles.label}>Year</label>
@@ -420,7 +509,7 @@ const AdminPYQ = () => {
                   <div>
                     <h3 style={{ margin: 0, fontSize: '1.125rem' }}>{pyq.title}</h3>
                     <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '0.25rem' }}>
-                      {pyq.examType} {pyq.year && `• ${pyq.year}`}
+                      {pyq.examType?.toUpperCase()} {pyq.paper && `• ${pyq.paper.toUpperCase()}`} {pyq.subject && `• ${pyq.subject.charAt(0).toUpperCase() + pyq.subject.slice(1)}`} {pyq.year && `• ${pyq.year}`}
                     </div>
                   </div>
                   <div style={{ display: 'flex', gap: '0.5rem' }}>

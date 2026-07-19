@@ -51,9 +51,6 @@ export default function AuthForm() {
           phoneNumber: formData.phoneNumber,
           dateOfBirth: formData.dateOfBirth,
           city: formData.city,
-          hasGivenSSB: formData.hasGivenSSB,
-          ssbAttempts: formData.ssbAttempts,
-          preparingForDefence: formData.preparingForDefence,
           examType: formData.examType,
           targetYear: formData.targetYear,
           isProfileComplete: true

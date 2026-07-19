@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import { storage } from '../../firebase/config'; // Adjust path to your firebase config
-import { ref, listAll, getDownloadURL, getMetadata } from 'firebase/storage';
+import { db } from '../../firebase/config';
+import { collection, query, where, orderBy, getDocs } from 'firebase/firestore';
 import PdfCard from './PdfCard';
 
 export default function PdfList({ onSelectPdf, selectedPdfUrl }) {
@@ -8,97 +8,59 @@ export default function PdfList({ onSelectPdf, selectedPdfUrl }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    fetchPdfsFromFirebase();
-
-    // Optional: Set up periodic refresh to check for new uploads
-    const interval = setInterval(() => {
-      fetchPdfsFromFirebase();
-    }, 30000); // Check every 30 seconds
-
-    return () => clearInterval(interval);
-  }, [fetchPdfsFromFirebase]);
-
-  const fetchPdfsFromFirebase = useCallback(async () => {
+  const fetchPdfsFromFirestore = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
       
-      // Reference to your PDFs folder in Firebase Storage
-      const pdfsRef = ref(storage, 'pdfs'); // Adjust path as needed
-      
-      // List all files in the pdfs folder
-      const result = await listAll(pdfsRef);
-      
-      if (result.items.length === 0) {
-        setPdfs([]);
-        setLoading(false);
-        return;
-      }
+      // Fetch PDFs from Firestore pdfs collection
+      const pdfsRef = collection(db, 'pdfs');
+      const pdfsSnapshot = await getDocs(query(pdfsRef, orderBy('createdAt', 'desc')));
 
-      // Get download URLs and metadata for each file
-      const pdfPromises = result.items.map(async (itemRef, index) => {
-        try {
-          const [downloadURL, metadata] = await Promise.all([
-            getDownloadURL(itemRef),
-            getMetadata(itemRef)
-          ]);
+      const allPdfs = [];
 
-          return {
-            id: `${itemRef.fullPath}-${index}`,
-            name: itemRef.name.replace('.pdf', ''),
-            title: itemRef.name.replace('.pdf', '').replace(/[-_]/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
-            url: downloadURL,
-            size: metadata.size,
-            createdAt: metadata.timeCreated,
-            updatedAt: metadata.updated,
-            contentType: metadata.contentType,
-            pages: null,
-            subject: extractSubjectFromFilename(itemRef.name),
-            description: `PDF document: ${itemRef.name.replace('.pdf', '').replace(/[-_]/g, ' ')}`,
-            fullPath: itemRef.fullPath,
-            bucket: metadata.bucket,
-            customMetadata: metadata.customMetadata || {},
-            fileName: itemRef.name
-          };
-        } catch (fileError) {
-          console.error(`Error processing file ${itemRef.name}:`, fileError);
-          return null;
-        }
+      // Get all PDFs
+      pdfsSnapshot.docs.forEach((pdfDoc) => {
+        const pdfData = pdfDoc.data();
+        allPdfs.push({
+          id: pdfDoc.id,
+          name: pdfData.title,
+          title: pdfData.title,
+          url: pdfData.url,
+          size: pdfData.size,
+          createdAt: pdfData.createdAt?.toDate?.() || new Date(pdfData.createdAt),
+          updatedAt: pdfData.createdAt?.toDate?.() || new Date(pdfData.createdAt),
+          contentType: 'application/pdf',
+          pages: pdfData.pages || null,
+          subject: pdfData.subjectId,
+          subjectId: pdfData.subjectId,
+          description: pdfData.description || pdfData.title,
+          fullPath: pdfData.url,
+        });
       });
 
-      const pdfResults = await Promise.all(pdfPromises);
-      const validPdfs = pdfResults.filter(pdf => pdf !== null);
-      
-      // Sort by creation date (newest first)
-      validPdfs.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      // Sort by upload date (newest first)
+      allPdfs.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
-      setPdfs(validPdfs);
+      setPdfs(allPdfs);
     } catch (err) {
-      console.error('Error fetching PDFs from Firebase Storage:', err);
+      console.error('Error fetching PDFs from Firestore:', err);
       setError(err.message);
     } finally {
       setLoading(false);
     }
   }, []);
 
-  const extractSubjectFromFilename = (filename) => {
-    const name = filename.toLowerCase();
-    
-    if (name.includes('current') && name.includes('affairs')) return 'Current Affairs';
-    if (name.includes('math') || name.includes('mathematics')) return 'Mathematics';
-    if (name.includes('science')) return 'Science';
-    if (name.includes('history')) return 'History';
-    if (name.includes('english')) return 'English';
-    if (name.includes('physics')) return 'Physics';
-    if (name.includes('chemistry')) return 'Chemistry';
-    if (name.includes('biology')) return 'Biology';
-    if (name.includes('geography')) return 'Geography';
-    if (name.includes('economics')) return 'Economics';
-    if (name.includes('political')) return 'Political Science';
-    
-    return 'General';
-  };
+  useEffect(() => {
+    fetchPdfsFromFirestore();
+
+    // Optional: Set up periodic refresh to check for new uploads
+    const interval = setInterval(() => {
+      fetchPdfsFromFirestore();
+    }, 30000); // Check every 30 seconds
+
+    return () => clearInterval(interval);
+  }, [fetchPdfsFromFirestore]);
 
   if (loading) {
     return (
@@ -116,7 +78,7 @@ export default function PdfList({ onSelectPdf, selectedPdfUrl }) {
           borderRadius: '50%',
           animation: 'spin 1s linear infinite'
         }}></div>
-        <p style={{ marginTop: '10px' }}>Loading PDFs from Firebase Storage...</p>
+        <p style={{ marginTop: '10px' }}>Loading PDFs...</p>
         <style jsx>{`
           @keyframes spin {
             0% { transform: rotate(0deg); }
@@ -137,9 +99,9 @@ export default function PdfList({ onSelectPdf, selectedPdfUrl }) {
         borderRadius: '8px',
         margin: '10px'
       }}>
-        <p>Firebase Storage Error: {error}</p>
+        <p>Error loading PDFs: {error}</p>
         <button 
-          onClick={fetchPdfsFromFirebase}
+          onClick={fetchPdfsFromFirestore}
           style={{
             padding: '8px 16px',
             background: '#3b82f6',
@@ -166,12 +128,12 @@ export default function PdfList({ onSelectPdf, selectedPdfUrl }) {
         borderRadius: '8px',
         margin: '10px'
       }}>
-        <p>No PDFs found in Firebase Storage</p>
+        <p>No PDFs found</p>
         <p style={{ fontSize: '14px', marginTop: '10px' }}>
-          Make sure the admin has uploaded PDFs to Firebase Storage.
+          Make sure the admin has uploaded PDFs to the dashboard.
         </p>
         <button 
-          onClick={fetchPdfsFromFirebase}
+          onClick={fetchPdfsFromFirestore}
           style={{
             padding: '6px 12px',
             background: '#10b981',
@@ -209,7 +171,7 @@ export default function PdfList({ onSelectPdf, selectedPdfUrl }) {
           Available PDFs ({pdfs.length})
         </h3>
         <button 
-          onClick={fetchPdfsFromFirebase}
+          onClick={fetchPdfsFromFirestore}
           style={{
             padding: '4px 8px',
             background: '#f3f4f6',

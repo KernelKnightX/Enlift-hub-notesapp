@@ -18,6 +18,12 @@ import {
 } from 'firebase/firestore';
 import Papa from 'papaparse';
 
+const normalizeExamType = (examType) => {
+  const type = examType?.toLowerCase();
+  if (['prelims', 'mains', 'mains-descriptive', 'current-affairs'].includes(type)) return 'upsc';
+  return type || 'upsc';
+};
+
 const AdminMockTests = () => {
   // Auth states
   const [user, setUser] = useState(null);
@@ -37,6 +43,7 @@ const AdminMockTests = () => {
   const [testForm, setTestForm] = useState({
     title: '',
     description: '',
+    examType: 'upsc',
     duration: 60,
     questions: []
   });
@@ -52,7 +59,10 @@ const AdminMockTests = () => {
     question: '',
     options: ['', '', '', ''],
     correctAnswer: 0,
-    explanation: ''
+    explanation: '',
+    subject: 'general',
+    difficulty: 'medium',
+    source: ''
   });
 
   // 🔐 Check admin access
@@ -190,7 +200,10 @@ const AdminMockTests = () => {
       question: '',
       options: ['', '', '', ''],
       correctAnswer: 0,
-      explanation: ''
+      explanation: '',
+      subject: 'general',
+      difficulty: 'medium',
+      source: ''
     });
   };
 
@@ -208,6 +221,7 @@ const AdminMockTests = () => {
     setTestForm({
       title: test.title || '',
       description: test.description || '',
+      examType: normalizeExamType(test.examType),
       duration: test.duration || 60,
       questions: test.questions || []
     });
@@ -233,6 +247,7 @@ const AdminMockTests = () => {
     setTestForm({
       title: '',
       description: '',
+      examType: 'upsc',
       duration: 60,
       questions: []
     });
@@ -240,7 +255,10 @@ const AdminMockTests = () => {
       question: '',
       options: ['', '', '', ''],
       correctAnswer: 0,
-      explanation: ''
+      explanation: '',
+      subject: 'general',
+      difficulty: 'medium',
+      source: ''
     });
     setEditingTest(null);
     setShowCreateForm(false);
@@ -288,7 +306,10 @@ const AdminMockTests = () => {
     let questionNumber = 1;
 
     csvData.forEach((row, index) => {
-      // Expected CSV format: Question,OptionA,OptionB,OptionC,OptionD,CorrectAnswer,Explanation
+      // CSV format: Question,OptionA,OptionB,OptionC,OptionD,CorrectAnswer,Explanation,Subject,Difficulty,Source
+      // Subject values: general, english, mathematics, reasoning, current_affairs, defence_awareness, general_science, history, geography, economy, polity
+      // Difficulty values: easy, medium, hard
+      // Source examples: PYQ 2023, Test Series, NCERT, etc.
       const question = row.Question || row.question || row.QUESTION;
       const optionA = row.OptionA || row.optionA || row.Option_A || row.A;
       const optionB = row.OptionB || row.optionB || row.Option_B || row.B;
@@ -296,6 +317,10 @@ const AdminMockTests = () => {
       const optionD = row.OptionD || row.optionD || row.Option_D || row.D;
       const correctAnswerText = row.CorrectAnswer || row.correctAnswer || row.CORRECT_ANSWER || row.Answer;
       const explanation = row.Explanation || row.explanation || row.EXPLANATION || '';
+      // New fields for UPSC categorization
+      const subject = row.Subject || row.subject || row.SUBJECT || 'general';
+      const difficulty = row.Difficulty || row.difficulty || row.DIFFICULTY || 'medium';
+      const source = row.Source || row.source || row.SOURCE || row.Year || row.year || '';
 
       if (!question || !optionA || !optionB || !optionC || !optionD) {
         console.warn(`Skipping row ${index + 1}: Missing required fields`);
@@ -317,7 +342,10 @@ const AdminMockTests = () => {
         question: question.trim(),
         options: [optionA.trim(), optionB.trim(), optionC.trim(), optionD.trim()],
         correctAnswer: correctAnswerIndex,
-        explanation: explanation.trim()
+        explanation: explanation.trim(),
+        subject: subject.toString().trim().toLowerCase().replace(/\s+/g, '_'),
+        difficulty: difficulty.toString().trim().toLowerCase(),
+        source: source.toString().trim()
       });
 
       questionNumber++;
@@ -401,7 +429,7 @@ const AdminMockTests = () => {
         <div>
           <h1 style={{ margin: 0, fontSize: '1.5rem' }}>📝 Admin - Mock Tests</h1>
           <p style={{ margin: '0.5rem 0 0 0', opacity: 0.9, fontSize: '0.875rem' }}>
-            Create and manage practice tests
+            Create and manage UPSC, NDA, CDS, and AFCAT practice tests
           </p>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
@@ -470,11 +498,13 @@ const AdminMockTests = () => {
                   Your CSV file should have these columns:
                 </p>
                 <code style={{ display: 'block', backgroundColor: '#e0f2fe', padding: '0.5rem', borderRadius: '0.25rem', fontSize: '0.8rem' }}>
-                  Question, OptionA, OptionB, OptionC, OptionD, CorrectAnswer, Explanation
+                  Question, OptionA, OptionB, OptionC, OptionD, CorrectAnswer, Explanation, Subject, Difficulty, Source
                 </code>
                 <p style={{ fontSize: '0.8rem', marginTop: '0.5rem', color: '#0369a1' }}>
                   <strong>CorrectAnswer:</strong> Use A, B, C, or D (case insensitive)<br/>
-                  <strong>Explanation:</strong> Optional field for answer explanation
+                  <strong>Subject:</strong> general, english, mathematics, reasoning, current_affairs, defence_awareness, general_science, history, geography, economy, polity<br/>
+                  <strong>Difficulty:</strong> easy, medium, hard<br/>
+                  <strong>Source:</strong> PYQ 2023, Test Series, NCERT, etc. (optional)
                 </p>
               </div>
 
@@ -596,7 +626,7 @@ const AdminMockTests = () => {
             <form onSubmit={saveTest}>
               {/* Basic Info */}
               <div style={{ marginBottom: '1.5rem' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
                   <div>
                     <label style={styles.label}>Test Title *</label>
                     <input
@@ -604,9 +634,23 @@ const AdminMockTests = () => {
                       value={testForm.title}
                       onChange={(e) => setTestForm(prev => ({ ...prev, title: e.target.value }))}
                       style={styles.input}
-                      placeholder="e.g., UPSC Prelims Practice Test 1"
+                      placeholder="e.g., NDA General Ability Test 1"
                       required
                     />
+                  </div>
+                  <div>
+                    <label style={styles.label}>Exam *</label>
+                    <select
+                      value={testForm.examType}
+                      onChange={(e) => setTestForm(prev => ({ ...prev, examType: e.target.value }))}
+                      style={styles.input}
+                      required
+                    >
+                      <option value="upsc">UPSC</option>
+                      <option value="nda">NDA</option>
+                      <option value="cds">CDS</option>
+                      <option value="afcat">AFCAT</option>
+                    </select>
                   </div>
                   <div>
                     <label style={styles.label}>Duration (minutes) *</label>
@@ -690,6 +734,52 @@ const AdminMockTests = () => {
                     />
                   </div>
 
+                  {/* New Fields: Subject, Difficulty, Source */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+                    <div>
+                      <label style={styles.label}>Subject</label>
+                      <select
+                        value={currentQuestion.subject}
+                        onChange={(e) => setCurrentQuestion(prev => ({ ...prev, subject: e.target.value }))}
+                        style={styles.input}
+                      >
+                        <option value="general">General Awareness</option>
+                        <option value="english">English</option>
+                        <option value="mathematics">Mathematics</option>
+                        <option value="reasoning">Reasoning</option>
+                        <option value="current_affairs">Current Affairs</option>
+                        <option value="defence_awareness">Defence Awareness</option>
+                        <option value="general_science">General Science</option>
+                        <option value="history">History</option>
+                        <option value="geography">Geography</option>
+                        <option value="economy">Indian Economy</option>
+                        <option value="polity">Indian Polity</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label style={styles.label}>Difficulty</label>
+                      <select
+                        value={currentQuestion.difficulty}
+                        onChange={(e) => setCurrentQuestion(prev => ({ ...prev, difficulty: e.target.value }))}
+                        style={styles.input}
+                      >
+                        <option value="easy">Easy</option>
+                        <option value="medium">Medium</option>
+                        <option value="hard">Hard</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label style={styles.label}>Source (e.g., PYQ 2023)</label>
+                      <input
+                        type="text"
+                        value={currentQuestion.source}
+                        onChange={(e) => setCurrentQuestion(prev => ({ ...prev, source: e.target.value }))}
+                        style={styles.input}
+                        placeholder="PYQ 2023 / Test Series"
+                      />
+                    </div>
+                  </div>
+
                   <button type="button" onClick={addQuestion} style={styles.secondaryBtn}>
                     + Add Question
                   </button>
@@ -753,7 +843,7 @@ const AdminMockTests = () => {
                   <div>
                     <h3 style={{ margin: 0, fontSize: '1.125rem' }}>{test.title}</h3>
                     <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '0.25rem' }}>
-                      {test.questions?.length || 0} questions • {test.duration} min
+                      {normalizeExamType(test.examType).toUpperCase()} • {test.questions?.length || 0} questions • {test.duration} min
                     </div>
                   </div>
                   <div style={{ display: 'flex', gap: '0.5rem' }}>

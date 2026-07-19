@@ -4,7 +4,7 @@ import { useAuth } from "../../contexts/AuthContext";
 import { useRouter } from "next/router";
 
 export default function ProfileSetup() {
-  const { user, loading } = useAuth();
+  const { user, authLoading: loading } = useAuth();
   const router = useRouter();
 
   // Redirect to login if not authenticated

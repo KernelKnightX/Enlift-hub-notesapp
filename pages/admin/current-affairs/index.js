@@ -275,7 +275,7 @@ export default function AdminCurrentAffairs() {
                 </div>
 
                 <div className="mb-3">
-                  <label className="form-label fw-semibold">Full Content <span className="text-muted fw-normal">(optional, shown on "Read more")</span></label>
+                  <label className="form-label fw-semibold">Full Content <span className="text-muted fw-normal">(optional, shown on &quot;Read more&quot;)</span></label>
                   <textarea
                     name="content" value={form.content} onChange={handleField}
                     className="form-control" rows={5} placeholder="Detailed article content…"
@@ -350,7 +350,7 @@ export default function AdminCurrentAffairs() {
           <div className="card border-0 shadow-sm">
             <div className="card-body text-center py-5">
               <div style={{ fontSize: "3rem" }}>📰</div>
-              <div className="fw-semibold text-muted mt-2">No articles yet. Click "New Article" to get started.</div>
+              <div className="fw-semibold text-muted mt-2">No articles yet. Click &quot;New Article&quot; to get started.</div>
             </div>
           </div>
         ) : (

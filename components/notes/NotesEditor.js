@@ -191,7 +191,7 @@ export default function NotesEditor({ pdfId, pdfTitle, userId }) {
           1.
         </button>
         <button className="ns-toolbar-btn" title="Quote" onClick={() => insertBlock("blockquote")}>
-          "
+          &quot;
         </button>
         <button className="ns-toolbar-btn" title="Code" onClick={() => execCommand('formatBlock', 'pre')}>
           {'</>'}

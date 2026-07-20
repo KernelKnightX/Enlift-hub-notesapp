@@ -148,7 +148,7 @@ export default function AdminNotifications() {
         <div>
           <h1 className="h5 fw-bold mb-1 text-white">📢 Notifications Manager</h1>
           <div className="small" style={{ color: "rgba(255,255,255,.7)" }}>
-            {notifications.length} total · {activeCount} active on students' dashboard
+            {notifications.length} total · {activeCount} active on students&apos; dashboard
           </div>
         </div>
         <div className="d-flex gap-2">

@@ -75,7 +75,7 @@ export function AuthGuard({ children, user, loading, requireAdmin = false }) {
           <div className="display-1 mb-3">🚫</div>
           <h2 className="h4 mb-3">Access Denied</h2>
           <p className="text-muted mb-4">
-            You don't have permission to access this page.
+            You don&apos;t have permission to access this page.
           </p>
           <button
             className="btn btn-primary"

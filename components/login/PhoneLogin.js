@@ -408,7 +408,7 @@ export default function PhoneLogin({ onLogin, onSwitchToEmail, onSwitchToSignup 
 
         {/* Sign Up Link */}
         <div style={signupTextStyle}>
-          Don't have an account?{' '}
+          Don&apos;t have an account?{' '}
           <button
             type="button"
             onClick={onSwitchToSignup}

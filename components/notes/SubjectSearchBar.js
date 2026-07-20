@@ -252,7 +252,7 @@ export default function SubjectSearchBar({ onSearch, onSubjectSelect, selectedSu
               color: '#6b7280',
               fontSize: '14px'
             }}>
-              No subjects found for "{searchTerm}"
+              No subjects found for &quot;{searchTerm}&quot;
             </div>
           )}
         </div>

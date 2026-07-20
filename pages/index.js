@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import Link from "next/link";
 
 const COLORS = {
   ink: "#1C1208",
@@ -105,7 +106,7 @@ export default function Home() {
               <div style={{ width: 34, height: 34, background: COLORS.saffron, borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 17 }}>📚</div>
               <span style={{ color: "#fff", fontSize: 19, fontWeight: 800, letterSpacing: "-0.4px" }}>NotesCafe</span>
             </div>
-            <a href="/login" style={{ background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.2)", color: "#fff", padding: "7px 18px", borderRadius: 50, fontSize: 13, fontWeight: 600, textDecoration: "none" }}>Login</a>
+            <Link href="/login" style={{ background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.2)", color: "#fff", padding: "7px 18px", borderRadius: 50, fontSize: 13, fontWeight: 600, textDecoration: "none" }}>Login</Link>
           </div>
 
           <div style={{ padding: "24px 20px 0" }}>
@@ -118,7 +119,7 @@ export default function Home() {
             </h1>
             <p style={{ color: "rgba(255,255,255,0.55)", fontSize: 13.5, lineHeight: 1.65, marginBottom: 22 }}>{s.sub}</p>
             <div style={{ display: "flex", gap: 10, marginBottom: 20 }}>
-              <a href="/login" style={{ flex: 1, background: COLORS.saffron, color: COLORS.ink, padding: 14, borderRadius: 14, fontSize: 14, fontWeight: 800, textDecoration: "none", textAlign: "center" }}>Start Free Prep →</a>
+              <Link href="/login" style={{ flex: 1, background: COLORS.saffron, color: COLORS.ink, padding: 14, borderRadius: 14, fontSize: 14, fontWeight: 800, textDecoration: "none", textAlign: "center" }}>Start Free Prep →</Link>
               <button style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", color: "#fff", padding: "14px 18px", borderRadius: 14, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Browse</button>
             </div>
             <div style={{ display: "flex", gap: 6, marginBottom: 20 }}>
@@ -203,9 +204,9 @@ export default function Home() {
           {["Features", "About", "Resources"].map(item => (
             <a key={item} href={`#${item.toLowerCase()}`} style={{ color: scrolled ? COLORS.muted : "rgba(255,255,255,0.75)", textDecoration: "none", fontSize: 14, fontWeight: 500 }}>{item}</a>
           ))}
-          <a href="/login" style={{ background: COLORS.saffron, color: COLORS.ink, padding: "8px 22px", borderRadius: 50, textDecoration: "none", fontSize: 14, fontWeight: 700 }}>
+          <Link href="/login" style={{ background: COLORS.saffron, color: COLORS.ink, padding: "8px 22px", borderRadius: 50, textDecoration: "none", fontSize: 14, fontWeight: 700 }}>
             Login / Register
-          </a>
+          </Link>
         </div>
       </nav>
 
@@ -235,9 +236,9 @@ export default function Home() {
         </p>
 
         <div style={{ display: "flex", gap: 14, marginBottom: 48, alignItems: "center" }}>
-          <a href="/login" style={{ background: COLORS.saffron, color: COLORS.ink, padding: "16px 40px", borderRadius: 50, textDecoration: "none", fontSize: 16, fontWeight: 800, letterSpacing: "-0.3px" }}>
+          <Link href="/login" style={{ background: COLORS.saffron, color: COLORS.ink, padding: "16px 40px", borderRadius: 50, textDecoration: "none", fontSize: 16, fontWeight: 800, letterSpacing: "-0.3px" }}>
             🚀 Start UPSC Prep — Free
-          </a>
+          </Link>
           <a href="#features" style={{ border: "1px solid rgba(255,255,255,0.2)", color: "rgba(255,255,255,0.75)", padding: "16px 32px", borderRadius: 50, textDecoration: "none", fontSize: 15, fontWeight: 600 }}>
             Explore features ↓
           </a>
@@ -290,7 +291,7 @@ export default function Home() {
             <div style={{ display: "inline-block", background: "#FEF3E2", color: COLORS.saffron, padding: "4px 14px", borderRadius: 50, fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 18 }}>About NotesCafe</div>
             <h2 style={{ fontSize: 36, fontWeight: 800, marginBottom: 18, color: COLORS.ink, letterSpacing: "-0.5px", lineHeight: 1.2 }}>Not a coaching.<br />A smarter way to prepare.</h2>
             <p style={{ color: COLORS.muted, lineHeight: 1.85, marginBottom: 28, fontSize: 15 }}>
-              NotesCafe is India's premier UPSC preparation platform. We give you the tools — smart notes, current affairs, mock tests, PYQs — so you stay in control of your own preparation.
+              NotesCafe is India&apos;s premier UPSC preparation platform. We give you the tools — smart notes, current affairs, mock tests, PYQs — so you stay in control of your own preparation.
             </p>
             <div style={{ display: "flex", flexDirection: "column", gap: 13, marginBottom: 36 }}>
               {[
@@ -306,9 +307,9 @@ export default function Home() {
                 </div>
               ))}
             </div>
-            <a href="/login" style={{ background: COLORS.saffron, color: COLORS.ink, padding: "13px 32px", borderRadius: 50, textDecoration: "none", fontSize: 15, fontWeight: 800, display: "inline-block" }}>
+            <Link href="/login" style={{ background: COLORS.saffron, color: COLORS.ink, padding: "13px 32px", borderRadius: 50, textDecoration: "none", fontSize: 15, fontWeight: 800, display: "inline-block" }}>
               Start Preparation →
-            </a>
+            </Link>
           </div>
 
           {/* UPSC info card */}
@@ -365,9 +366,9 @@ export default function Home() {
       <section style={{ padding: "90px 40px", background: COLORS.saffron, textAlign: "center" }}>
         <h2 style={{ fontSize: 42, fontWeight: 800, color: COLORS.ink, marginBottom: 14, letterSpacing: "-0.5px" }}>Ready to start your UPSC journey?</h2>
         <p style={{ color: "rgba(28,18,8,0.65)", fontSize: 17, marginBottom: 36 }}>Join thousands of aspirants preparing smarter with NotesCafe.</p>
-        <a href="/login" style={{ background: COLORS.ink, color: COLORS.saffronLight, padding: "16px 44px", borderRadius: 50, textDecoration: "none", fontSize: 16, fontWeight: 800, display: "inline-block" }}>
-          Get Started — It's Free
-        </a>
+        <Link href="/login" style={{ background: COLORS.ink, color: COLORS.saffronLight, padding: "16px 44px", borderRadius: 50, textDecoration: "none", fontSize: 16, fontWeight: 800, display: "inline-block" }}>
+          Get Started — It&apos;s Free
+        </Link>
       </section>
 
       {/* FOOTER */}
@@ -379,7 +380,7 @@ export default function Home() {
                 <div style={{ width: 32, height: 32, background: COLORS.saffron, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16 }}>📚</div>
                 <span style={{ fontWeight: 800, fontSize: 17, color: "#fff" }}>NotesCafe</span>
               </div>
-              <p style={{ fontSize: 13, lineHeight: 1.75, maxWidth: 240 }}>India's premier UPSC preparation platform. Smart notes, current affairs, mock tests & PYQs.</p>
+              <p style={{ fontSize: 13, lineHeight: 1.75, maxWidth: 240 }}>India&apos;s premier UPSC preparation platform. Smart notes, current affairs, mock tests & PYQs.</p>
             </div>
             {[
               { title: "Product", links: ["Features", "Resources", "UPSC Info", "Pricing"] },

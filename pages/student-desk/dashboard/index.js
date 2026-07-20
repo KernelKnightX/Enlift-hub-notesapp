@@ -389,7 +389,7 @@ function NotificationsCard({ notifications, loading }) {
         ) : notifications.length === 0 ? (
           <div className="notif-empty">
             <div className="notif-empty-icon">🔕</div>
-            <div>No notifications — you're all caught up!</div>
+            <div>No notifications — you&apos;re all caught up!</div>
           </div>
         ) : (
           notifications.map((n) => (
@@ -857,7 +857,7 @@ export default function StudentDashboard() {
                   <div style={{ fontSize: ".72rem", letterSpacing: ".1em", textTransform: "uppercase", color: "var(--gold)", marginBottom: 10, fontWeight: 600 }}>
                     Daily Inspiration
                   </div>
-                  <p className="hero-quote">"{quote.text}"</p>
+                  <p className="hero-quote">&quot;{quote.text}&quot;</p>
                   <div className="hero-quote-author">— {quote.author}</div>
                 </div>
                 <div className="hero-badge">
@@ -890,12 +890,12 @@ export default function StudentDashboard() {
             </div>
 
             {/* Today's Tasks & Study Stats */}
-            <div className="section-label animate delay-2">Today's Progress</div>
+            <div className="section-label animate delay-2">Today&apos;s Progress</div>
             <div className="two-col animate delay-2" style={{ marginBottom: 28 }}>
               {/* Today's Tasks */}
               <div className="card">
                 <div className="card-head">
-                  <span className="card-title">📋 Today's Tasks</span>
+                  <span className="card-title">📋 Today&apos;s Tasks</span>
                   <Link href="/student-desk/planner" style={{ fontSize: '.75rem', color: 'var(--gold)', textDecoration: 'none', fontWeight: 600 }}>View Planner →</Link>
                 </div>
                 <div className="card-body">
@@ -1001,7 +1001,7 @@ export default function StudentDashboard() {
               {/* Daily CA Highlights */}
               <div className="card">
                 <div className="card-head">
-                  <span className="card-title">📰 Today's CA</span>
+                  <span className="card-title">📰 Today&apos;s CA</span>
                   <Link href="/student-desk/current-affairs" style={{ fontSize: '.75rem', color: 'var(--gold)', textDecoration: 'none', fontWeight: 600 }}>View All →</Link>
                 </div>
                 <div className="card-body">

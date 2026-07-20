@@ -177,7 +177,7 @@ export default function ForgotPassword({ onBackToLogin }) {
           <div style={successStyle}>
             <div style={{ fontSize: '24px', marginBottom: '8px' }}>✅</div>
             <p style={{ margin: 0 }}>
-              We've sent a password reset link to <strong>{email}</strong>
+              We&apos;ve sent a password reset link to <strong>{email}</strong>
             </p>
           </div>
         )}
@@ -235,7 +235,7 @@ export default function ForgotPassword({ onBackToLogin }) {
 
         {emailSent && (
           <div style={backTextStyle}>
-            Didn't receive the email?{' '}
+            Didn&apos;t receive the email?{' '}
             <button
               type="button"
               onClick={() => { setEmailSent(false); setEmail(""); }}

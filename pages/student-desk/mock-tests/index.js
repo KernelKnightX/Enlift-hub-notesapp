@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/router';
+import Link from 'next/link';
 import { db } from '../../../firebase/config';
 import {
   collection, query, orderBy, onSnapshot, addDoc, serverTimestamp, getDoc, doc,
@@ -1419,12 +1420,12 @@ useEffect(() => {
                     {userAttempts.length} tests attempted • Best: {Math.max(...userAttempts.map(a => a.score || 0))}%
                   </div>
                 </div>
-                <a href="/student-desk/mock-tests/history" style={{ 
+                <Link href="/student-desk/mock-tests/history" style={{ 
                   padding: '10px 20px', background: 'var(--ink)', color: 'white', 
                   borderRadius: 10, textDecoration: 'none', fontWeight: 600, fontSize: '.85rem' 
                 }}>
                   View Full History →
-                </a>
+                </Link>
               </div>
             )}
 

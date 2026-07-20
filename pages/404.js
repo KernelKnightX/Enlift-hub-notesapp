@@ -79,8 +79,8 @@ export default function Custom404() {
         <div style={numberStyle}>404</div>
         <h1 style={titleStyle}>Page Not Found</h1>
         <p style={descStyle}>
-          Oops! The page you're looking for doesn't exist or has been moved.
-          <br />Let's get you back on track.
+          Oops! The page you&apos;re looking for doesn&apos;t exist or has been moved.
+          <br />Let&apos;s get you back on track.
         </p>
         <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
           <Link href="/" style={buttonPrimaryStyle}>

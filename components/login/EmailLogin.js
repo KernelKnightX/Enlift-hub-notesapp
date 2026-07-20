@@ -314,7 +314,7 @@ export default function EmailLogin({ onLogin, onSwitchToSignup, onSwitchToPhone,
 
         {/* Sign Up Link */}
         <div style={signupTextStyle}>
-          Don't have an account?{' '}
+          Don&apos;t have an account?{' '}
           <button
             type="button"
             onClick={onSwitchToSignup}

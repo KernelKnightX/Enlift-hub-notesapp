@@ -1,590 +1,270 @@
-import React, { useState, useEffect } from "react";
-import { useRouter } from "next/router";
-import { auth, db } from "../../../firebase/config";
-import { doc, setDoc, getDoc } from "firebase/firestore";
-import { toast } from "react-toastify";
-import { Pencil, LogOut, Camera, User, MapPin, GraduationCap, BookOpen, Building2 } from "lucide-react";
-import Sidebar from "../../../components/common/sidebar";
+import { useState } from 'react';
+import StudentLayout from '../../../components/StudentLayout';
+import { useAuth } from '../../../contexts/AuthContext';
+import { motion } from 'framer-motion';
+import {
+  Sparkles, Mail, Phone, MapPin, GraduationCap, Calendar as CalIcon, Award, Flame,
+  BookOpen, ClipboardCheck, ArrowUpRight, Settings, Bell, ChevronRight, Coffee
+} from 'lucide-react';
 
-export default function ProfileSetupSinglePage() {
-  const router = useRouter();
-  const [user, setUser] = useState(null);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const defaultExampleImage = "/images/student-image.png";
-  const [photoPreview, setPhotoPreview] = useState(defaultExampleImage);
-  const [isEditing, setIsEditing] = useState(false);
-  const [form, setForm] = useState({
-    fullName: "",
-    gender: "",
-    dob: "",
-    city: "",
-    district: "",
-    state: "",
-    pincode: "",
-    exam: "",
-    attemptYear: "",
-    medium: "",
-    qualification: "",
-    discipline: "",
-    college: "",
-    coaching: "",
-    coachingName: "",
-    profileImage: "",
-  });
+// Deterministic 60-cell activity heatmap (0-3 intensity) — no Math.random to avoid SSR hydration mismatch
+const HEATMAP = [
+  1,2,0,3,0,3,1,0,1,0,2,2,
+  0,1,1,2,2,0,2,2,3,0,2,3,
+  1,0,0,1,3,2,1,0,0,3,2,1,
+  0,3,3,2,0,3,2,0,1,0,3,0,
+  0,3,0,3,3,3,1,0,2,1,0,2,
+];
 
-  useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged(async (authUser) => {
-      if (!authUser) {
-        router.replace("/login");
-        return;
-      }
-      setUser(authUser);
-      const docRef = doc(db, "users", authUser.uid);
-      const docSnap = await getDoc(docRef);
-      if (docSnap.exists()) {
-        setForm((prev) => ({ ...prev, ...docSnap.data() }));
-        if (docSnap.data().profileImage) setPhotoPreview(docSnap.data().profileImage);
-      }
-    });
-    return () => unsubscribe();
-  }, []);
+export default function ProfilePage() {
+  const { user, logout } = useAuth();
+  const [tab, setTab] = useState('overview');
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setForm({ ...form, [name]: value });
-  };
-
-  const handlePhotoChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const preview = URL.createObjectURL(file);
-      setPhotoPreview(preview);
-      setForm({ ...form, profileImage: preview });
-    }
-  };
-
-  const handleSubmit = async () => {
-    try {
-      await setDoc(doc(db, "users", user.uid), {
-        phone: user.phoneNumber,
-        ...form,
-        updatedAt: new Date(),
-      });
-      toast.success("Profile saved successfully!");
-      setIsEditing(false);
-      router.push("/student-desk/dashboard");
-    } catch (error) {
-      toast.error("Failed to save profile. Try again.");
-      console.error(error);
-    }
-  };
-
-  const handleLogout = async () => {
-    try {
-      await auth.signOut();
-      toast.success('Logged out successfully!');
-      router.push('/login');
-    } catch (error) {
-      console.error('Logout error:', error);
-    }
-  };
+  const u = user || {};
+  const name = u.fullName || 'Priya Sharma';
+  const email = u.email || 'aspirant@notescafe.in';
+  const examLabel = {
+    UPSC_CSE_PRELIMS:'UPSC CSE — Prelims',
+    UPSC_CSE_MAINS:  'UPSC CSE — Mains',
+    UPSC_CAPF:       'UPSC CAPF',
+    UPSC_CDS:        'UPSC CDS',
+    UPSC_IFOS:       'UPSC IFoS',
+    UPSC_ESE:        'UPSC ESE',
+  }[u.examType] || 'UPSC CSE — Prelims';
+  const initials = name.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
 
   return (
-    <>
-      <style jsx>{`
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600;700&display=swap');
-
-        :root {
-          --ink: #0f1923;
-          --ink-2: #2c3e50;
-          --ink-3: #64748b;
-          --paper: #f5f2ee;
-          --paper-2: #ede9e3;
-          --paper-3: #e2ddd6;
-          --gold: #c9a84c;
-          --gold-light: #f0d98a;
-          --emerald: #1a6b4a;
-          --radius: 16px;
-          --shadow: 0 4px 24px rgba(15,25,35,.08);
-          --shadow-lg: 0 12px 40px rgba(15,25,35,.14);
-          --sidebar-w: 260px;
-        }
-
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-
-        body { font-family: 'DM Sans', sans-serif; background: var(--paper); color: var(--ink); }
-        .layout { display: flex; min-height: 100vh; }
-
-        .main { margin-left: var(--sidebar-w); flex: 1; min-width: 0; }
-        
-        /* Topbar */
-        .topbar {
-          position: sticky; top: 0; z-index: 50;
-          background: rgba(245,242,238,.96); backdrop-filter: blur(12px);
-          border-bottom: 1px solid var(--paper-3); padding: 0 28px; height: 56px;
-          display: flex; align-items: center; justify-content: space-between;
-        }
-        .topbar-left { display: flex; align-items: center; gap: 12px; }
-        .hamburger {
-          display: none; width: 36px; height: 36px; border-radius: 8px;
-          border: 1px solid var(--paper-3); background: white;
-          align-items: center; justify-content: center; cursor: pointer; font-size: 1.1rem;
-        }
-        .topbar-title { font-family: 'Playfair Display', serif; font-size: 1.1rem; color: var(--ink); font-weight: 600; }
-        .topbar-right { display: flex; align-items: center; gap: 10px; }
-        .avatar {
-          width: 36px; height: 36px; border-radius: 50%; background: var(--ink); color: var(--gold);
-          display: flex; align-items: center; justify-content: center;
-          font-weight: 700; font-size: .9rem; font-family: 'Playfair Display', serif;
-        }
-
-        /* Content Area */
-        .content { padding: 28px 32px; max-width: 1100px; }
-
-        /* Profile Hero Card */
-        .profile-hero {
-          background: linear-gradient(135deg, var(--ink) 0%, #1a2a38 100%);
-          border-radius: var(--radius);
-          padding: 40px;
-          margin-bottom: 28px;
-          position: relative;
-          overflow: hidden;
-          box-shadow: var(--shadow-lg);
-        }
-        .profile-hero::before {
-          content: '';
-          position: absolute;
-          top: -50%;
-          right: -20%;
-          width: 400px;
-          height: 400px;
-          background: radial-gradient(circle, rgba(201,168,76,0.15) 0%, transparent 70%);
-          pointer-events: none;
-        }
-        .profile-hero::after {
-          content: '';
-          position: absolute;
-          bottom: -30%;
-          left: -10%;
-          width: 300px;
-          height: 300px;
-          background: radial-gradient(circle, rgba(26,107,74,0.2) 0%, transparent 70%);
-          pointer-events: none;
-        }
-        .profile-main {
-          display: flex; align-items: center; gap: 28px;
-          position: relative; z-index: 1;
-        }
-        .profile-avatar-wrap {
-          position: relative;
-          flex-shrink: 0;
-        }
-        .profile-avatar {
-          width: 140px; height: 140px; border-radius: 50%;
-          border: 4px solid var(--gold);
-          object-fit: cover;
-          box-shadow: 0 8px 32px rgba(0,0,0,0.3);
-        }
-        .profile-avatar-edit {
-          position: absolute; bottom: 4px; right: 4px;
-          width: 40px; height: 40px; border-radius: 50%;
-          background: var(--gold); border: 3px solid var(--ink);
-          display: flex; align-items: center; justify-content: center;
-          cursor: pointer; transition: all .2s;
-        }
-        .profile-avatar-edit:hover { transform: scale(1.1); background: var(--gold-light); }
-        .profile-info { flex: 1; }
-        .profile-name {
-          font-family: 'Playfair Display', serif;
-          font-size: 2rem; font-weight: 700; color: white;
-          margin-bottom: 6px;
-        }
-        .profile-greeting { color: var(--gold); font-size: .95rem; font-weight: 500; margin-bottom: 4px; }
-        .profile-phone { color: rgba(255,255,255,.6); font-size: .85rem; }
-        .profile-edit-btn {
-          display: flex; align-items: center; gap: 8px;
-          padding: 10px 20px; border-radius: 10px;
-          border: none; background: var(--gold); color: var(--ink);
-          font-weight: 600; font-size: .85rem; cursor: pointer;
-          transition: all .2s; font-family: 'DM Sans', sans-serif;
-        }
-        .profile-edit-btn:hover { background: var(--gold-light); transform: translateY(-2px); }
-        
-        /* Info Cards Grid */
-        .info-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-          gap: 20px;
-          margin-bottom: 28px;
-        }
-        .info-card {
-          background: white; border-radius: var(--radius);
-          padding: 24px; box-shadow: var(--shadow);
-          border: 1px solid var(--paper-3);
-          transition: all .2s;
-        }
-        .info-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
-        .info-card-header {
-          display: flex; align-items: center; gap: 12px;
-          margin-bottom: 20px; padding-bottom: 14px;
-          border-bottom: 1px solid var(--paper-2);
-        }
-        .info-card-icon {
-          width: 42px; height: 42px; border-radius: 10px;
-          display: flex; align-items: center; justify-content: center;
-          font-size: 1.2rem;
-        }
-        .info-card-icon.personal { background: #eff6ff; color: #3b82f6; }
-        .info-card-icon.address { background: #fff7ed; color: #f97316; }
-        .info-card-icon.exam { background: #f0fdf4; color: #10b981; }
-        .info-card-icon.education { background: #fdf4ff; color: #8b5cf6; }
-        .info-card-title {
-          font-family: 'Playfair Display', serif;
-          font-size: 1.1rem; color: var(--ink); font-weight: 600;
-        }
-        
-        /* Form Grid */
-        .form-grid {
-          display: grid;
-          grid-template-columns: repeat(2, 1fr);
-          gap: 16px;
-        }
-        .form-group { display: flex; flex-direction: column; gap: 6px; }
-        .form-group.full { grid-column: 1 / -1; }
-        .form-label {
-          font-size: .75rem; font-weight: 600; color: var(--ink-3);
-          text-transform: uppercase; letter-spacing: .5px;
-        }
-        .form-input, .form-select {
-          padding: 12px 14px; border-radius: 10px;
-          border: 1.5px solid var(--paper-3);
-          font-size: .9rem; font-family: 'DM Sans', sans-serif;
-          color: var(--ink); background: var(--paper);
-          transition: all .15s; outline: none;
-        }
-        .form-input:focus, .form-select:focus {
-          border-color: var(--gold); background: white;
-          box-shadow: 0 0 0 3px rgba(201,168,76,.12);
-        }
-        .form-input::placeholder { color: var(--ink-3); }
-
-        /* Submit Button */
-        .submit-section {
-          display: flex; justify-content: center; gap: 16px; margin-top: 32px;
-        }
-        .submit-btn {
-          display: flex; align-items: center; gap: 10px;
-          padding: 14px 36px; border-radius: 12px;
-          border: none; background: linear-gradient(135deg, var(--emerald) 0%, #23755a 100%);
-          color: white; font-weight: 600; font-size: 1rem;
-          cursor: pointer; transition: all .2s;
-          font-family: 'DM Sans', sans-serif;
-          box-shadow: 0 4px 16px rgba(26,107,74,.3);
-        }
-        .submit-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(26,107,74,.4); }
-        .cancel-btn {
-          padding: 14px 28px; border-radius: 12px;
-          border: 1.5px solid var(--paper-3); background: white;
-          color: var(--ink-3); font-weight: 500; font-size: 1rem;
-          cursor: pointer; transition: all .2s;
-          font-family: 'DM Sans', sans-serif;
-        }
-        .cancel-btn:hover { border-color: var(--ink-3); color: var(--ink); }
-
-        /* Read-only view */
-        .info-value {
-          font-size: .95rem; color: var(--ink); font-weight: 500;
-          padding: 8px 0; border-bottom: 1px solid var(--paper-2);
-        }
-        .info-value:last-child { border-bottom: none; }
-        .info-label-small {
-          font-size: .7rem; color: var(--ink-3); text-transform: uppercase;
-          letter-spacing: .5px; margin-bottom: 2px;
-        }
-
-        /* Mobile */
-        @media (max-width: 768px) {
-          .main { margin-left: 0; }
-          .hamburger { display: flex; }
-          .content { padding: 20px 16px; }
-          .profile-hero { padding: 24px 20px; }
-          .profile-main { flex-direction: column; text-align: center; }
-          .profile-avatar { width: 110px; height: 110px; }
-          .profile-name { font-size: 1.5rem; }
-          .form-grid { grid-template-columns: 1fr; }
-          .info-grid { grid-template-columns: 1fr; }
-          .topbar { padding: 0 18px; }
-        }
-      `}</style>
-      
-      <div className="layout">
-        <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} onLogout={handleLogout} />
-
-        <main className="main">
-          <header className="topbar">
-            <div className="topbar-left">
-              <button className="hamburger" onClick={() => setSidebarOpen(true)}>☰</button>
-              <div className="topbar-title">My Profile</div>
+    <StudentLayout title="Profile" subtitle="Your desk, your preferences.">
+      {/* Hero */}
+      <div className="card overflow-hidden" data-testid="profile-hero">
+        <div className="relative" style={{ background: 'var(--color-ink)', height: 160 }}>
+          <div style={{
+            position: 'absolute', top: '-20%', right: '-10%', width: 320, height: 320,
+            borderRadius: '50%', background: 'radial-gradient(circle, rgba(178,90,61,0.20), transparent 65%)',
+            filter: 'blur(10px)', pointerEvents: 'none'
+          }} />
+        </div>
+        <div className="px-6 md:px-8 pb-6 md:pb-8 -mt-14 flex flex-col md:flex-row md:items-end gap-6">
+          <div style={{
+            width: 108, height: 108, borderRadius: 22,
+            background: 'var(--color-primary)', color: 'var(--color-bg)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontFamily: 'var(--font-serif)', fontWeight: 500, fontSize: 44,
+            border: '5px solid var(--color-bg)',
+            boxShadow: '0 20px 40px -18px rgba(15,22,19,0.2)'
+          }} data-testid="profile-avatar">
+            {initials}
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="chip chip-primary mb-2">Free tier</div>
+            <div className="font-serif" style={{ fontSize: 34, letterSpacing: '-0.02em', fontWeight: 500 }}>{name}</div>
+            <div className="mt-1 text-[13.5px] flex flex-wrap items-center gap-3" style={{ color: 'var(--color-ink-muted)' }}>
+              <span className="flex items-center gap-1.5"><Mail size={13} strokeWidth={1.5} /> {email}</span>
+              {u.phoneNumber && <span className="flex items-center gap-1.5"><Phone size={13} strokeWidth={1.5} /> {u.phoneNumber}</span>}
+              {u.city && <span className="flex items-center gap-1.5"><MapPin size={13} strokeWidth={1.5} /> {u.city}</span>}
+              <span className="flex items-center gap-1.5"><GraduationCap size={13} strokeWidth={1.5} /> {examLabel} · {u.targetYear || '2026'}</span>
             </div>
-            <div className="topbar-right">
-              <button onClick={handleLogout} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '8px', borderRadius: '8px' }}>
-                <LogOut size={20} color="#64748b" />
+          </div>
+          <div className="flex gap-2 md:ml-auto md:mb-1">
+            <button className="btn btn-ghost" style={{ padding: '0.55rem 1rem', fontSize: 12.5 }} data-testid="profile-settings">
+              <Settings size={14} strokeWidth={1.6} /> Settings
+            </button>
+            <button className="btn btn-primary" data-testid="profile-edit">Edit profile</button>
+          </div>
+        </div>
+      </div>
+
+      {/* Tabs */}
+      <div className="mt-6 flex items-center gap-2" data-testid="profile-tabs">
+        {['overview', 'achievements', 'subscription', 'preferences'].map(t => (
+          <button key={t} onClick={() => setTab(t)}
+                  className="px-4 py-2 rounded-full text-[13px]"
+                  data-testid={`tab-${t}`}
+                  style={{
+                    border: `1px solid ${tab === t ? 'var(--color-primary)' : 'var(--color-border)'}`,
+                    background: tab === t ? 'var(--color-primary)' : 'var(--color-surface)',
+                    color: tab === t ? 'var(--color-bg)' : 'var(--color-ink)',
+                    fontWeight: 600, textTransform: 'capitalize',
+                    transition: 'background-color .15s, color .15s, border-color .15s'
+                  }}>{t}</button>
+        ))}
+      </div>
+
+      {tab === 'overview' && (
+        <>
+          <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4">
+            <StatCard label="Notes written"    value="42" icon={BookOpen} tone="primary" />
+            <StatCard label="Mocks attempted"  value="18" icon={ClipboardCheck} tone="accent" />
+            <StatCard label="Study streak"     value="27" unit="days" icon={Flame} tone="gold" />
+            <StatCard label="Rank in cohort"   value="#124" icon={Award} tone="ink" />
+          </div>
+
+          <div className="mt-6 grid grid-cols-12 gap-4 md:gap-6">
+            <div className="col-span-12 lg:col-span-7 card p-6 md:p-8">
+              <div className="eyebrow mb-2">Activity</div>
+              <div className="font-serif text-[20px]" style={{ letterSpacing: '-0.01em' }}>Your prep this month</div>
+              <div className="mt-6 grid grid-cols-6 md:grid-cols-12 gap-1.5">
+                {HEATMAP.map((level, i) => {
+                  const bg = ['var(--color-surface-alt)', 'rgba(27,59,43,0.25)', 'rgba(27,59,43,0.6)', 'var(--color-primary)'][level];
+                  return <div key={i} style={{ aspectRatio: '1', borderRadius: 5, background: bg }} />;
+                })}
+              </div>
+              <div className="mt-4 flex items-center gap-3 text-[11.5px] font-mono" style={{ color: 'var(--color-ink-muted)' }}>
+                <span>Less</span>
+                {[0,1,2,3].map(l => <span key={l} style={{ width: 12, height: 12, borderRadius: 3, background: ['var(--color-surface-alt)', 'rgba(27,59,43,0.25)', 'rgba(27,59,43,0.6)', 'var(--color-primary)'][l] }} />)}
+                <span>More</span>
+              </div>
+            </div>
+
+            <div className="col-span-12 lg:col-span-5 card p-6 md:p-8"
+                 style={{ background: 'var(--color-ink)', color: 'var(--color-bg)', borderColor: 'transparent' }}>
+              <span className="chip" style={{ background: 'rgba(178,90,61,0.15)', color: '#E8A889', borderColor: 'rgba(178,90,61,0.35)' }}>
+                <Sparkles size={11} /> Upgrade to Plus
+              </span>
+              <div className="mt-4 font-serif text-[22px]" style={{ letterSpacing: '-0.01em' }}>
+                Unlock the full editorial + testing engine.
+              </div>
+              <p className="mt-2 text-[13.5px]" style={{ color: '#B7BFB8' }}>
+                All mocks, all PYQs, weak-topic radar, and priority editorial email.
+              </p>
+              <div className="mt-6 flex items-baseline gap-2">
+                <span className="display-num text-[42px]" style={{ color: 'var(--color-bg)' }}>₹399</span>
+                <span className="text-[13px]" style={{ color: '#8A9993' }}>/ month · Cancel anytime</span>
+              </div>
+              <button className="btn btn-accent mt-5 w-full justify-center" data-testid="profile-upgrade">
+                Start 7-day free trial <ArrowUpRight size={13} />
               </button>
             </div>
-          </header>
+          </div>
+        </>
+      )}
 
-          <div className="content">
-            {/* Profile Hero Card */}
-            <div className="profile-hero">
-              <div className="profile-main">
-                <div className="profile-avatar-wrap">
-                  <img src={photoPreview} alt="Profile" className="profile-avatar" />
-                  <label htmlFor="uploadPhoto" className="profile-avatar-edit">
-                    <Camera size={18} color="#0f1923" />
-                    <input id="uploadPhoto" type="file" accept="image/*" className="d-none" onChange={handlePhotoChange} />
-                  </label>
-                </div>
-                <div className="profile-info">
-                  <div className="profile-greeting">Welcome back,</div>
-                  <h1 className="profile-name">{form.fullName || "Aspirant"}</h1>
-                  <div className="profile-phone">📱 {user?.phoneNumber || "Your registered phone number"}</div>
-                </div>
-                <button className="profile-edit-btn" onClick={() => setIsEditing(!isEditing)}>
-                  <Pencil size={16} />
-                  {isEditing ? "Cancel" : "Edit Profile"}
-                </button>
+      {tab === 'achievements' && (
+        <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4">
+          {[
+            { t:'First Note', s:'Wrote your first study note', icon:BookOpen, unlocked:true },
+            { t:'Consistent 7', s:'7-day study streak', icon:Flame, unlocked:true },
+            { t:'Mock Master', s:'Attempted 10 mocks', unlocked:true, icon:ClipboardCheck },
+            { t:'Editor', s:'Read 30 morning briefs', unlocked:true, icon:Coffee },
+            { t:'Consistent 30', s:'30-day study streak', unlocked:false, icon:Flame },
+            { t:'Ranker', s:'Score in top 10 of a cohort mock', unlocked:false, icon:Award },
+            { t:'Full Coverage', s:'Complete an entire syllabus paper', unlocked:false, icon:GraduationCap },
+            { t:'Century', s:'Write 100 notes', unlocked:false, icon:BookOpen },
+          ].map((a, i) => (
+            <div key={i} className="card card-hover p-5" data-testid={`ach-${i}`}
+                 style={{ opacity: a.unlocked ? 1 : 0.55 }}>
+              <div style={{
+                width: 42, height: 42, borderRadius: 12,
+                background: a.unlocked ? 'var(--color-primary-tint)' : 'var(--color-surface-alt)',
+                color: a.unlocked ? 'var(--color-primary)' : 'var(--color-ink-muted)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 12
+              }}>
+                <a.icon size={18} strokeWidth={1.5} />
+              </div>
+              <div className="font-serif text-[16px]">{a.t}</div>
+              <div className="text-[12.5px] mt-1" style={{ color: 'var(--color-ink-muted)' }}>{a.s}</div>
+              <div className="mt-3 text-[10.5px] font-mono" style={{ color: a.unlocked ? 'var(--color-primary)' : 'var(--color-ink-faint)', letterSpacing: '0.14em' }}>
+                {a.unlocked ? 'UNLOCKED' : 'LOCKED'}
               </div>
             </div>
+          ))}
+        </div>
+      )}
 
-            {isEditing ? (
-              /* Edit Mode - Form Cards */
-              <>
-                <div className="info-grid">
-                  {/* Personal Info Card */}
-                  <div className="info-card">
-                    <div className="info-card-header">
-                      <div className="info-card-icon personal">👤</div>
-                      <div className="info-card-title">Personal Information</div>
-                    </div>
-                    <div className="form-grid">
-                      <div className="form-group">
-                        <label className="form-label">Full Name</label>
-                        <input type="text" name="fullName" className="form-input" value={form.fullName} onChange={handleChange} placeholder="Enter your full name" />
-                      </div>
-                      <div className="form-group">
-                        <label className="form-label">Gender</label>
-                        <select name="gender" className="form-select" value={form.gender} onChange={handleChange}>
-                          <option value="">Select Gender</option>
-                          <option>Male</option>
-                          <option>Female</option>
-                          <option>Other</option>
-                        </select>
-                      </div>
-                      <div className="form-group">
-                        <label className="form-label">Date of Birth</label>
-                        <input type="date" name="dob" className="form-input" value={form.dob} onChange={handleChange} />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Address Card */}
-                  <div className="info-card">
-                    <div className="info-card-header">
-                      <div className="info-card-icon address">📍</div>
-                      <div className="info-card-title">Address Details</div>
-                    </div>
-                    <div className="form-grid">
-                      <div className="form-group">
-                        <label className="form-label">City</label>
-                        <input type="text" name="city" className="form-input" value={form.city} onChange={handleChange} placeholder="City" />
-                      </div>
-                      <div className="form-group">
-                        <label className="form-label">District</label>
-                        <input type="text" name="district" className="form-input" value={form.district} onChange={handleChange} placeholder="District" />
-                      </div>
-                      <div className="form-group">
-                        <label className="form-label">State</label>
-                        <input type="text" name="state" className="form-input" value={form.state} onChange={handleChange} placeholder="State" />
-                      </div>
-                      <div className="form-group">
-                        <label className="form-label">PIN Code</label>
-                        <input type="text" name="pincode" className="form-input" value={form.pincode} onChange={handleChange} placeholder="PIN" />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Exam Details Card */}
-                  <div className="info-card">
-                    <div className="info-card-header">
-                      <div className="info-card-icon exam">📋</div>
-                      <div className="info-card-title">Exam Information</div>
-                    </div>
-                    <div className="form-grid">
-                      <div className="form-group">
-                        <label className="form-label">Exam</label>
-                        <select name="exam" className="form-select" value={form.exam} onChange={handleChange}>
-                          <option value="">Select Exam</option>
-                          <option>UPSC CSE</option>
-                          <option>UPPSC PCS</option>
-                          <option>SSC CGL</option>
-                          <option>State PSC</option>
-                        </select>
-                      </div>
-                      <div className="form-group">
-                        <label className="form-label">Attempt Year</label>
-                        <input type="text" name="attemptYear" className="form-input" value={form.attemptYear} onChange={handleChange} placeholder="e.g., 2026" />
-                      </div>
-                      <div className="form-group">
-                        <label className="form-label">Medium</label>
-                        <select name="medium" className="form-select" value={form.medium} onChange={handleChange}>
-                          <option value="">Select Medium</option>
-                          <option>English</option>
-                          <option>Hindi</option>
-                        </select>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Education Card */}
-                  <div className="info-card">
-                    <div className="info-card-header">
-                      <div className="info-card-icon education">🎓</div>
-                      <div className="info-card-title">Education & Coaching</div>
-                    </div>
-                    <div className="form-grid">
-                      <div className="form-group">
-                        <label className="form-label">Qualification</label>
-                        <select name="qualification" className="form-select" value={form.qualification} onChange={handleChange}>
-                          <option value="">Select Qualification</option>
-                          <option>Graduation</option>
-                          <option>Post-Graduation</option>
-                          <option>PhD</option>
-                        </select>
-                      </div>
-                      <div className="form-group">
-                        <label className="form-label">Discipline</label>
-                        <input type="text" name="discipline" className="form-input" value={form.discipline} onChange={handleChange} placeholder="e.g., Arts, Science" />
-                      </div>
-                      <div className="form-group">
-                        <label className="form-label">College/University</label>
-                        <input type="text" name="college" className="form-input" value={form.college} onChange={handleChange} placeholder="Your college name" />
-                      </div>
-                      <div className="form-group">
-                        <label className="form-label">Enrolled in Coaching?</label>
-                        <select name="coaching" className="form-select" value={form.coaching} onChange={handleChange}>
-                          <option value="">Select</option>
-                          <option>Yes</option>
-                          <option>No</option>
-                        </select>
-                      </div>
-                      {form.coaching === "Yes" && (
-                        <div className="form-group full">
-                          <label className="form-label">Coaching Name</label>
-                          <input type="text" name="coachingName" className="form-input" value={form.coachingName} onChange={handleChange} placeholder="Name of your coaching institute" />
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="submit-section">
-                  <button className="cancel-btn" onClick={() => setIsEditing(false)}>Cancel</button>
-                  <button className="submit-btn" onClick={handleSubmit}>
-                    <Pencil size={18} /> Save Changes
-                  </button>
-                </div>
-              </>
-            ) : (
-              /* View Mode - Read Only Cards */
-              <div className="info-grid">
-                <div className="info-card">
-                  <div className="info-card-header">
-                    <div className="info-card-icon personal"><User size={20} /></div>
-                    <div className="info-card-title">Personal Details</div>
-                  </div>
-                  <div className="info-value">
-                    <div className="info-label-small">Full Name</div>
-                    {form.fullName || "Not provided"}
-                  </div>
-                  <div className="info-value">
-                    <div className="info-label-small">Gender</div>
-                    {form.gender || "Not specified"}
-                  </div>
-                  <div className="info-value">
-                    <div className="info-label-small">Date of Birth</div>
-                    {form.dob || "Not provided"}
-                  </div>
-                </div>
-
-                <div className="info-card">
-                  <div className="info-card-header">
-                    <div className="info-card-icon address"><MapPin size={20} /></div>
-                    <div className="info-card-title">Location</div>
-                  </div>
-                  <div className="info-value">
-                    <div className="info-label-small">City</div>
-                    {form.city || "Not provided"}
-                  </div>
-                  <div className="info-value">
-                    <div className="info-label-small">District</div>
-                    {form.district || "Not provided"}
-                  </div>
-                  <div className="info-value">
-                    <div className="info-label-small">State</div>
-                    {form.state || "Not provided"}
-                  </div>
-                  <div className="info-value">
-                    <div className="info-label-small">PIN Code</div>
-                    {form.pincode || "Not provided"}
-                  </div>
-                </div>
-
-                <div className="info-card">
-                  <div className="info-card-header">
-                    <div className="info-card-icon exam"><BookOpen size={20} /></div>
-                    <div className="info-card-title">Exam Details</div>
-                  </div>
-                  <div className="info-value">
-                    <div className="info-label-small">Target Exam</div>
-                    {form.exam || "Not selected"}
-                  </div>
-                  <div className="info-value">
-                    <div className="info-label-small">Attempt Year</div>
-                    {form.attemptYear || "Not specified"}
-                  </div>
-                  <div className="info-value">
-                    <div className="info-label-small">Medium</div>
-                    {form.medium || "Not selected"}
-                  </div>
-                </div>
-
-                <div className="info-card">
-                  <div className="info-card-header">
-                    <div className="info-card-icon education"><GraduationCap size={20} /></div>
-                    <div className="info-card-title">Education</div>
-                  </div>
-                  <div className="info-value">
-                    <div className="info-label-small">Qualification</div>
-                    {form.qualification || "Not selected"}
-                  </div>
-                  <div className="info-value">
-                    <div className="info-label-small">Discipline</div>
-                    {form.discipline || "Not provided"}
-                  </div>
-                  <div className="info-value">
-                    <div className="info-label-small">College</div>
-                    {form.college || "Not provided"}
-                  </div>
-                  <div className="info-value">
-                    <div className="info-label-small">Coaching</div>
-                    {form.coaching === "Yes" ? form.coachingName || "Enrolled" : "Self Study"}
-                  </div>
-                </div>
-              </div>
-            )}
+      {tab === 'subscription' && (
+        <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="card p-6 md:p-8">
+            <div className="chip">Current plan</div>
+            <div className="font-serif text-[26px] mt-4">Free forever</div>
+            <p className="mt-2 text-[13.5px]" style={{ color: 'var(--color-ink-muted)' }}>
+              You&apos;re on the free tier. Enjoy daily brief, free notes and selected videos.
+            </p>
+            <ul className="mt-5 text-[13.5px] flex flex-col gap-2.5">
+              <li>✓ Daily current affairs</li>
+              <li>✓ Free notes library</li>
+              <li>✓ Basic planner</li>
+              <li className="opacity-40">— Mock tests unlimited</li>
+              <li className="opacity-40">— Full PYQ archive</li>
+            </ul>
           </div>
-        </main>
+          <div className="card p-6 md:p-8" style={{ background: 'var(--color-primary)', color: 'var(--color-bg)', borderColor: 'transparent' }}>
+            <span className="chip" style={{ background: 'rgba(255,255,255,0.08)', color: '#B7BFB8', borderColor: 'rgba(255,255,255,0.15)' }}>
+              Upgrade
+            </span>
+            <div className="font-serif text-[26px] mt-4">Notes Cafe Plus</div>
+            <p className="mt-2 text-[13.5px]" style={{ color: '#B7BFB8' }}>₹399 / month · cancel anytime.</p>
+            <ul className="mt-5 text-[13.5px] flex flex-col gap-2.5">
+              <li>✓ Unlimited mocks (Prelims, Mains, CAPF, CDS)</li>
+              <li>✓ Complete PYQ archive with solutions</li>
+              <li>✓ Weak-topic radar & AI review</li>
+              <li>✓ PDF export + cross-device sync</li>
+            </ul>
+            <button className="btn btn-accent mt-6 w-full justify-center" data-testid="sub-upgrade">
+              Start 7-day free trial <ArrowUpRight size={13} />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {tab === 'preferences' && (
+        <div className="mt-6 card p-6 md:p-8" data-testid="prefs">
+          <div className="eyebrow mb-3">Notifications</div>
+          {[
+            { t:'Daily morning brief email', d:'Get the brief in your inbox at 7:15 AM IST', on:true },
+            { t:'Mock reminder push',        d:'Weekly reminders to attempt your next mock', on:true },
+            { t:'Streak nudges',              d:'A gentle nudge if you miss a day (never spam)', on:false },
+            { t:'Editorial newsletter',       d:'A monthly long-read on prep strategy', on:true },
+          ].map((p, i) => (
+            <div key={i} className="py-4 flex items-start justify-between"
+                 style={{ borderTop: i > 0 ? '1px solid var(--color-border)' : 'none' }}>
+              <div>
+                <div className="text-[14px] font-medium">{p.t}</div>
+                <div className="text-[12.5px] mt-0.5" style={{ color: 'var(--color-ink-muted)' }}>{p.d}</div>
+              </div>
+              <Toggle initial={p.on} />
+            </div>
+          ))}
+        </div>
+      )}
+    </StudentLayout>
+  );
+}
+
+function StatCard({ label, value, unit, icon: Icon, tone }) {
+  const color = tone === 'accent' ? 'var(--color-accent)' :
+                tone === 'gold'   ? 'var(--color-gold)' :
+                tone === 'ink'    ? 'var(--color-ink-muted)' :
+                'var(--color-primary)';
+  return (
+    <div className="card p-5">
+      <div className="flex items-center justify-between mb-3">
+        <span className="eyebrow">{label}</span>
+        <Icon size={16} strokeWidth={1.5} style={{ color }} />
       </div>
-    </>
+      <div className="flex items-baseline gap-1.5">
+        <span className="display-num text-[38px]" style={{ color: 'var(--color-ink)' }}>{value}</span>
+        {unit && <span className="text-[13px]" style={{ color: 'var(--color-ink-muted)' }}>{unit}</span>}
+      </div>
+    </div>
+  );
+}
+
+function Toggle({ initial }) {
+  const [on, setOn] = useState(initial);
+  return (
+    <button onClick={() => setOn(o => !o)} aria-pressed={on}
+            style={{
+              width: 42, height: 24, borderRadius: 999,
+              background: on ? 'var(--color-primary)' : 'var(--color-border-strong)',
+              border: 'none', cursor: 'pointer', position: 'relative',
+              transition: 'background .18s ease',
+            }}>
+      <span style={{
+        position: 'absolute', top: 3, left: on ? 21 : 3,
+        width: 18, height: 18, borderRadius: 999, background: '#fff',
+        transition: 'left .18s ease',
+        boxShadow: '0 2px 4px rgba(0,0,0,0.15)'
+      }} />
+    </button>
   );
 }

@@ -112,7 +112,9 @@ export const AuthProvider = ({ children }) => {
       await sendPasswordResetEmail(auth, email);
       return true;
     } catch (error) {
-      console.error('Forgot password error:', error);
+      if (typeof console !== 'undefined' && console.warn) {
+        console.warn('[auth] forgot password failed:', error.code || error.message);
+      }
       
       let errorMessage;
       switch (error.code) {
@@ -145,9 +147,11 @@ export const AuthProvider = ({ children }) => {
       await result.user.getIdToken(true);
       return result.user;
     } catch (error) {
-      console.error('Login error:', error);
-      console.error('Error code:', error.code);
-      console.error('Error message:', error.message);
+      // Use console.warn (not console.error) for expected auth failures — otherwise
+      // Next.js dev overlay treats it as an unhandled runtime error and blocks the UI.
+      if (typeof console !== 'undefined' && console.warn) {
+        console.warn('[auth] login failed:', error.code || error.message);
+      }
       
       // Provide more specific error messages
       let errorMessage;
@@ -204,8 +208,9 @@ export const AuthProvider = ({ children }) => {
 
       return result.user;
     } catch (error) {
-      console.error('Signup error:', error);
-      console.error('Signup error code:', error.code);
+      if (typeof console !== 'undefined' && console.warn) {
+        console.warn('[auth] signup failed:', error.code || error.message);
+      }
       
       let errorMessage;
       switch (error.code) {
@@ -246,7 +251,9 @@ export const AuthProvider = ({ children }) => {
       setVerificationId(verificationId);
       return verificationId;
     } catch (error) {
-      console.error('Send OTP error:', error);
+      if (typeof console !== 'undefined' && console.warn) {
+        console.warn('[auth] send OTP failed:', error.code || error.message);
+      }
       
       let errorMessage;
       switch (error.code) {
@@ -285,7 +292,9 @@ export const AuthProvider = ({ children }) => {
       await result.user.getIdToken(true);
       return result.user;
     } catch (error) {
-      console.error('Verify OTP error:', error);
+      if (typeof console !== 'undefined' && console.warn) {
+        console.warn('[auth] verify OTP failed:', error.code || error.message);
+      }
       
       let errorMessage;
       switch (error.code) {

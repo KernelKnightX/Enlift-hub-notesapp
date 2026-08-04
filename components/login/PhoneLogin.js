@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import { useAuth } from "../../contexts/AuthContext";
-import { getAuth, RecaptchaVerifier } from "firebase/auth";
+import { app } from "../../firebase/config";
 
 export default function PhoneLogin({ onLogin, onSwitchToEmail, onSwitchToSignup }) {
   const { sendPhoneOtp, verifyPhoneOtp } = useAuth();
@@ -16,27 +16,29 @@ export default function PhoneLogin({ onLogin, onSwitchToEmail, onSwitchToSignup 
   useEffect(() => {
     // Initialize reCAPTCHA when component mounts
     if (typeof window !== 'undefined' && recaptchaContainerRef.current) {
-      try {
-        const auth = getAuth();
-        
-        // Clear any existing reCAPTCHA
-        recaptchaContainerRef.current.innerHTML = '';
-        
-        // Create new reCAPTCHA verifier
-        window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
-          'size': 'invisible',
-          'callback': (response) => {
-            // reCAPTCHA solved
-            console.log('reCAPTCHA solved');
-          },
-          'expired-callback': () => {
-            // reCAPTCHA expired
-            setError('Verification expired. Please try again.');
-          }
-        });
-      } catch (err) {
-        console.error('Error initializing reCAPTCHA:', err);
-      }
+      (async () => {
+        try {
+          const { RecaptchaVerifier, getAuth } = await import('firebase/auth');
+
+          const auth = getAuth(app);
+
+          // Clear any existing reCAPTCHA
+          recaptchaContainerRef.current.innerHTML = '';
+
+          // Create new reCAPTCHA verifier
+          window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+            'size': 'invisible',
+            'callback': (response) => {
+              console.log('reCAPTCHA solved');
+            },
+            'expired-callback': () => {
+              setError('Verification expired. Please try again.');
+            }
+          });
+        } catch (err) {
+          console.error('Error initializing reCAPTCHA:', err);
+        }
+      })();
     }
   }, []);
 
@@ -76,7 +78,8 @@ export default function PhoneLogin({ onLogin, onSwitchToEmail, onSwitchToSignup 
       
       // Check if recaptchaVerifier exists
       if (!window.recaptchaVerifier) {
-        const auth = getAuth();
+        const { RecaptchaVerifier, getAuth } = await import('firebase/auth');
+        const auth = getAuth(app);
         window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
           'size': 'invisible'
         });

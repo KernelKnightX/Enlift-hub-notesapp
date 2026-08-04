@@ -1,0 +1,47 @@
+{
+  "folders": [
+    {
+      "name": "Enlift Hub",
+      "path": "."
+    }
+  ],
+  "settings": {
+    "workbench.startupEditor": "readme",
+    "workbench.editor.labelFormat": "medium",
+    "explorer.compactFolders": false,
+    "explorer.fileNesting.enabled": true,
+    "explorer.fileNesting.expand": false,
+    "explorer.fileNesting.patterns": {
+      "package.json": "package-lock.json, yarn.lock",
+      "next.config.mjs": "next-env.d.ts, jsconfig.json",
+      "eslint.config.mjs": ".editorconfig",
+      ".env.example": ".env.local",
+      "firebase.json": "firestore.rules, firestore.indexes.json, firebase-service-account.json",
+      "jest.config.js": "jest.setup.js, __tests__, __mocks__",
+      "README.md": "CONTRIBUTING.md, DEPLOYMENT.md, VERCEL_DEPLOYMENT_GUIDE.md, FIXES_SUMMARY.md"
+    },
+    "files.exclude": {
+      "**/.DS_Store": true,
+      "**/.next": true,
+      "**/.vercel": true,
+      "**/coverage": true,
+      "**/node_modules": true,
+      "**/abc": true,
+      "**/env": true,
+      "**/venv": true,
+      "**/.venv": true
+    },
+    "search.exclude": {
+      "**/.next": true,
+      "**/.vercel": true,
+      "**/coverage": true,
+      "**/node_modules": true,
+      "**/abc": true,
+      "**/env": true,
+      "**/venv": true,
+      "**/.venv": true,
+      "package-lock.json": true,
+      "yarn.lock": true
+    }
+  }
+}

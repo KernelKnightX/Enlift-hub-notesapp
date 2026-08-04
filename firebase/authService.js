@@ -1,7 +1,5 @@
 // firebase/authService.js
-import { 
-  RecaptchaVerifier, 
-  signInWithPhoneNumber,
+import {
   onAuthStateChanged,
   signOut as firebaseSignOut
 } from 'firebase/auth';
@@ -12,7 +10,7 @@ import {
   updateDoc,
   serverTimestamp 
 } from 'firebase/firestore';
-import { auth, db } from './config';
+import { auth, db, app } from './config';
 
 class AuthService {
   constructor() {
@@ -28,17 +26,25 @@ class AuthService {
   }
 
   // Initialize reCAPTCHA verifier
-  initializeRecaptcha(containerId = 'recaptcha-container') {
+  async initializeRecaptcha(containerId = 'recaptcha-container') {
+    if (typeof window === 'undefined') return null;
     if (!this.recaptchaVerifier) {
-      this.recaptchaVerifier = new RecaptchaVerifier(auth, containerId, {
-        size: 'invisible',
-        callback: (response) => {
-          // reCAPTCHA resolved
-        },
-        'expired-callback': () => {
-          this.recaptchaVerifier = null;
-        }
-      });
+      try {
+        const { RecaptchaVerifier, getAuth } = await import('firebase/auth');
+        const clientAuth = getAuth(app);
+        this.recaptchaVerifier = new RecaptchaVerifier(clientAuth, containerId, {
+          size: 'invisible',
+          callback: (response) => {
+            // reCAPTCHA resolved
+          },
+          'expired-callback': () => {
+            this.recaptchaVerifier = null;
+          }
+        });
+      } catch (err) {
+        console.error('Failed to initialize RecaptchaVerifier:', err);
+        this.recaptchaVerifier = null;
+      }
     }
     return this.recaptchaVerifier;
   }
@@ -53,12 +59,13 @@ class AuthService {
 
       // Initialize reCAPTCHA if not already done
       if (!this.recaptchaVerifier) {
-        this.initializeRecaptcha();
+        await this.initializeRecaptcha();
       }
 
+      const { signInWithPhoneNumber } = await import('firebase/auth');
       const confirmationResult = await signInWithPhoneNumber(
-        auth, 
-        formattedPhone, 
+        auth,
+        formattedPhone,
         this.recaptchaVerifier
       );
 

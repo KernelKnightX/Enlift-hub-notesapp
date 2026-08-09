@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '@/contexts/AuthContext';
 import {
   Coffee, ArrowRight, ArrowLeft, Eye, EyeOff, Mail, Lock, User, Phone, MapPin,
   Calendar as CalIcon, GraduationCap, AlertCircle, Loader2, CheckCircle2, Sparkles

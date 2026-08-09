@@ -2,16 +2,16 @@ import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { motion, AnimatePresence } from 'framer-motion';
-import useFirestoreCollection from '../hooks/useFirestoreCollection';
+import useFirestoreCollection from '@/hooks/useFirestoreCollection';
 import {
   ArrowUpRight, ArrowRight, BookOpen, Newspaper, ClipboardCheck, FileText,
   Calendar, GraduationCap, Sparkles, Play, ChevronRight, ChevronDown, Star,
   CheckCircle2, TrendingUp, Users, Clock, Menu, X, Coffee, Compass,
   MapPin, Flag, PenLine, Target, Award, Bell
 } from 'lucide-react';
-import Navbar from '../components/common/NavBar';
-import LandingFooter from '../components/landing/LandingFooter';
-import SplashLoader from '../components/landing/SplashLoader';
+import Navbar from '@/components/common/NavBar';
+import LandingFooter from '@/components/landing/LandingFooter';
+import SplashLoader from '@/components/landing/SplashLoader';
 
 /* ─────────────────────────────────────────────
    MOCK DATA — TODO(firestore): each block below marks
@@ -193,7 +193,7 @@ export default function Home() {
 
   return (
     <>
-      <AnimatePresence>{!ready && <SplashLoader key="splash" />}</AnimatePresence>
+      <AnimatePresence initial={false}>{!ready && <SplashLoader key="splash" />}</AnimatePresence>
 
       <div style={{ opacity: ready ? 1 : 0, transition: 'opacity .5s ease' }}>
 

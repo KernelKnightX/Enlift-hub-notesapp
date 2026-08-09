@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ChevronDown, ChevronRight, CheckCircle2, Circle, FileText, Search } from 'lucide-react';
+import { ChevronDown, CheckCircle2, Circle, FileText, Search, Landmark, Download, Plus, Minus } from 'lucide-react';
 
 const EXAMS = [
   { id: 'cse-p', name: 'UPSC CSE — Prelims' },
@@ -58,87 +58,175 @@ const SYLLABUS = {
   ],
 };
 
+const GOV = {
+  navy: '#0B2A4A',
+  navyDeep: '#081E38',
+  navyMid: '#0D3258',
+  maroon: '#7A1F2B',
+  saffron: '#FF9933',
+  green: '#138808',
+  bg: '#F5F3EC',
+  surface: '#FFFFFF',
+  border: '#C7BFA8',
+  ink: '#1A1A1A',
+  inkMuted: '#5A5648',
+  link: '#0B4C8C',
+  serif: "Georgia, 'Times New Roman', Times, serif",
+  sans: "Arial, Helvetica, sans-serif",
+  mono: "'Courier New', Courier, monospace",
+};
+
+const ROMAN = ['i', 'ii', 'iii', 'iv', 'v', 'vi', 'vii', 'viii', 'ix', 'x', 'xi', 'xii', 'xiii', 'xiv', 'xv'];
+
+const TRICOLOR = `linear-gradient(to right, ${GOV.saffron} 0%, ${GOV.saffron} 33.33%, #ffffff 33.33%, #ffffff 66.66%, ${GOV.green} 66.66%, ${GOV.green} 100%)`;
+
 export default function SyllabusContent() {
   const [exam, setExam] = useState('cse-p');
   const [q, setQ] = useState('');
   const [open, setOpen] = useState({});
-  const list = SYLLABUS[exam];
+  const [fontScale, setFontScale] = useState(1);
+  const [contrast, setContrast] = useState(false);
 
+  const list = SYLLABUS[exam];
   const totalTopics = list.reduce((sum, paper) => sum + paper.topics.length, 0);
   const doneTopics = list.reduce((sum, paper) => sum + paper.topics.filter((topic) => topic.done).length, 0);
+  const totalHours = list.reduce((sum, paper) => sum + paper.hours, 0);
   const pct = Math.round((doneTopics / totalTopics) * 100);
 
+  const c = contrast
+    ? { bg: '#050505', surface: '#111111', border: '#4A4A4A', ink: '#F2F2F2', inkMuted: '#C9C9C9' }
+    : { bg: GOV.bg, surface: GOV.surface, border: GOV.border, ink: GOV.ink, inkMuted: GOV.inkMuted };
+
   return (
-    <main className="max-w-7xl mx-auto px-4 py-10 md:px-8 lg:px-12">
-      <div className="mb-8">
-        <div className="inline-flex items-center rounded-full px-3 py-1 text-[11px] font-mono uppercase tracking-[0.2em]" style={{ background: 'var(--color-primary-tint)', color: 'var(--color-primary)' }}>
-          Resources
-        </div>
-        <h1 className="mt-4 text-3xl md:text-4xl font-serif" style={{ letterSpacing: '-0.02em' }}>UPSC Syllabus</h1>
-        <p className="mt-3 max-w-2xl text-[15px]" style={{ color: 'var(--color-ink-muted)' }}>
-          A public reference for exam structure, paper patterns, and core topics across UPSC preparation tracks.
-        </p>
-      </div>
+    <div style={{ background: c.bg, minHeight: '100vh', fontFamily: GOV.sans, fontSize: `${fontScale * 100}%` }}>
+      {/* tricolor strip */}
+      <div style={{ height: 4, background: TRICOLOR }} />
 
-      <div className="grid grid-cols-12 gap-4 md:gap-6">
-        <div className="col-span-12 lg:col-span-8 card p-6 md:p-8" style={{ background: 'var(--color-primary)', color: 'var(--color-bg)', borderColor: 'transparent' }}>
-          <div className="eyebrow" style={{ color: '#B7BFB8' }}>Coverage · {EXAMS.find((entry) => entry.id === exam)?.name}</div>
-          <div className="mt-4 flex items-end gap-6">
-            <div>
-              <div className="display-num" style={{ fontSize: 72, lineHeight: 1, color: 'var(--color-bg)' }}>
-                {pct}
-                <span style={{ fontSize: 28, color: '#B7BFB8' }}>%</span>
-              </div>
-              <div className="mt-1 text-[13px]" style={{ color: '#B7BFB8' }}>
-                {doneTopics} of {totalTopics} topics complete
-              </div>
-            </div>
-            <div className="flex-1 pb-1">
-              <div className="w-full h-1.5 rounded-full overflow-hidden" style={{ background: '#2A3631' }}>
-                <div style={{ width: `${pct}%`, height: '100%', background: 'var(--color-accent)' }} />
-              </div>
-              <div className="mt-3 text-[12px]" style={{ color: '#B7BFB8' }}>
-                {list.length} papers · Estimated {list.reduce((sum, paper) => sum + paper.hours, 0)} hours of focused revision
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="col-span-12 lg:col-span-4 card p-6">
-          <div className="eyebrow mb-3">Exam</div>
-          <div className="flex flex-col gap-2">
-            {EXAMS.map((entry) => (
-              <button
-                key={entry.id}
-                onClick={() => setExam(entry.id)}
-                className="text-left px-3.5 py-2.5 rounded-xl text-[13.5px] flex items-center justify-between"
-                style={{
-                  border: `1px solid ${exam === entry.id ? 'var(--color-primary)' : 'var(--color-border)'}`,
-                  background: exam === entry.id ? 'var(--color-primary-tint)' : 'var(--color-surface)',
-                  color: exam === entry.id ? 'var(--color-primary)' : 'var(--color-ink)',
-                  fontWeight: exam === entry.id ? 600 : 500,
-                }}
-              >
-                {entry.name}
-                <ChevronRight size={13} strokeWidth={1.5} />
+      {/* accessibility bar */}
+      <div style={{ background: GOV.navyDeep }}>
+        <div className="max-w-7xl mx-auto px-4" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', height: 30, fontSize: 11, color: '#B9C4D4' }}>
+          <span>Screen Reader Access&nbsp; | &nbsp;Skip to Main Content</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+              <button aria-label="Decrease font size" onClick={() => setFontScale((s) => Math.max(0.85, +(s - 0.1).toFixed(2)))} style={{ color: '#B9C4D4', display: 'flex', alignItems: 'center' }}>
+                <Minus size={10} strokeWidth={2} />
               </button>
-            ))}
+              <button onClick={() => setFontScale(1)} style={{ color: '#B9C4D4', fontWeight: 700 }}>A</button>
+              <button aria-label="Increase font size" onClick={() => setFontScale((s) => Math.min(1.3, +(s + 0.1).toFixed(2)))} style={{ color: '#B9C4D4', display: 'flex', alignItems: 'center' }}>
+                <Plus size={10} strokeWidth={2} />
+              </button>
+            </span>
+            <span style={{ opacity: 0.5 }}>|</span>
+            <button onClick={() => setContrast((v) => !v)} style={{ color: '#B9C4D4' }}>
+              {contrast ? 'Normal Contrast' : 'High Contrast'}
+            </button>
           </div>
         </div>
       </div>
 
-      <div className="mt-6 flex items-center gap-2 px-3 py-2.5 rounded-xl" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
-        <Search size={15} strokeWidth={1.5} style={{ color: 'var(--color-ink-muted)' }} />
-        <input
-          value={q}
-          onChange={(event) => setQ(event.target.value)}
-          placeholder="Search topics…"
-          className="bg-transparent outline-none text-[14px] flex-1"
-          style={{ color: 'var(--color-ink)' }}
-        />
-      </div>
+      {/* main header */}
+      <header style={{ background: GOV.navy, borderBottom: `3px solid ${GOV.maroon}` }}>
+        <div className="max-w-7xl mx-auto px-4" style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '16px 0' }}>
+          <div style={{ width: 54, height: 54, borderRadius: '50%', border: `2px solid ${GOV.saffron}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <Landmark size={24} strokeWidth={1.5} color="#EDEFF2" />
+          </div>
+          <div>
+            <div style={{ color: '#fff', fontFamily: GOV.serif, fontSize: 21, fontWeight: 700, letterSpacing: 0.4 }}>
+              UNION PUBLIC SERVICE COMMISSION
+            </div>
+            <div style={{ color: '#AEBBCB', fontSize: 12, letterSpacing: 0.6, marginTop: 2 }}>
+              GOVERNMENT OF INDIA &nbsp;·&nbsp; संघ लोक सेवा आयोग
+            </div>
+          </div>
+        </div>
+        <div style={{ background: GOV.navyMid }}>
+          <div className="max-w-7xl mx-auto px-4" style={{ fontSize: 12, color: '#9FAFC4', padding: '6px 0' }}>
+            Home &nbsp;›&nbsp; Examinations &nbsp;›&nbsp; <span style={{ color: '#fff' }}>Syllabus</span>
+          </div>
+        </div>
+      </header>
 
-      <div className="mt-6 card overflow-hidden">
+      <main className="max-w-7xl mx-auto px-4" style={{ padding: '32px 16px 48px' }}>
+        {/* notification plate */}
+        <div style={{ border: `1px solid ${c.border}`, background: c.surface, padding: '20px 24px', marginBottom: 24 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8, fontSize: 12, fontFamily: GOV.mono, color: c.inkMuted, borderBottom: `1px dashed ${c.border}`, paddingBottom: 12, marginBottom: 16 }}>
+            <span>No. UPSC/SYL-{exam.toUpperCase()}/2026</span>
+            <span>Dated: 04 August, 2026</span>
+          </div>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontFamily: GOV.serif, fontSize: 23, fontWeight: 700, letterSpacing: 0.4, color: c.ink, textTransform: 'uppercase' }}>
+              Examination Syllabus &amp; Scheme
+            </div>
+            <div style={{ fontFamily: GOV.serif, fontStyle: 'italic', fontSize: 13, color: c.inkMuted, marginTop: 6 }}>
+              (For the information of candidates)
+            </div>
+          </div>
+        </div>
+
+        {/* overview table */}
+        <table style={{ width: '100%', borderCollapse: 'collapse', border: `1px solid ${c.border}`, marginBottom: 28 }}>
+          <thead>
+            <tr style={{ background: GOV.maroon }}>
+              {['Papers', 'Total Topics', 'Completed', 'Progress', 'Est. Hours'].map((h) => (
+                <th key={h} style={{ color: '#fff', fontFamily: GOV.serif, fontSize: 12.5, fontWeight: 700, textAlign: 'left', padding: '10px 14px', letterSpacing: 0.3 }}>
+                  {h}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ background: c.surface }}>
+              <td style={{ padding: '10px 14px', borderTop: `1px solid ${c.border}`, color: c.ink, fontSize: 14 }}>{list.length}</td>
+              <td style={{ padding: '10px 14px', borderTop: `1px solid ${c.border}`, color: c.ink, fontSize: 14 }}>{totalTopics}</td>
+              <td style={{ padding: '10px 14px', borderTop: `1px solid ${c.border}`, color: c.ink, fontSize: 14 }}>{doneTopics}</td>
+              <td style={{ padding: '10px 14px', borderTop: `1px solid ${c.border}`, color: c.ink, fontSize: 14, fontWeight: 700 }}>{pct}%</td>
+              <td style={{ padding: '10px 14px', borderTop: `1px solid ${c.border}`, color: c.ink, fontSize: 14 }}>{totalHours}</td>
+            </tr>
+          </tbody>
+        </table>
+
+        {/* exam tabs */}
+        <div style={{ display: 'flex', flexWrap: 'wrap', borderBottom: `2px solid ${GOV.navy}`, marginBottom: 24 }}>
+          {EXAMS.map((entry) => (
+            <button
+              key={entry.id}
+              onClick={() => setExam(entry.id)}
+              style={{
+                padding: '10px 18px',
+                fontFamily: GOV.serif,
+                fontSize: 13.5,
+                fontWeight: exam === entry.id ? 700 : 500,
+                color: exam === entry.id ? '#fff' : c.ink,
+                background: exam === entry.id ? GOV.navy : 'transparent',
+                border: `1px solid ${GOV.navy}`,
+                borderBottom: exam === entry.id ? 'none' : `1px solid ${GOV.navy}`,
+                marginRight: 4,
+                marginBottom: -1,
+                cursor: 'pointer',
+              }}
+            >
+              {entry.name}
+            </button>
+          ))}
+        </div>
+
+        {/* search */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 22 }}>
+          <label style={{ fontFamily: GOV.serif, fontSize: 13, fontWeight: 700, color: c.ink, whiteSpace: 'nowrap' }}>
+            Search Topics:
+          </label>
+          <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 8, border: `1px solid ${c.border}`, padding: '8px 12px', background: c.surface }}>
+            <Search size={14} strokeWidth={1.6} style={{ color: c.inkMuted }} />
+            <input
+              value={q}
+              onChange={(event) => setQ(event.target.value)}
+              placeholder="Type a keyword…"
+              style={{ background: 'transparent', outline: 'none', fontSize: 13.5, flex: 1, color: c.ink }}
+            />
+          </div>
+        </div>
+
+        {/* papers */}
         {list.map((paper, index) => {
           const paperTopics = paper.topics.filter((topic) => q.trim() === '' || topic.t.toLowerCase().includes(q.toLowerCase()));
           const paperDone = paper.topics.filter((topic) => topic.done).length;
@@ -146,46 +234,71 @@ export default function SyllabusContent() {
           const isOpen = open[index] ?? true;
 
           return (
-            <div key={index} style={{ borderTop: index > 0 ? '1px solid var(--color-border)' : 'none' }}>
-              <button className="w-full p-5 md:p-6 flex items-center gap-5 text-left" onClick={() => setOpen((previous) => ({ ...previous, [index]: !isOpen }))}>
-                <ChevronDown size={17} strokeWidth={1.6} style={{ color: 'var(--color-ink-muted)', transform: isOpen ? 'rotate(0deg)' : 'rotate(-90deg)', transition: 'transform .2s ease' }} />
-                <div className="flex-1 min-w-0">
-                  <div className="font-serif text-[19px]" style={{ letterSpacing: '-0.01em' }}>{paper.paper}</div>
-                  <div className="text-[12px] mt-0.5" style={{ color: 'var(--color-ink-muted)' }}>
-                    {paperDone} of {paper.topics.length} topics · ~{paper.hours} hours
-                  </div>
-                </div>
-                <div className="hidden md:block w-[160px]">
-                  <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--color-border)' }}>
-                    <div style={{ width: `${paperPct}%`, height: '100%', background: 'var(--color-primary)' }} />
-                  </div>
-                  <div className="text-[11px] mt-1.5 text-right font-mono" style={{ color: 'var(--color-ink-muted)' }}>{paperPct}%</div>
-                </div>
+            <div key={index} style={{ border: `1px solid ${c.border}`, marginBottom: 16 }}>
+              <button
+                onClick={() => setOpen((previous) => ({ ...previous, [index]: !isOpen }))}
+                style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 14, padding: '13px 16px', background: GOV.maroon, textAlign: 'left', cursor: 'pointer' }}
+              >
+                <span style={{ fontFamily: GOV.mono, fontSize: 12, color: '#E9C9CB', width: 22 }}>{String(index + 1).padStart(2, '0')}</span>
+                <span style={{ flex: 1, minWidth: 0, fontFamily: GOV.serif, fontSize: 15.5, fontWeight: 700, color: '#fff' }}>{paper.paper}</span>
+                <span style={{ fontFamily: GOV.mono, fontSize: 11, color: '#E9C9CB', whiteSpace: 'nowrap' }}>
+                  {paperDone}/{paper.topics.length} &nbsp;·&nbsp; {paper.hours} hrs
+                </span>
+                <ChevronDown size={16} strokeWidth={1.8} style={{ color: '#fff', transform: isOpen ? 'rotate(0deg)' : 'rotate(-90deg)', transition: 'transform .2s ease', flexShrink: 0 }} />
               </button>
+
+              <div style={{ background: '#EDE9DB', height: 4 }}>
+                <div style={{ width: `${paperPct}%`, height: '100%', background: GOV.green }} />
+              </div>
 
               <AnimatePresence initial={false}>
                 {isOpen && (
-                  <motion.ul initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.25 }} className="overflow-hidden">
+                  <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }} style={{ overflow: 'hidden', background: c.surface }}>
                     {paperTopics.map((topic, topicIndex) => (
-                      <li key={topicIndex} className="px-6 md:px-14 py-3 flex items-center gap-3" style={{ borderTop: '1px dashed var(--color-border)' }}>
-                        {topic.done ? <CheckCircle2 size={17} strokeWidth={1.6} style={{ color: 'var(--color-primary)' }} /> : <Circle size={17} strokeWidth={1.5} style={{ color: 'var(--color-border-strong)' }} />}
-                        <span className="flex-1 text-[14px]" style={{ color: topic.done ? 'var(--color-ink-faint)' : 'var(--color-ink-2)' }}>{topic.t}</span>
-                        <span className="text-[11px] font-mono" style={{ color: 'var(--color-ink-faint)' }}>
-                          <FileText size={12} strokeWidth={1.5} style={{ display: 'inline-block', marginRight: 4 }} />
-                          Open note
+                      <div
+                        key={topicIndex}
+                        style={{ display: 'flex', alignItems: 'flex-start', gap: 12, padding: '11px 18px', borderTop: `1px dashed ${c.border}` }}
+                      >
+                        <span style={{ fontFamily: GOV.serif, fontSize: 12.5, color: c.inkMuted, width: 24, flexShrink: 0 }}>
+                          ({ROMAN[topicIndex] ?? topicIndex + 1})
                         </span>
-                      </li>
+                        {topic.done ? (
+                          <CheckCircle2 size={16} strokeWidth={1.8} style={{ color: GOV.green, marginTop: 2, flexShrink: 0 }} />
+                        ) : (
+                          <Circle size={16} strokeWidth={1.6} style={{ color: c.border, marginTop: 2, flexShrink: 0 }} />
+                        )}
+                        <span style={{ flex: 1, fontSize: 13.5, color: topic.done ? c.inkMuted : c.ink, lineHeight: 1.5 }}>{topic.t}</span>
+                        <a href="#" style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: GOV.link, textDecoration: 'underline', whiteSpace: 'nowrap', flexShrink: 0 }}>
+                          <FileText size={12} strokeWidth={1.6} />
+                          Notes
+                        </a>
+                      </div>
                     ))}
                     {paperTopics.length === 0 && (
-                      <li className="px-6 md:px-14 py-4 text-[13px]" style={{ color: 'var(--color-ink-muted)' }}>No topics match search.</li>
+                      <div style={{ padding: '16px 18px', fontSize: 13, color: c.inkMuted }}>No topics match your search.</div>
                     )}
-                  </motion.ul>
+                    <div style={{ padding: '10px 18px', borderTop: `1px dashed ${c.border}` }}>
+                      <a href="#" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12, color: GOV.link, textDecoration: 'underline' }}>
+                        <Download size={13} strokeWidth={1.6} />
+                        Download detailed syllabus (PDF)
+                      </a>
+                    </div>
+                  </motion.div>
                 )}
               </AnimatePresence>
             </div>
           );
         })}
-      </div>
-    </main>
+      </main>
+
+      {/* footer */}
+      <footer style={{ background: GOV.navy, marginTop: 24 }}>
+        <div style={{ height: 4, background: TRICOLOR }} />
+        <div className="max-w-7xl mx-auto px-4" style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', gap: 8, padding: '14px 16px', fontSize: 11, color: '#9FAFC4' }}>
+          <span>Website Content Owned by Union Public Service Commission</span>
+          <span>Last Reviewed: 04-08-2026 &nbsp;|&nbsp; Best Viewed in 1280 x 800 Resolution</span>
+        </div>
+      </footer>
+    </div>
   );
 }

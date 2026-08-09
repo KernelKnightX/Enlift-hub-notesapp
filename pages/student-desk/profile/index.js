@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import StudentLayout from '../../../components/common/StudentLayout';
-import { useAuth } from '../../../contexts/AuthContext';
+import StudentLayout from '@/layouts/StudentLayout';
+import { useAuth } from '@/contexts/AuthContext';
 import { motion } from 'framer-motion';
 import {
   Mail, Phone, MapPin, GraduationCap, Calendar as CalIcon, Award, Flame,

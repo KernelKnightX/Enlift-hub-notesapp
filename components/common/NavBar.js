@@ -1,38 +1,28 @@
 import { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { Menu, X, ChevronDown, FileText } from 'lucide-react';
+import { Menu, X, ChevronDown } from 'lucide-react';
+import { publicNavigation } from '@/config/publicNavigation';
 
-const MAIN_LINKS = [
-  { label: 'Home', href: '/' },
-  { label: 'Courses', href: '/courses' },
-  { label: 'Resources', href: '/resources', hasDropdown: true },
-  { label: 'Current Affairs', href: '/current-affairs' },
-  { label: 'Practice', href: '/practice' },
-  { label: 'Contact', href: '/contact' },
-];
+const NAV_ITEMS = publicNavigation;
 
-const RESOURCES = [
-  { label: 'Syllabus', href: '/resources/syllabus' },
-  { label: 'Books', href: '/resources/books' },
-  { label: 'PYQs', href: '/resources/pyqs' },
-  { label: 'Maps', href: '/maps' },
-  { label: 'UPSC Age Calculator', href: '/resources/age-calculator' },
-  { label: 'UPSC Marks Calculator', href: '/resources/marks-calculator' },
-  { label: 'UPSC Photo & Signature Image Resizer', href: '/resources/photo-resizer' },
-  { label: '8th Pay Commission Calculator', href: '/resources/8th-pay-commission-calculator' },
-  { label: 'UPSC Study Planner', href: '/resources/study-planner' },
-  { label: 'Pomodoro Timer', href: '/resources/pomodoro-timer' },
-  { label: 'Mains Answer Writing Booklet', href: '/resources/mains-answer-writing-booklet' },
-];
+// Previously some routes were hidden by default. Keep this empty so navbar shows on all pages
+// except where the top-level app explicitly skips it (e.g., /student-desk).
+const HIDDEN_PREFIXES = []; 
+
+function isHiddenPath(pathname) {
+  return HIDDEN_PREFIXES.some(
+    (prefix) => pathname === prefix || pathname.startsWith(prefix + '/')
+  );
+}
 
 export default function NavBar({ showOnLanding = false }) {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [resourcesOpen, setResourcesOpen] = useState(false);
-  const [mobileResourcesOpen, setMobileResourcesOpen] = useState(false);
+  const [activeDropdown, setActiveDropdown] = useState(null);
+  const [mobileOpenLabel, setMobileOpenLabel] = useState(null);
   const router = useRouter();
-  const dropdownRef = useRef(null);
+  const navRef = useRef(null);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -41,16 +31,14 @@ export default function NavBar({ showOnLanding = false }) {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  // Close dropdown on outside click, and on Escape
+  // Close dropdown on outside click / Escape
   useEffect(() => {
-    if (!resourcesOpen) return;
+    if (!activeDropdown) return;
     const onClickOutside = (e) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
-        setResourcesOpen(false);
-      }
+      if (navRef.current && !navRef.current.contains(e.target)) setActiveDropdown(null);
     };
     const onKeyDown = (e) => {
-      if (e.key === 'Escape') setResourcesOpen(false);
+      if (e.key === 'Escape') setActiveDropdown(null);
     };
     document.addEventListener('mousedown', onClickOutside);
     document.addEventListener('keydown', onKeyDown);
@@ -58,21 +46,28 @@ export default function NavBar({ showOnLanding = false }) {
       document.removeEventListener('mousedown', onClickOutside);
       document.removeEventListener('keydown', onKeyDown);
     };
-  }, [resourcesOpen]);
+  }, [activeDropdown]);
 
-  // Close dropdown on route change
+  // Close everything on route change
   useEffect(() => {
-    const handleRouteChange = () => setResourcesOpen(false);
+    const handleRouteChange = () => {
+      setActiveDropdown(null);
+      setMobileOpenLabel(null);
+      setOpen(false);
+    };
     router.events.on('routeChangeStart', handleRouteChange);
     return () => router.events.off('routeChangeStart', handleRouteChange);
   }, [router.events]);
 
-  // Don't render on landing unless explicitly requested
-  if (router.pathname === '/' && !showOnLanding) return null;
+  const isDashboard = isHiddenPath(router.pathname);
+  const isLandingHidden = router.pathname === '/' && !showOnLanding;
+
+  if (isDashboard || isLandingHidden) return null;
 
   return (
     <>
       <nav
+        ref={navRef}
         style={{
           position: 'fixed', top: 0, left: 0, right: 0, zIndex: 60,
           background: scrolled ? 'rgba(253,252,247,0.92)' : 'transparent',
@@ -93,60 +88,67 @@ export default function NavBar({ showOnLanding = false }) {
           </Link>
 
           <div className="hidden lg:flex items-center gap-7">
-            {MAIN_LINKS.map(link => {
-              const isActive = link.href === '/' ? router.pathname === '/' : router.pathname.startsWith(link.href);
+            {NAV_ITEMS.map(item => {
+              const isActive = item.href === '/' ? router.pathname === '/' : router.pathname.startsWith(item.href);
 
-              if (link.hasDropdown) {
+              if (!item.children) {
                 return (
-                  <div key={link.href} className="relative" ref={dropdownRef}>
-                    <button
-                      onClick={() => setResourcesOpen(o => !o)}
-                      className="text-[14px] font-medium flex items-center gap-1"
-                      style={{ color: isActive || resourcesOpen ? 'var(--color-primary)' : 'var(--color-ink-muted)', background: 'transparent', border: 'none', cursor: 'pointer', padding: 0 }}
-                      aria-expanded={resourcesOpen}
-                      aria-haspopup="true"
-                    >
-                      {link.label}
-                      <ChevronDown
-                        size={14}
-                        strokeWidth={1.6}
-                        style={{ transition: 'transform .15s ease', transform: resourcesOpen ? 'rotate(180deg)' : 'none' }}
-                      />
-                    </button>
-
-                    {resourcesOpen && (
-                      <div
-                        className="absolute left-0 mt-3 w-72 card p-2"
-                        style={{ maxHeight: '70vh', overflowY: 'auto', zIndex: 70 }}
-                        data-testid="resources-dropdown"
-                      >
-                        {RESOURCES.map(r => (
-                          <Link
-                            key={r.href}
-                            href={r.href}
-                            onClick={() => setResourcesOpen(false)}
-                            className="flex items-center gap-2.5 px-2 py-2 text-sm rounded-md"
-                            style={{ color: 'var(--color-ink)' }}
-                          >
-                            <FileText size={16} strokeWidth={1.5} style={{ color: 'var(--color-ink-muted)', flexShrink: 0 }} />
-                            <span>{r.label}</span>
-                          </Link>
-                        ))}
-                      </div>
-                    )}
-                  </div>
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className="text-[14px] font-medium"
+                    style={{ color: isActive ? 'var(--color-primary)' : 'var(--color-ink-muted)' }}
+                  >
+                    {item.label}
+                  </Link>
                 );
               }
 
+              const isOpen = activeDropdown === item.label;
+
               return (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className="text-[14px] font-medium"
-                  style={{ color: isActive ? 'var(--color-primary)' : 'var(--color-ink-muted)' }}
-                >
-                  {link.label}
-                </Link>
+                <div key={item.href} className="relative">
+                  <button
+                    onClick={() => setActiveDropdown(isOpen ? null : item.label)}
+                    className="text-[14px] font-medium flex items-center gap-1"
+                    style={{ color: isActive || isOpen ? 'var(--color-primary)' : 'var(--color-ink-muted)', background: 'transparent', border: 'none', cursor: 'pointer', padding: 0 }}
+                    aria-expanded={isOpen}
+                    aria-haspopup="true"
+                  >
+                    {item.label}
+                    <ChevronDown
+                      size={14}
+                      strokeWidth={1.6}
+                      style={{ transition: 'transform .15s ease', transform: isOpen ? 'rotate(180deg)' : 'none' }}
+                    />
+                  </button>
+
+                  {isOpen && (
+                    <div
+                      className="card"
+                      style={{
+                        position: 'absolute', top: 'calc(100% + 10px)', left: 0,
+                        minWidth: 220, padding: '8px', display: 'flex', flexDirection: 'column',
+                        background: 'var(--color-bg)', border: '1px solid var(--color-border)',
+                        borderRadius: 10, boxShadow: '0 12px 30px rgba(0,0,0,0.08)', zIndex: 70,
+                      }}
+                    >
+                      {item.children.map(child => (
+                        <Link
+                          key={child.href}
+                          href={child.href}
+                          onClick={() => setActiveDropdown(null)}
+                          className="text-[14px]"
+                          style={{
+                            padding: '8px 10px', borderRadius: 6, color: 'var(--color-ink)',
+                          }}
+                        >
+                          {child.label}
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                </div>
               );
             })}
           </div>
@@ -165,45 +167,48 @@ export default function NavBar({ showOnLanding = false }) {
         {open && (
           <div className="lg:hidden hairline-b" style={{ background: 'var(--color-bg)', maxHeight: 'calc(100vh - 64px)', overflowY: 'auto' }}>
             <div className="px-6 py-4 flex flex-col gap-1">
-              {MAIN_LINKS.map(l => (
-                <div key={l.href} className="flex flex-col">
-                  {l.hasDropdown ? (
-                    <button
-                      onClick={() => setMobileResourcesOpen(o => !o)}
-                      className="py-2 text-[15px] flex items-center justify-between w-full text-left"
-                      style={{ color: 'var(--color-ink)', background: 'transparent', border: 'none' }}
-                    >
-                      {l.label}
-                      <ChevronDown
-                        size={16}
-                        strokeWidth={1.6}
-                        style={{ transition: 'transform .15s ease', transform: mobileResourcesOpen ? 'rotate(180deg)' : 'none' }}
-                      />
-                    </button>
-                  ) : (
-                    <Link href={l.href} onClick={() => setOpen(false)} className="py-2 text-[15px]" style={{ color: 'var(--color-ink)' }}>
-                      {l.label}
-                    </Link>
-                  )}
+              {NAV_ITEMS.map(item => {
+                const isMobileOpen = mobileOpenLabel === item.label;
 
-                  {l.hasDropdown && l.label === 'Resources' && mobileResourcesOpen && (
-                    <div className="pl-2 pb-2 flex flex-col">
-                      {RESOURCES.map(r => (
-                        <Link
-                          key={r.href}
-                          href={r.href}
-                          onClick={() => setOpen(false)}
-                          className="flex items-center gap-2.5 py-1.5 text-sm"
-                          style={{ color: 'var(--color-ink-muted)' }}
-                        >
-                          <FileText size={15} strokeWidth={1.5} style={{ flexShrink: 0 }} />
-                          <span>{r.label}</span>
-                        </Link>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              ))}
+                return (
+                  <div key={item.href} className="flex flex-col">
+                    {item.children ? (
+                      <button
+                        onClick={() => setMobileOpenLabel(isMobileOpen ? null : item.label)}
+                        className="py-2 text-[15px] flex items-center justify-between w-full text-left"
+                        style={{ color: 'var(--color-ink)', background: 'transparent', border: 'none' }}
+                      >
+                        {item.label}
+                        <ChevronDown
+                          size={16}
+                          strokeWidth={1.6}
+                          style={{ transition: 'transform .15s ease', transform: isMobileOpen ? 'rotate(180deg)' : 'none' }}
+                        />
+                      </button>
+                    ) : (
+                      <Link href={item.href} onClick={() => setOpen(false)} className="py-2 text-[15px]" style={{ color: 'var(--color-ink)' }}>
+                        {item.label}
+                      </Link>
+                    )}
+
+                    {item.children && isMobileOpen && (
+                      <div className="pl-2 pb-2 flex flex-col">
+                        {item.children.map(child => (
+                          <Link
+                            key={child.href}
+                            href={child.href}
+                            onClick={() => setOpen(false)}
+                            className="py-1.5 text-sm"
+                            style={{ color: 'var(--color-ink-muted)' }}
+                          >
+                            {child.label}
+                          </Link>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
 
               <div className="hairline-t my-2" />
               <Link href="/login" onClick={() => setOpen(false)} className="btn btn-ghost justify-center">Login</Link>

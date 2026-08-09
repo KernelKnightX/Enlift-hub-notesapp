@@ -1,12 +1,12 @@
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
-import StudentLayout from '../../../components/common/StudentLayout';
+import StudentLayout from '@/layouts/StudentLayout';
 import { motion } from 'framer-motion';
 import {
   Play, ClipboardCheck, Database, Search,
   ClipboardList, Landmark, Globe2, FileText, Star, Leaf, BookOpen
 } from 'lucide-react';
-import useFirestoreCollection from '../../../hooks/useFirestoreCollection';
+import useFirestoreCollection from '@/hooks/useFirestoreCollection';
 
 const EXAM_TABS = ['CSE Prelims', 'CSE Mains', 'CAPF', 'CDS', 'IFoS', 'ESE'];
 const DIFFICULTIES = ['Easy', 'Medium', 'Hard'];

@@ -1,0 +1,317 @@
+/* admin-ncert.css */
+
+:root {
+  --nc-bg: #FAF7F0;
+  --nc-surface: #FFFFFF;
+  --nc-border: #E8E2D6;
+  --nc-text: #2A2621;
+  --nc-text-muted: #7A736694
+  --nc-indigo: #4B4CDB;
+  --nc-indigo-hover: #3F40C4;
+  --nc-coral: #E8654F;
+  --nc-coral-bg: #FDECE8;
+  --nc-green-bg: #E7F5EC;
+  --nc-green-text: #1E7A43;
+  --nc-amber-bg: #FDF3E3;
+  --nc-amber-text: #92620B;
+  --nc-radius: 10px;
+  --font-display: "Fraunces", serif;
+  --font-body: "Geist", -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+}
+
+.admin-ncert-page {
+  background: var(--nc-bg);
+  font-family: var(--font-body);
+  color: var(--nc-text);
+  padding: 40px 48px;
+  min-height: 100vh;
+}
+
+.admin-ncert-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 28px;
+  gap: 24px;
+}
+
+.admin-ncert-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: var(--nc-coral);
+  font-weight: 600;
+}
+
+.admin-ncert-header h1 {
+  font-family: var(--font-display);
+  font-size: 32px;
+  font-weight: 600;
+  margin: 6px 0 6px;
+}
+
+.admin-ncert-header p {
+  color: var(--nc-text-muted);
+  font-size: 14px;
+  margin: 0;
+}
+
+.admin-btn-primary {
+  background: var(--nc-indigo);
+  color: #fff;
+  border: none;
+  border-radius: var(--nc-radius);
+  padding: 11px 20px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s ease;
+}
+.admin-btn-primary:hover { background: var(--nc-indigo-hover); }
+.admin-btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.admin-btn-secondary {
+  background: transparent;
+  color: var(--nc-text);
+  border: 1px solid var(--nc-border);
+  border-radius: var(--nc-radius);
+  padding: 11px 20px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+}
+.admin-btn-secondary:hover { background: var(--nc-surface); }
+
+.admin-ncert-error {
+  background: var(--nc-coral-bg);
+  color: #A83B26;
+  border: 1px solid #F3C7BB;
+  border-radius: var(--nc-radius);
+  padding: 12px 16px;
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+}
+.admin-ncert-error button {
+  background: none;
+  border: none;
+  text-decoration: underline;
+  cursor: pointer;
+  color: inherit;
+  font-size: 13px;
+}
+
+.admin-ncert-toolbar {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.admin-ncert-search {
+  flex: 1;
+  min-width: 220px;
+  padding: 10px 14px;
+  border: 1px solid var(--nc-border);
+  border-radius: var(--nc-radius);
+  background: var(--nc-surface);
+  font-size: 14px;
+  font-family: var(--font-body);
+}
+
+.admin-ncert-toolbar select {
+  padding: 10px 14px;
+  border: 1px solid var(--nc-border);
+  border-radius: var(--nc-radius);
+  background: var(--nc-surface);
+  font-size: 14px;
+  font-family: var(--font-body);
+  cursor: pointer;
+}
+
+.admin-ncert-empty {
+  background: var(--nc-surface);
+  border: 1px dashed var(--nc-border);
+  border-radius: var(--nc-radius);
+  padding: 48px 24px;
+  text-align: center;
+  color: var(--nc-text-muted);
+}
+.admin-ncert-empty p { margin: 0 0 16px; }
+
+.admin-ncert-table-wrap {
+  background: var(--nc-surface);
+  border: 1px solid var(--nc-border);
+  border-radius: var(--nc-radius);
+  overflow: hidden;
+}
+
+.admin-ncert-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.admin-ncert-table thead th {
+  text-align: left;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--nc-text-muted);
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--nc-border);
+  background: var(--nc-bg);
+}
+
+.admin-ncert-table tbody td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--nc-border);
+  vertical-align: middle;
+}
+.admin-ncert-table tbody tr:last-child td { border-bottom: none; }
+.admin-ncert-table tbody tr:hover { background: #FCFAF5; }
+
+.admin-ncert-thumb {
+  width: 36px;
+  height: 48px;
+  object-fit: cover;
+  border-radius: 4px;
+  border: 1px solid var(--nc-border);
+  display: block;
+}
+.admin-ncert-thumb-empty { background: var(--nc-bg); }
+
+.admin-ncert-title-cell {
+  font-weight: 600;
+  display: block;
+}
+
+.admin-ncert-edition-tag {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--nc-text-muted);
+  text-transform: capitalize;
+}
+
+.admin-priority-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.admin-priority-essential { background: var(--nc-coral-bg); color: #A83B26; }
+.admin-priority-recommended { background: var(--nc-amber-bg); color: var(--nc-amber-text); }
+.admin-priority-optional { background: #EEF0F2; color: #5B6570; }
+
+.admin-ncert-pdf-ok { color: var(--nc-green-text); font-size: 13px; }
+.admin-ncert-pdf-missing { color: var(--nc-text-muted); font-size: 13px; }
+
+.admin-ncert-actions { display: flex; gap: 10px; white-space: nowrap; }
+.admin-ncert-actions button {
+  background: none;
+  border: none;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--nc-indigo);
+  cursor: pointer;
+  padding: 0;
+}
+.admin-ncert-delete-btn { color: #C6493A !important; }
+
+/* ---------------- Modal ---------------- */
+
+.admin-ncert-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(30, 26, 20, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 24px;
+}
+
+.admin-ncert-modal {
+  background: var(--nc-surface);
+  border-radius: 14px;
+  padding: 28px 32px;
+  width: 100%;
+  max-width: 560px;
+  max-height: 88vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+}
+.admin-ncert-modal-small { max-width: 420px; }
+
+.admin-ncert-modal h2 {
+  font-family: var(--font-display);
+  font-size: 22px;
+  margin: 0 0 20px;
+}
+
+.admin-ncert-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.admin-ncert-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--nc-text);
+}
+
+.admin-ncert-form input,
+.admin-ncert-form textarea,
+.admin-ncert-form select {
+  border: 1px solid var(--nc-border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 14px;
+  font-family: var(--font-body);
+  font-weight: 400;
+  color: var(--nc-text);
+  background: var(--nc-bg);
+}
+.admin-ncert-form input:focus,
+.admin-ncert-form textarea:focus,
+.admin-ncert-form select:focus {
+  outline: 2px solid var(--nc-indigo);
+  outline-offset: 1px;
+}
+
+.admin-ncert-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.admin-ncert-checkbox-row {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.admin-ncert-checkbox {
+  flex-direction: row !important;
+  align-items: center;
+  gap: 6px !important;
+  font-weight: 400 !important;
+  font-size: 14px !important;
+}
+
+.admin-ncert-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 8px;
+}

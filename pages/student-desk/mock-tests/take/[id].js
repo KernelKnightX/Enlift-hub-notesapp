@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { doc, getDoc } from 'firebase/firestore';
-import { db } from '../../../../firebase/config';
+import { db } from '@/firebase/config';
 import {
   ArrowLeft, Clock, Flag, ChevronLeft, ChevronRight, CheckCircle2, XCircle,
   ClipboardCheck, Loader2, RotateCcw, Home, Trophy, Circle

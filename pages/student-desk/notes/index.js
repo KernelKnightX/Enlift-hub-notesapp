@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
-import StudentLayout from '../../../components/common/StudentLayout';
+import StudentLayout from '@/layouts/StudentLayout';
 import { motion } from 'framer-motion';
 import {
   Landmark, Clock, Globe, TrendingUp, FlaskConical, Leaf, Shield, Newspaper,
   Scale, Users, Network, Brain, Sigma, FileText, ExternalLink, Library
 } from 'lucide-react';
-import useFirestoreCollection from '../../../hooks/useFirestoreCollection';
+import useFirestoreCollection from '@/hooks/useFirestoreCollection';
 
 // ---- Subject palette --------------------------------------------------
 // Each subject gets an icon + a soft bg / ink color pair, matching the

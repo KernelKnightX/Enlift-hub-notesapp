@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { toast } from "react-toastify";
-import { useAuth } from "../../../contexts/AuthContext";
-import { db, storage } from "../../../firebase/config";
+import { useAuth } from "@/contexts/AuthContext";
+import { db, storage } from "@/firebase/config";
 import {
   collection, query, where, onSnapshot, doc, getDoc,
   addDoc, updateDoc, deleteDoc, serverTimestamp, orderBy
 } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import Link from "next/link";
+import { createEmptyBookForm, createEmptySubjectForm, buildBookPayload, buildSubjectPayload } from "@/utils/adminBooks";
 
 const inputCls =
   "w-full rounded-[12px] border border-[var(--color-border)] bg-[var(--color-surface)] px-3.5 py-2.5 text-sm text-[var(--color-ink)] placeholder:text-[var(--color-ink-faint)] outline-none transition-colors focus:border-[var(--color-primary)]";
@@ -42,8 +43,10 @@ export default function AdminBooks() {
 
   const [showSubjectModal, setShowSubjectModal] = useState(false);
   const [showBookModal, setShowBookModal] = useState(false);
-  const [subjectForm, setSubjectForm] = useState({ name: '', description: '', order: 0 });
-  const [bookForm, setBookForm] = useState({ title: '', description: '', url: '', coverFile: null, coverUrl: '', pages: '', subjectId: '', language: 'English', difficulty: 'Intermediate' });
+  const [editingSubjectId, setEditingSubjectId] = useState(null);
+  const [editingBookId, setEditingBookId] = useState(null);
+  const [subjectForm, setSubjectForm] = useState(createEmptySubjectForm());
+  const [bookForm, setBookForm] = useState(createEmptyBookForm());
   const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
@@ -94,30 +97,89 @@ export default function AdminBooks() {
     try { await logout(); router.push('/login'); } catch (err) { console.error(err); }
   };
 
-  const handleCreateSubject = async (e) => {
+  const resetSubjectModal = () => {
+    setShowSubjectModal(false);
+    setEditingSubjectId(null);
+    setSubjectForm(createEmptySubjectForm());
+  };
+
+  const resetBookModal = () => {
+    setShowBookModal(false);
+    setEditingBookId(null);
+    setBookForm(createEmptyBookForm());
+  };
+
+  const openSubjectModal = (subject = null) => {
+    if (subject) {
+      setEditingSubjectId(subject.id);
+      setSubjectForm({
+        name: subject.name || '',
+        description: subject.description || '',
+        order: subject.order || 0,
+      });
+    } else {
+      setEditingSubjectId(null);
+      setSubjectForm(createEmptySubjectForm());
+    }
+    setShowSubjectModal(true);
+  };
+
+  const openBookModal = (book = null) => {
+    if (book) {
+      setEditingBookId(book.id);
+      setBookForm({
+        title: book.title || '',
+        description: book.description || '',
+        url: book.url || '',
+        coverFile: null,
+        coverUrl: book.coverUrl || '',
+        pages: book.pages || '',
+        subjectId: book.subjectId || '',
+        language: book.language || 'English',
+        difficulty: book.difficulty || 'Intermediate',
+      });
+    } else {
+      setEditingBookId(null);
+      setBookForm({ ...createEmptyBookForm(), subjectId: selectedSubject || '' });
+    }
+    setShowBookModal(true);
+  };
+
+  const updateSubjectPdfCount = async (subjectId, delta) => {
+    if (!subjectId) return;
+    const subjectRef = doc(db, 'bookSubjects', subjectId);
+    const subjectSnap = await getDoc(subjectRef);
+    if (!subjectSnap.exists()) return;
+    await updateDoc(subjectRef, { pdfCount: Math.max(0, (subjectSnap.data().pdfCount || 0) + delta) });
+  };
+
+  const handleCreateOrUpdateSubject = async (e) => {
     e.preventDefault();
-    if (!subjectForm.name.trim()) { toast.error('Subject name is required.'); return; }
+    const payload = buildSubjectPayload(subjectForm);
+    if (!payload.name.trim()) { toast.error('Subject name is required.'); return; }
     setUploading(true);
     try {
-      await addDoc(collection(db, 'bookSubjects'), {
-        name: subjectForm.name.trim(),
-        description: subjectForm.description.trim(),
-        order: Number(subjectForm.order) || 0,
-        pdfCount: 0,
-        createdAt: serverTimestamp(),
-      });
-      toast.success('Book subject created.');
-      setShowSubjectModal(false);
-      setSubjectForm({ name: '', description: '', order: 0 });
+      if (editingSubjectId) {
+        await updateDoc(doc(db, 'bookSubjects', editingSubjectId), payload);
+        toast.success('Book subject updated.');
+      } else {
+        await addDoc(collection(db, 'bookSubjects'), {
+          ...payload,
+          pdfCount: 0,
+          createdAt: serverTimestamp(),
+        });
+        toast.success('Book subject created.');
+      }
+      resetSubjectModal();
     } catch (err) {
       console.error(err);
-      toast.error('Failed to create subject.');
+      toast.error(editingSubjectId ? 'Failed to update subject.' : 'Failed to create subject.');
     } finally {
       setUploading(false);
     }
   };
 
-  const handleCreateBook = async (e) => {
+  const handleCreateOrUpdateBook = async (e) => {
     e.preventDefault();
     if (!bookForm.title.trim() || !bookForm.subjectId) {
       toast.error('Title and subject are required.');
@@ -126,39 +188,41 @@ export default function AdminBooks() {
 
     setUploading(true);
     try {
-      let coverUrl = bookForm.coverUrl;
+      let nextCoverUrl = bookForm.coverUrl || '';
       if (bookForm.coverFile) {
         const storageRef = ref(storage, `book-covers/${Date.now()}_${bookForm.coverFile.name}`);
         await uploadBytes(storageRef, bookForm.coverFile);
-        coverUrl = await getDownloadURL(storageRef);
+        nextCoverUrl = await getDownloadURL(storageRef);
       }
 
+      const payload = buildBookPayload({ ...bookForm, coverUrl: nextCoverUrl });
+      const description = payload.description || payload.title;
       const bookData = {
-        title: bookForm.title.trim(),
-        description: bookForm.description.trim() || bookForm.title.trim(),
-        url: bookForm.url.trim(),
-        coverUrl: coverUrl || '',
-        pages: Number(bookForm.pages) || null,
-        subjectId: bookForm.subjectId,
-        language: bookForm.language,
-        difficulty: bookForm.difficulty,
-        createdAt: serverTimestamp(),
+        ...payload,
+        description,
+        coverUrl: nextCoverUrl,
+        createdAt: editingBookId ? undefined : serverTimestamp(),
       };
 
-      await addDoc(collection(db, 'books'), bookData);
-
-      const subjectRef = doc(db, 'bookSubjects', bookForm.subjectId);
-      const subjectSnap = await getDoc(subjectRef);
-      if (subjectSnap.exists()) {
-        await updateDoc(subjectRef, { pdfCount: (subjectSnap.data().pdfCount || 0) + 1 });
+      if (editingBookId) {
+        const currentBook = books.find((item) => item.id === editingBookId);
+        await updateDoc(doc(db, 'books', editingBookId), bookData);
+        const previousSubjectId = currentBook?.subjectId;
+        if (previousSubjectId && previousSubjectId !== payload.subjectId) {
+          await updateSubjectPdfCount(previousSubjectId, -1);
+          await updateSubjectPdfCount(payload.subjectId, 1);
+        }
+        toast.success('Book updated.');
+      } else {
+        await addDoc(collection(db, 'books'), { ...bookData, createdAt: serverTimestamp() });
+        await updateSubjectPdfCount(payload.subjectId, 1);
+        toast.success('Book created.');
       }
 
-      toast.success('Book created.');
-      setShowBookModal(false);
-      setBookForm({ title: '', description: '', url: '', coverFile: null, coverUrl: '', pages: '', subjectId: '', language: 'English', difficulty: 'Intermediate' });
+      resetBookModal();
     } catch (err) {
       console.error(err);
-      toast.error('Failed to create book.');
+      toast.error(editingBookId ? 'Failed to update book.' : 'Failed to create book.');
     } finally {
       setUploading(false);
     }
@@ -167,7 +231,11 @@ export default function AdminBooks() {
   const handleDeleteBook = async (bookId) => {
     if (!confirm('Delete this book?')) return;
     try {
+      const book = books.find((item) => item.id === bookId);
       await deleteDoc(doc(db, 'books', bookId));
+      if (book?.subjectId) {
+        await updateSubjectPdfCount(book.subjectId, -1);
+      }
       toast.success('Book deleted.');
     } catch (err) {
       console.error(err);
@@ -189,8 +257,8 @@ export default function AdminBooks() {
             <p className="text-sm text-[var(--color-ink-muted)]">Manage public UPSC book subjects, listings, and cover images.</p>
           </div>
           <div className="flex flex-wrap gap-3">
-            <button className="btn btn-primary" onClick={() => setShowSubjectModal(true)}>Add subject</button>
-            <button className="btn btn-secondary" disabled={!bookSubjects.length} onClick={() => setShowBookModal(true)}>Add book</button>
+            <button className="btn btn-primary" onClick={() => openSubjectModal()}>Add subject</button>
+            <button className="btn btn-secondary" disabled={!bookSubjects.length} onClick={() => openBookModal()}>Add book</button>
             <button className="btn btn-ghost" onClick={handleLogout}>Logout</button>
           </div>
         </div>
@@ -204,10 +272,15 @@ export default function AdminBooks() {
               </div>
               <div className="space-y-3">
                 {bookSubjects.map((subject) => (
-                  <button key={subject.id} className={`w-full rounded-2xl border px-4 py-3 text-left ${selectedSubject === subject.id ? 'border-[var(--color-primary)] bg-[var(--color-primary-tint)]' : 'border-[var(--color-border)] hover:border-[var(--color-primary)]'}`} onClick={() => setSelectedSubject(subject.id)}>
-                    <div className="font-semibold">{subject.name}</div>
-                    <div className="text-xs text-[var(--color-ink-muted)]">{subject.description || 'No description yet.'}</div>
-                  </button>
+                  <div key={subject.id} className={`rounded-2xl border px-4 py-3 ${selectedSubject === subject.id ? 'border-[var(--color-primary)] bg-[var(--color-primary-tint)]' : 'border-[var(--color-border)]'}`}>
+                    <button className="w-full text-left" onClick={() => setSelectedSubject(subject.id)}>
+                      <div className="font-semibold">{subject.name}</div>
+                      <div className="text-xs text-[var(--color-ink-muted)]">{subject.description || 'No description yet.'}</div>
+                    </button>
+                    <div className="mt-3 flex gap-2">
+                      <button className="btn btn-ghost btn-sm" onClick={() => openSubjectModal(subject)}>Edit</button>
+                    </div>
+                  </div>
                 ))}
               </div>
             </div>
@@ -236,7 +309,8 @@ export default function AdminBooks() {
                         </div>
                       </div>
                       <div className="flex items-center gap-3">
-                        <Link href={book.url || '#'} className="btn btn-ghost" target="_blank">Open</Link>
+                        <Link href={book.url || '#'} className="btn btn-ghost" target="_blank" rel="noreferrer">Open</Link>
+                        <button className="btn btn-ghost" onClick={() => openBookModal(book)}>Edit</button>
                         <button className="btn btn-danger" onClick={() => handleDeleteBook(book.id)}>Delete</button>
                       </div>
                     </div>
@@ -251,8 +325,8 @@ export default function AdminBooks() {
       </div>
 
       {showSubjectModal && (
-        <Modal title="Add Book Subject" onClose={() => setShowSubjectModal(false)}>
-          <form onSubmit={handleCreateSubject} className="space-y-4">
+        <Modal title={editingSubjectId ? 'Edit Book Subject' : 'Add Book Subject'} onClose={resetSubjectModal}>
+          <form onSubmit={handleCreateOrUpdateSubject} className="space-y-4">
             <div>
               <label className={labelCls}>Subject name</label>
               <input type="text" className={inputCls} value={subjectForm.name} onChange={e => setSubjectForm({ ...subjectForm, name: e.target.value })} required />
@@ -266,16 +340,16 @@ export default function AdminBooks() {
               <input type="number" className={inputCls} value={subjectForm.order} onChange={e => setSubjectForm({ ...subjectForm, order: Number(e.target.value) })} />
             </div>
             <div className="flex gap-3 justify-end">
-              <button type="button" className="btn btn-ghost" onClick={() => setShowSubjectModal(false)}>Cancel</button>
-              <button type="submit" className="btn btn-primary" disabled={uploading}>{uploading ? 'Saving…' : 'Save subject'}</button>
+              <button type="button" className="btn btn-ghost" onClick={resetSubjectModal}>Cancel</button>
+              <button type="submit" className="btn btn-primary" disabled={uploading}>{uploading ? 'Saving…' : editingSubjectId ? 'Update subject' : 'Save subject'}</button>
             </div>
           </form>
         </Modal>
       )}
 
       {showBookModal && (
-        <Modal title="Add Book" wide onClose={() => setShowBookModal(false)}>
-          <form onSubmit={handleCreateBook} className="space-y-4">
+        <Modal title={editingBookId ? 'Edit Book' : 'Add Book'} wide onClose={resetBookModal}>
+          <form onSubmit={handleCreateOrUpdateBook} className="space-y-4">
             <div>
               <label className={labelCls}>Subject</label>
               <select className={inputCls} value={bookForm.subjectId} onChange={e => setBookForm({ ...bookForm, subjectId: e.target.value })} required>
@@ -322,8 +396,8 @@ export default function AdminBooks() {
               <input type="number" className={inputCls} value={bookForm.pages} onChange={e => setBookForm({ ...bookForm, pages: e.target.value })} />
             </div>
             <div className="flex gap-3 justify-end">
-              <button type="button" className="btn btn-ghost" onClick={() => setShowBookModal(false)}>Cancel</button>
-              <button type="submit" className="btn btn-primary" disabled={uploading}>{uploading ? 'Saving…' : 'Save book'}</button>
+              <button type="button" className="btn btn-ghost" onClick={resetBookModal}>Cancel</button>
+              <button type="submit" className="btn btn-primary" disabled={uploading}>{uploading ? 'Saving…' : editingBookId ? 'Update book' : 'Save book'}</button>
             </div>
           </form>
         </Modal>

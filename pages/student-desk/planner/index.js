@@ -1,10 +1,10 @@
 import { useMemo, useState } from 'react';
-import StudentLayout from '../../../components/common/StudentLayout';
+import StudentLayout from '@/layouts/StudentLayout';
 import { motion } from 'framer-motion';
-import { useAuth } from '../../../contexts/AuthContext';
-import useFirestoreCollection from '../../../hooks/useFirestoreCollection';
-import { usePlannerTasks } from '../../../hooks/usePlannerTasks';
-import TaskModal from '../../../components/planner/TaskModal';
+import { useAuth } from '@/contexts/AuthContext';
+import useFirestoreCollection from '@/hooks/useFirestoreCollection';
+import { usePlannerTasks } from '@/hooks/usePlannerTasks';
+import TaskModal from '@/components/planner/TaskModal';
 import {
   Plus, ChevronLeft, ChevronRight, Clock, CheckCircle2, Circle
 } from 'lucide-react';

@@ -201,6 +201,13 @@ service cloud.firestore {
       allow create: if isAdmin() && request.resource.data.keys().hasAll(['title', 'date']);
     }
 
+    // Maps & Atlas
+    match /maps/{mapId} {
+      allow read: if resource.data.status == 'published' || isAdmin();
+      allow create, update, delete: if isAdmin();
+      allow create: if isAdmin() && request.resource.data.keys().hasAll(['title', 'slug', 'category', 'imageUrl', 'status']);
+    }
+
     // SSB Materials
     match /ssb_ppdt_pictures/{pictureId} {
       allow read: if isAuthenticated();

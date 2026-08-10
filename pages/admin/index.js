@@ -2,18 +2,19 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { motion } from "framer-motion";
-import { useAuth } from "../../contexts/AuthContext";
-import { db } from "../../firebase/config";
+import { useAuth } from "@/contexts/AuthContext";
+import { db } from "@/firebase/config";
 import { collection, query, where, onSnapshot, doc, getDoc } from "firebase/firestore";
 import {
   Users, FileText, Newspaper, Bell, ClipboardCheck, BookOpen, ArrowUpRight, LogOut,
-  Home, Sparkles, TrendingUp, Coffee, Shield, Loader2
+  Home, Sparkles, TrendingUp, Coffee, Shield, Loader2, Map
 } from "lucide-react";
 
 const ACTIONS = [
   { href:"/admin/notes",           icon:BookOpen,       label:"Notes & PDFs",    desc:"Manage study notes subjects and PDFs",    tone:"violet" },
   { href:"/admin/books",           icon:BookOpen,       label:"Books Library",   desc:"Manage public UPSC book listings",       tone:"blue" },
   { href:"/admin/current-affairs", icon:Newspaper,      label:"Current Affairs", desc:"Publish and manage news articles",         tone:"green" },
+  { href:"/admin/maps",            icon:Map,            label:"Maps & Atlas",    desc:"Upload and publish UPSC map resources",    tone:"cyan" },
   { href:"/admin/notifications",   icon:Bell,           label:"Notifications",   desc:"Send alerts to all students",              tone:"blue" },
   { href:"/admin/mock-tests",      icon:ClipboardCheck, label:"Mock Tests",      desc:"Create and manage practice tests",         tone:"pink" },
   { href:"/admin/pyq",             icon:FileText,       label:"PYQ Papers",      desc:"Upload previous year questions",           tone:"amber" },
@@ -36,7 +37,7 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [stats, setStats] = useState({ users:0, currentAffairs:0, mockTests:0, pyqs:0, notifications:0, pdfSubjects:0, books:0, bookSubjects:0 });
+  const [stats, setStats] = useState({ users:0, currentAffairs:0, maps:0, mockTests:0, pyqs:0, notifications:0, pdfSubjects:0, books:0, bookSubjects:0 });
 
   const demoMode = process.env.NEXT_PUBLIC_DEMO_MODE === 'true';
 
@@ -80,6 +81,7 @@ export default function AdminDashboard() {
     };
     wire('users');
     wire('currentAffairs', ['isActive', '==', true]);
+    wire('maps', ['status', '==', 'published']);
     wire('mockTests');
     wire('pyqs');
     wire('adminNotifications', ['isActive', '==', true]);
@@ -161,6 +163,7 @@ export default function AdminDashboard() {
             { label:"Book subjects", value:stats.bookSubjects,   tone:'blue',   icon:BookOpen },
             { label:"Books",         value:stats.books,          tone:'blue',   icon:FileText },
             { label:"Current affairs",value:stats.currentAffairs, tone:'green',  icon:Newspaper },
+            { label:"Maps",          value:stats.maps,           tone:'cyan',   icon:Map },
             { label:"Mock tests",    value:stats.mockTests,      tone:'pink',   icon:ClipboardCheck },
             { label:"PYQs",          value:stats.pyqs,           tone:'amber',  icon:FileText },
             { label:"Notifications", value:stats.notifications,  tone:'blue',   icon:Bell },

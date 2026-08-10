@@ -5,8 +5,8 @@ import {
   collection, doc, getDoc, getDocs, addDoc, updateDoc, deleteDoc,
   onSnapshot, query, serverTimestamp, where
 } from 'firebase/firestore';
-import { db } from '../../../firebase/config';
-import { useAuth } from '../../../contexts/AuthContext';
+import { db } from '@/firebase/config';
+import { useAuth } from '@/contexts/AuthContext';
 import {
   ArrowLeft, FileText, Plus, Save, Trash2, Download, ExternalLink, Loader2,
   Bold, Italic, List, Heading, Highlighter, ChevronRight, BookOpen, Sparkles

@@ -1,4 +1,4 @@
-import StudentLayout from '../../../components/common/StudentLayout';
+import StudentLayout from '@/layouts/StudentLayout';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import {
@@ -6,7 +6,7 @@ import {
   BookOpen, Flame, Target, Newspaper, Play, ChevronRight, Sparkles, Coffee,
   Calendar as CalIcon, AlertCircle, Database
 } from 'lucide-react';
-import useFirestoreCollection from '../../../hooks/useFirestoreCollection';
+import useFirestoreCollection from '@/hooks/useFirestoreCollection';
 
 /* ── MOCK DATA (Firestore-swappable) ── */
 const KPI_STATIC = [

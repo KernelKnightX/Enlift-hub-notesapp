@@ -1,6 +1,6 @@
 import { useRouter } from 'next/router';
 import Link from 'next/link';
-import SyllabusContent from '../../components/resources/SyllabusContent';
+import SyllabusContent from '@/components/resources/SyllabusContent';
 
 export default function ResourceDetail() {
   const router = useRouter();

@@ -31,8 +31,13 @@ export default function GoogleAnalytics({ GA_MEASUREMENT_ID }) {
 
     // Cleanup on unmount
     return () => {
-      if (script.parentNode) {
-        script.parentNode.removeChild(script);
+      try {
+        if (script && script.parentNode) {
+          script.parentNode.removeChild(script);
+        }
+      } catch (e) {
+        // Ignore if DOM elements are already gone or inaccessible
+        // (defensive guard against rare hydration/unmount races)
       }
     };
   }, [GA_MEASUREMENT_ID, router.pathname]);

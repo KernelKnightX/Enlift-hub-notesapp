@@ -73,7 +73,7 @@ export default function CategoryAdminPage() {
                   <div className="mt-1 text-[12px] text-[var(--color-ink-muted)]">/{item.slug}</div>
                 </div>
                 <div className="flex gap-2">
-                  <Link href={`/admin/maps/${item.id}/edit`} className="btn btn-ghost !px-3 !py-2 text-[13px]"><Edit3 size={14} /> Edit</Link>
+                  <Link href={`/admin/maps/map/${item.id}/edit`} className="btn btn-ghost !px-3 !py-2 text-[13px]"><Edit3 size={14} /> Edit</Link>
                   <button type="button" onClick={() => handleDelete(item.id)} className="btn !px-3 !py-2 text-[13px]" style={{ background: "var(--color-accent-tint)", color: "var(--color-accent-hover)" }}><Trash2 size={14} /> Delete</button>
                 </div>
               </div>

@@ -6,55 +6,65 @@ import { ArrowRight, Map } from "lucide-react";
 import { getPublishedMaps } from "@/lib/firestore/maps";
 
 const CATEGORY_LABELS = {
-  "india-states": {
-    eyebrow: "Maps & Atlas · India",
-    title: "Explore India through Maps",
-    description: "Browse state-wise maps and visual geography resources.",
-    heading: "India States",
-    sectionDescription: "Explore state-wise administrative maps and important geographic details.",
-    metaTitle: "India States Maps | UPSC Maps and Atlas Resources | Notes Cafe",
-    metaDescription: "Explore India state maps for UPSC preparation.",
-    heroImage: "/maps/india-states-hero-bg.svg",
+  "schemes": {
+    eyebrow: "Government",
+    title: "Government Schemes",
+    description: "Explore major government schemes, their scope, and geographic implementation.",
+    heading: "Government Schemes",
+    sectionDescription: "Discover central/state schemes and their spatial coverage.",
+    metaTitle: "Government Schemes | Notes Cafe",
+    metaDescription: "Maps and references for Government Schemes and their geographic reach.",
+    heroImage: "/maps/schemes-hero-bg.svg",
   },
-  "biosphere-reserves": {
-    eyebrow: "Maps & Atlas · India",
-    title: "Biosphere Reserves of India",
-    description: "Explore India's protected biosphere reserves and biodiversity hotspots.",
-    heading: "Biosphere Reserves",
-    sectionDescription: "Discover India's biosphere reserves and their ecological significance.",
-    metaTitle: "Biosphere Reserves Maps | UPSC Maps and Atlas Resources | Notes Cafe",
-    metaDescription: "Explore India's biosphere reserves for UPSC geography preparation.",
-    heroImage: "/maps/biosphere-reserves-hero-bg.svg",
+  "constitution-articles": {
+    eyebrow: "Government",
+    title: "Constitution Articles",
+    description: "Explore important constitutional provisions and their interpretation.",
+    heading: "Constitution Articles",
+    sectionDescription: "Key articles and their relevance — with spatial/administrative context.",
+    metaTitle: "Constitution Articles | Maps & Atlas | Notes Cafe",
+    metaDescription: "Reference maps and notes for Constitution Articles.",
+    heroImage: "/maps/constitution-articles-hero-bg.svg",
   },
-  "river-systems": {
-    eyebrow: "Maps & Atlas · India",
-    title: "River Systems of India",
-    description: "Explore India's major river systems and their geographical significance.",
-    heading: "River Systems",
-    sectionDescription: "Discover India's river systems and their importance for UPSC.",
-    metaTitle: "River Systems Maps | UPSC Maps and Atlas Resources | Notes Cafe",
-    metaDescription: "Explore India's river systems for UPSC geography preparation.",
-    heroImage: "/maps/river-systems-hero-bg.svg",
+  "important-acts": {
+    eyebrow: "Government",
+    title: "Important Acts",
+    description: "Explore major laws and acts and regional implementation notes.",
+    heading: "Important Acts",
+    sectionDescription: "Maps and summaries for important statutes and their jurisdiction.",
+    metaTitle: "Important Acts | Maps & Atlas | Notes Cafe",
+    metaDescription: "Maps and summaries for major government acts.",
+    heroImage: "/maps/important-acts-hero-bg.svg",
   },
-  "mountain-ranges": {
-    eyebrow: "Maps & Atlas · India",
-    title: "Mountain Ranges of India",
-    description: "Explore India's major mountain ranges and highland regions.",
-    heading: "Mountain Ranges",
-    sectionDescription: "Discover India's mountain ranges and their geographical features.",
-    metaTitle: "Mountain Ranges Maps | UPSC Maps and Atlas Resources | Notes Cafe",
-    metaDescription: "Explore India's mountain ranges for UPSC geography preparation.",
-    heroImage: "/maps/mountain-ranges-hero-bg.svg",
+  "committees": {
+    eyebrow: "Government",
+    title: "Committees",
+    description: "Explore government committees, their mandates and reports.",
+    heading: "Committees",
+    sectionDescription: "Find committee reports, jurisdictional notes, and maps where applicable.",
+    metaTitle: "Committees | Maps & Atlas | Notes Cafe",
+    metaDescription: "Maps and references for government committees and findings.",
+    heroImage: "/maps/committees-hero-bg.svg",
   },
-  "national-parks": {
-    eyebrow: "Maps & Atlas · India",
-    title: "National Parks of India",
-    description: "Explore India's national parks and protected wildlife areas.",
-    heading: "National Parks",
-    sectionDescription: "Discover India's national parks and their ecological importance.",
-    metaTitle: "National Parks Maps | UPSC Maps and Atlas Resources | Notes Cafe",
-    metaDescription: "Explore India's national parks for UPSC geography preparation.",
-    heroImage: "/maps/national-parks-hero-bg.svg",
+  "ministries": {
+    eyebrow: "Government",
+    title: "Ministries",
+    description: "Explore ministries, departments and their geographic responsibilities.",
+    heading: "Ministries",
+    sectionDescription: "Maps and organizational references for ministries and departments.",
+    metaTitle: "Ministries | Maps & Atlas | Notes Cafe",
+    metaDescription: "Maps and references for government ministries and departments.",
+    heroImage: "/maps/ministries-hero-bg.svg",
+  },
+  "reports-indices": {
+    eyebrow: "Government",
+    title: "Reports & Indices",
+    description: "Explore major government reports and indices with geographic context.",
+    heading: "Reports & Indices",
+    sectionDescription: "Key reports, indices and spatial analyses for policymaking.",
+    metaTitle: "Reports & Indices | Maps & Atlas | Notes Cafe",
+    metaDescription: "Government reports, indices and maps for policy reference.",
+    heroImage: "/maps/reports-indices-hero-bg.svg",
   },
 };
 
@@ -65,18 +75,18 @@ const getCategoryConfig = (category) => {
   
   const formatted = category?.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ') || 'Maps';
   return {
-    eyebrow: "Maps & Atlas · India",
+    eyebrow: "Government",
     title: formatted,
-    description: `Explore ${formatted.toLowerCase()} and their geographical significance.`,
+    description: `Explore ${formatted.toLowerCase()} and their policy / administrative significance.`,
     heading: formatted,
-    sectionDescription: `Discover ${formatted.toLowerCase()} for UPSC preparation.`,
-    metaTitle: `${formatted} Maps | UPSC Maps and Atlas Resources | Notes Cafe`,
-    metaDescription: `Explore ${formatted.toLowerCase()} for UPSC geography preparation.`,
+    sectionDescription: `Discover ${formatted.toLowerCase()} related to government data and maps.`,
+    metaTitle: `${formatted} Maps | Government Maps and Atlas | Notes Cafe`,
+    metaDescription: `Explore ${formatted.toLowerCase()} for government reference.`,
     heroImage: `/maps/${category}-hero-bg.svg`,
   };
 };
 
-export default function UpscMapsPage({ heroImage: propHeroImage }) {
+export default function GovernmentCategoryPage({ heroImage: propHeroImage }) {
   const router = useRouter();
   const { category } = router.query;
   const config = getCategoryConfig(category);
@@ -138,10 +148,7 @@ export default function UpscMapsPage({ heroImage: propHeroImage }) {
       </Head>
 
       <main className="maps-upsc">
-        {/* =====================================================
-            HERO
-        ====================================================== */}
-
+        {/* HERO */}
         <section className="maps-upsc__hero">
           <div className="maps-upsc__container">
             <div className="maps-upsc__hero-inner">
@@ -173,10 +180,7 @@ export default function UpscMapsPage({ heroImage: propHeroImage }) {
           </div>
         </section>
 
-        {/* =====================================================
-            CATEGORY SECTION
-        ====================================================== */}
-
+        {/* CATEGORY SECTION */}
         <section className="maps-upsc__maps-section">
           <div className="maps-upsc__container">
 
@@ -191,10 +195,6 @@ export default function UpscMapsPage({ heroImage: propHeroImage }) {
                 </p>
               </div>
             </div>
-
-            {/* =================================================
-                LOADING
-            ================================================== */}
 
             {loading ? (
               <div className="maps-upsc__loading">
@@ -212,9 +212,6 @@ export default function UpscMapsPage({ heroImage: propHeroImage }) {
                 ))}
               </div>
             ) : maps.length === 0 ? (
-              /* =================================================
-                  EMPTY STATE
-              ================================================== */
 
               <div className="maps-upsc__empty">
                 <div className="maps-upsc__empty-icon">
@@ -222,28 +219,22 @@ export default function UpscMapsPage({ heroImage: propHeroImage }) {
                 </div>
 
                 <h2 className="maps-upsc__empty-title">
-                  No India maps published yet.
+                  No government maps published yet.
                 </h2>
 
                 <p className="maps-upsc__empty-description">
-                  Published state maps will appear here once they
-                  are available.
+                  Published government maps will appear here once they are available.
                 </p>
               </div>
             ) : (
-              /* =================================================
-                  MAP GRID
-              ================================================== */
 
               <div className="maps-upsc__grid">
                 {maps.map((item) => (
                   <Link
                     key={item.id}
-                    href={`/maps/upsc-maps/${item.category}/${item.slug}`}
+                    href={`/maps/government/${item.category}/${item.slug}`}
                     className="maps-upsc__card"
                   >
-                    {/* MAP IMAGE */}
-
                     <div className="maps-upsc__card-image">
                       {item.thumbnailUrl || item.imageUrl ? (
                         <img
@@ -259,8 +250,6 @@ export default function UpscMapsPage({ heroImage: propHeroImage }) {
                         </div>
                       )}
                     </div>
-
-                    {/* CARD CONTENT */}
 
                     <div className="maps-upsc__card-content">
                       <h2 className="maps-upsc__card-title">
@@ -303,7 +292,6 @@ export async function getStaticProps({ params }) {
       const mapsDir = path.join(process.cwd(), 'public', 'maps');
       const exts = ['svg', 'png', 'jpg', 'jpeg', 'webp'];
 
-      // 1) exact match: <category>-hero-bg.<ext>
       for (const ext of exts) {
         const candidate = path.join(mapsDir, `${category}-hero-bg.${ext}`);
         if (fs.existsSync(candidate)) {
@@ -312,10 +300,8 @@ export async function getStaticProps({ params }) {
         }
       }
 
-      // 2) relaxed match: any file containing category and 'hero-bg'
       if (heroImage === "/maps/upsc-maps-hero-bg.svg") {
         const files = fs.readdirSync(mapsDir);
-        // Build a relaxed regex that matches any token from the category (allow optional trailing 's')
         const tokens = category.split('-').map(t => t.replace(/[-\\/\\^$*+?.()|[\]{}]/g, '\\$&'));
         const tokenPatterns = tokens.map(t => `${t}(?:s)?`);
         const regex = new RegExp(`(?:${tokenPatterns.join('|')}).*hero-bg\\.(` + exts.join('|') + `)$`, 'i');

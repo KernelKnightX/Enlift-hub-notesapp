@@ -2,33 +2,31 @@ import { useEffect, useMemo, useState } from "react";
 import Head from "next/head";
 import Link from "next/link";
 import { ArrowRight, ChevronRight, Search, Target } from "lucide-react";
-import { getPublishedMaps } from "@/lib/firestore/maps";
+import { getPublishedMaps } from "@/lib/firestore/government";
 
-const FALLBACK_STATES = [
-  { id: "andhra-pradesh", title: "Andhra Pradesh", region: "South India", slug: "andhra-pradesh" },
-  { id: "rajasthan", title: "Rajasthan", region: "North India", slug: "rajasthan" },
-  { id: "telangana", title: "Telangana", region: "South India", slug: "telangana" },
-  { id: "karnataka", title: "Karnataka", region: "South India", slug: "karnataka" },
-  { id: "maharashtra", title: "Maharashtra", region: "West India", slug: "maharashtra" },
-  { id: "gujarat", title: "Gujarat", region: "West India", slug: "gujarat" },
+const FALLBACK_CARDS = [
+  { id: "gov-1", title: "Government Map A", region: "National", slug: "government-map-a" },
+  { id: "gov-2", title: "Government Map B", region: "National", slug: "government-map-b" },
+  { id: "gov-3", title: "Government Map C", region: "National", slug: "government-map-c" },
+  { id: "gov-4", title: "Government Map D", region: "National", slug: "government-map-d" },
+  { id: "gov-5", title: "Government Map E", region: "National", slug: "government-map-e" },
+  { id: "gov-6", title: "Government Map F", region: "National", slug: "government-map-f" },
 ];
 
-const STATE_SWATCHES = [
-  "#f04f4f",
-  "#f5c65b",
-  "#66c28d",
-  "#52a8e8",
-  "#8b6eea",
-  "#e888ca",
-  "#f08b58",
-  "#3fb6b2",
-  "#9ace5a",
-  "#d95b82",
-];
-
-function MiniStateMap({ seed = 0, title }) {
+function MiniCard({ seed = 0, title }) {
   const cells = Array.from({ length: 18 });
-
+  const STATE_SWATCHES = [
+    "#f04f4f",
+    "#f5c65b",
+    "#66c28d",
+    "#52a8e8",
+    "#8b6eea",
+    "#e888ca",
+    "#f08b58",
+    "#3fb6b2",
+    "#9ace5a",
+    "#d95b82",
+  ];
   return (
     <div className="maps-upsc__mini-map" aria-hidden="true">
       {cells.map((_, index) => (
@@ -47,9 +45,7 @@ function MiniStateMap({ seed = 0, title }) {
 }
 
 function MapCard({ item, index, isFallback }) {
-  const href = isFallback
-    ? "/maps/upsc-maps/india-states"
-    : `/maps/upsc-maps/${item.category}/${item.slug}`;
+  const href = isFallback ? "/government" : `/government/${item.category}/${item.slug}`;
 
   return (
     <Link href={href} className="maps-upsc__card">
@@ -57,12 +53,12 @@ function MapCard({ item, index, isFallback }) {
         {!isFallback && (item.thumbnailUrl || item.imageUrl) ? (
           <img src={item.thumbnailUrl || item.imageUrl} alt={item.title} />
         ) : (
-          <MiniStateMap title={item.title} seed={index} />
+          <MiniCard title={item.title} seed={index} />
         )}
       </div>
       <div className="maps-upsc__card-content">
         <h2 className="maps-upsc__card-title">{item.title}</h2>
-        <p className="maps-upsc__card-region">{item.region || "India map"}</p>
+        <p className="maps-upsc__card-region">{item.region || "Government map"}</p>
         <span className="maps-upsc__card-action">
           Open map <ArrowRight size={14} strokeWidth={1.8} />
         </span>
@@ -71,7 +67,7 @@ function MapCard({ item, index, isFallback }) {
   );
 }
 
-export default function UpscMapsPage() {
+export default function GovernmentMapsPage() {
   const [maps, setMaps] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -79,7 +75,8 @@ export default function UpscMapsPage() {
     let cancelled = false;
     (async () => {
       try {
-        const items = await getPublishedMaps("india-states");
+        // show all published maps for government overview by default
+        const items = await getPublishedMaps("all");
         if (!cancelled) setMaps(items);
       } catch (error) {
         console.error(error);
@@ -93,38 +90,31 @@ export default function UpscMapsPage() {
   }, []);
 
   const visibleMaps = useMemo(() => maps.slice(0, 6), [maps]);
-  const cards = visibleMaps.length > 0 ? visibleMaps : FALLBACK_STATES;
+  const cards = visibleMaps.length > 0 ? visibleMaps : FALLBACK_CARDS;
   const usingFallback = !loading && visibleMaps.length === 0;
 
   return (
     <>
       <Head>
-        <title>UPSC Maps and Atlas Resources | Notes Cafe</title>
-        <meta name="description" content="Explore published UPSC maps for India, world geography, rivers, mountains, parks, reserves, and important locations." />
-        <meta property="og:title" content="UPSC Maps and Atlas Resources | Notes Cafe" />
-        <meta property="og:description" content="Explore published UPSC maps for India, world geography, rivers, mountains, parks, reserves, and important locations." />
+        <title>Government Maps and Resources | Notes Cafe</title>
+        <meta name="description" content="Explore government maps and related geographic resources." />
       </Head>
 
       <main className="maps-upsc">
         <section className="maps-upsc__hero">
           <div className="maps-upsc__container maps-upsc__hero-inner">
             <div className="maps-upsc__hero-content">
-              <span className="maps-upsc__eyebrow">Maps &amp; Atlas</span>
+              <span className="maps-upsc__eyebrow">Maps &amp; Atlas · Government</span>
               <h1 className="maps-upsc__title">
-                Explore India through <span>Maps</span>
+                Explore Government <span>Maps</span>
               </h1>
               <p className="maps-upsc__description">
-                Browse state-wise maps and visual geography resources.             </p>
+                Browse government maps, administrative boundaries, and policy-related geographic data.
+              </p>
             </div>
             <div
               className="maps-upsc__hero-art"
               aria-hidden="true"
-              style={{
-                backgroundImage: `linear-gradient(90deg, rgba(255,255,255,0.98) 0%, rgba(255,255,255,0.92) 12%, rgba(255,255,255,0.78) 26%, rgba(255,255,255,0.45) 44%, rgba(255,255,255,0) 62%), url("/maps/upsc-maps-hero-bg.png")`,
-                backgroundRepeat: 'no-repeat',
-                backgroundPosition: 'left center, right center',
-                backgroundSize: '100% 100%, cover',
-              }}
             />
           </div>
         </section>
@@ -132,12 +122,9 @@ export default function UpscMapsPage() {
         <section className="maps-upsc__container maps-upsc__maps-section">
           <div className="maps-upsc__section-header">
             <div>
-              <h2 className="maps-upsc__section-heading">India States</h2>
-              <p className="maps-upsc__section-description">
-                Explore state-wise administrative maps
-              </p>
+              <h2 className="maps-upsc__section-heading">Government Maps</h2>
+              <p className="maps-upsc__section-description">Explore government maps and spatial datasets.</p>
             </div>
-   
           </div>
 
           {loading ? (
@@ -162,19 +149,16 @@ export default function UpscMapsPage() {
                     isFallback={usingFallback}
                   />
                 ))}
-
               </div>
 
               {usingFallback && (
                 <div className="maps-upsc__empty-note">
                   <Search size={15} strokeWidth={1.8} />
-                  Publish India state maps from admin to replace these preview cards.
+                  Publish government maps from admin to replace these preview cards.
                 </div>
               )}
             </>
           )}
-
-
         </section>
       </main>
     </>

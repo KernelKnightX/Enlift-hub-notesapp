@@ -1,5 +1,3 @@
-// pages/maps/upsc-maps/[category]/[slug].js
-
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -27,10 +25,6 @@ import {
 
 export default function MapDetailPage({ map, relatedMaps }) {
 
-  // --------------------------------------------------
-  // MAP NOT FOUND
-  // --------------------------------------------------
-
   if (!map) {
     return (
       <div className="map-detail">
@@ -39,7 +33,7 @@ export default function MapDetailPage({ map, relatedMaps }) {
             This map could not be found.
           </p>
           <Link
-            href="/maps/upsc-maps"
+            href="/government"
             className="btn btn-primary"
           >
             Back to Maps
@@ -49,27 +43,18 @@ export default function MapDetailPage({ map, relatedMaps }) {
     );
   }
 
-
   const mapName = map.title?.replace('Map of ', '') || map.title;
   return (
     <div className="map-detail">
       <div className="map-detail__container">
 
-        {/* =====================================================
-            BREADCRUMB
-        ====================================================== */}
-
         <div className="map-detail__breadcrumb">
-          <Link href="/maps">
-            Maps & Atlas
-          </Link>
+          <Link href="/maps">Maps & Atlas</Link>
           <ChevronRight size={14} />
-          <Link href="/maps/upsc-maps">
-            India
-          </Link>
+          <Link href="/government">Government</Link>
           <ChevronRight size={14} />
-          <Link href={`/maps/upsc-maps/${map.category}`}>
-            States
+          <Link href={`/government/${map.category}`}>
+            {map.category}
           </Link>
           <ChevronRight size={14} />
           <span className="map-detail__breadcrumb-current">
@@ -77,18 +62,11 @@ export default function MapDetailPage({ map, relatedMaps }) {
           </span>
         </div>
 
-
-        {/* =====================================================
-            HEADER
-        ====================================================== */}
-
         <div className="map-detail__header">
-          {/* LEFT SIDE */}
           <div className="map-detail__heading">
             <h1 className="map-detail__title">
               {map.title}
-            </h1>   
-
+            </h1>
 
             <div className="map-detail__tags">
 
@@ -102,9 +80,6 @@ export default function MapDetailPage({ map, relatedMaps }) {
 
           </div>
 
-
-          {/* QUICK FACT */}
-
           {map.upscFact && (
             <div className="map-detail__quick-fact">
               <div className="map-detail__quick-fact-header">
@@ -112,7 +87,7 @@ export default function MapDetailPage({ map, relatedMaps }) {
                   <Lightbulb size={15} />
                 </div>
                 <span className="eyebrow map-detail__quick-fact-title">
-                  UPSC Quick Fact
+                  Quick Fact
                 </span>
               </div>
               <p className="map-detail__quick-fact-text">
@@ -122,14 +97,7 @@ export default function MapDetailPage({ map, relatedMaps }) {
           )}
         </div>
 
-        {/* =====================================================
-            MAP + KEY INFORMATION
-        ====================================================== */}
-
         <div className="map-detail__content-grid">
-
-
-          {/* MAP VIEWER */}
 
           <div className="map-viewer">
 
@@ -145,8 +113,6 @@ export default function MapDetailPage({ map, relatedMaps }) {
               />
             </div>
           </div>
-
-          {/* KEY INFORMATION */}
 
           <div className="map-info">
             <h2 className="eyebrow map-info__title">
@@ -192,10 +158,6 @@ export default function MapDetailPage({ map, relatedMaps }) {
             </div>
           </div>
         </div>
-
-        {/* =====================================================
-            AT A GLANCE
-        ====================================================== */}
 
         <section className="map-detail__section">
           <div className="map-detail__section-header">
@@ -245,11 +207,6 @@ export default function MapDetailPage({ map, relatedMaps }) {
 
         </section>
 
-
-        {/* =====================================================
-            MAP HIGHLIGHTS
-        ====================================================== */}
-
         {(map.districtsCount || map.coastlineKm) && (
           <section className="map-detail__section">
             <div className="map-detail__section-header">
@@ -292,10 +249,6 @@ export default function MapDetailPage({ map, relatedMaps }) {
           </section>
         )}
 
-        {/* =====================================================
-            IMPORTANT LOCATIONS
-        ====================================================== */}
-
         {map.importantLocations?.length > 0 && (
           <section className="map-detail__section">
             <div className="map-detail__section-header">
@@ -331,11 +284,6 @@ export default function MapDetailPage({ map, relatedMaps }) {
           </section>
         )}
 
-
-        {/* =====================================================
-            EXPLORE MORE MAPS
-        ====================================================== */}
-
         {relatedMaps?.length > 0 && (
           <section className="map-detail__section map-related">
             <div className="map-detail__section-header">
@@ -348,7 +296,7 @@ export default function MapDetailPage({ map, relatedMaps }) {
               {relatedMaps.map((relatedMap) => (
                 <Link
                   key={relatedMap.id}
-                  href={`/maps/upsc-maps/${relatedMap.category}/${relatedMap.slug}`}
+                  href={`/government/${relatedMap.category}/${relatedMap.slug}`}
                   className="map-related-card"
                 >
                   <div className="map-related-card__image">
@@ -404,10 +352,6 @@ export default function MapDetailPage({ map, relatedMaps }) {
 }
 
 
-/* =========================================================
-   INFO ROW
-========================================================= */
-
 function InfoRow({
   icon: Icon,
   label,
@@ -439,10 +383,6 @@ function InfoRow({
 }
 
 
-/* =========================================================
-   GLANCE CARD
-========================================================= */
-
 function GlanceCard({
   icon: Icon,
   label,
@@ -466,10 +406,6 @@ function GlanceCard({
   );
 }
 
-
-/* =========================================================
-   HIGHLIGHT CARD
-========================================================= */
 
 function HighlightCard({
   color,
@@ -496,10 +432,6 @@ function HighlightCard({
     </div>
   );
 }
-
-/* =========================================================
-   DATA FETCHING
-========================================================= */
 
 export async function getStaticPaths() {
   const q = query(
@@ -548,10 +480,6 @@ export async function getStaticProps({ params }) {
   };
 
 
-  // --------------------------------------------------
-  // SERIALIZE TIMESTAMPS
-  // --------------------------------------------------
-
   if (map.createdAt?.toDate) {
     map.createdAt =
       map.createdAt.toDate().toISOString();
@@ -562,10 +490,6 @@ export async function getStaticProps({ params }) {
       map.updatedAt.toDate().toISOString();
   }
 
-
-  // --------------------------------------------------
-  // RELATED MAPS
-  // --------------------------------------------------
 
   let relatedMaps = [];
   if (map.region) {

@@ -11,6 +11,9 @@ import NoticeTicker from '@/components/common/NoticeTicker';
 import LandingFooter from '@/components/landing/LandingFooter';
 import "./study-material/ncert-books.css";
 import "./admin/books/admin-ncert.css";
+import "../styles/maps/map-detail.css";
+import "../styles/maps/maps-upsc.css";
+import "../styles/about.module.css";
 function App({ Component, pageProps }) {
   const router = useRouter();
   const isStudentRoute = router.pathname.startsWith('/student-desk');

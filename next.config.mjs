@@ -2,8 +2,11 @@
 
 const nextConfig = {
   compress: true,
+
   poweredByHeader: false,
+
   reactStrictMode: false,
+
   eslint: {
     ignoreDuringBuilds: true,
   },
@@ -12,7 +15,12 @@ const nextConfig = {
     return [
       {
         source: '/api/(.*)',
-        headers: [{ key: 'Cache-Control', value: 'no-cache' }],
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'no-cache',
+          },
+        ],
       },
       {
         source: '/_next/static/(.*)',
@@ -28,8 +36,35 @@ const nextConfig = {
 
   images: {
     formats: ['image/webp', 'image/avif'],
-    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
-    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+
+    deviceSizes: [
+      640,
+      750,
+      828,
+      1080,
+      1200,
+      1920,
+      2048,
+      3840,
+    ],
+
+    imageSizes: [
+      16,
+      32,
+      48,
+      64,
+      96,
+      128,
+      256,
+      384,
+    ],
+
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'firebasestorage.googleapis.com',
+      },
+    ],
   },
 };
 

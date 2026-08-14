@@ -12,17 +12,15 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-// Initialize Firebase only if it hasn't been initialized
-let app;
-if (getApps().length === 0) {
-  app = initializeApp(firebaseConfig);
-} else {
-  app = getApps()[0];
-}
+// Initialize Firebase only once
+const app =
+  getApps().length === 0
+    ? initializeApp(firebaseConfig)
+    : getApps()[0];
 
-// Firebase services are browser-only in this app. Avoid calling them during SSR.
-const auth = typeof window !== 'undefined' ? getAuth(app) : null;
-const db = typeof window !== 'undefined' ? getFirestore(app) : null;
-const storage = typeof window !== 'undefined' ? getStorage(app) : null;
+// Firebase services
+const auth = getAuth(app);
+const db = getFirestore(app);
+const storage = getStorage(app);
 
 export { app, auth, db, storage };

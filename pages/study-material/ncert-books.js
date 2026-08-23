@@ -1,8 +1,10 @@
 import Head from "next/head";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import BookPreviewModal from "@/components/notes/BookPreviewModal";
 import { db } from "@/firebase/config";
 import { collection, query, orderBy, onSnapshot } from "firebase/firestore";
+import ResourceHero from "@/components/public/ResourceHero";
 
 /* ================================================================
    BOOK CARD
@@ -118,17 +120,12 @@ export default function NcertUpscPage() {
       </Head>
 
       <div className="ncert-page">
-        <section className="ncert-hero">
-          <div className="ncert-container">
-            <div className="ncert-hero-content">
-              <h1>NCERT Books for UPSC</h1>
-              <p>
-                Know what to read. Know what to skip.
-                Build your UPSC foundation with the right NCERT books.
-              </p>
-            </div>
-          </div>
-        </section>
+        <ResourceHero
+          title="NCERT Books for UPSC"
+          description="Know what to read. Know what to skip. Build your UPSC foundation with the right NCERT books."
+          eyebrow="Study Material · Foundation"
+          withSeo={false}
+        />
 
         <main className="ncert-container ncert-main">
           <section className="ncert-content-section">
@@ -224,27 +221,27 @@ export default function NcertUpscPage() {
                 fundamentals and connect them with the syllabus and
                 previous year questions.
               </p>
-              <a href="/study-material/upsc-syllabus" className="ncert-guide-link">
+              <Link href="/study-material/upsc-syllabus" className="ncert-guide-link">
                 Check the UPSC syllabus <span aria-hidden="true">→</span>
-              </a>
+              </Link>
             </div>
 
             <div className="ncert-guide-links">
-              <a href="/study-material/upsc-syllabus">
+              <Link href="/study-material/upsc-syllabus">
                 <span>
                   <strong>Why NCERT for UPSC?</strong>
                   <small>Understand how foundation books support UPSC preparation.</small>
                 </span>
                 <span aria-hidden="true">→</span>
-              </a>
+              </Link>
 
-              <a href="/study-material/standard-books">
+              <Link href="/study-material/standard-books">
                 <span>
                   <strong>NCERT to standard books</strong>
                   <small>Know when to move beyond foundational textbooks.</small>
                 </span>
                 <span aria-hidden="true">→</span>
-              </a>
+              </Link>
             </div>
           </section>
 

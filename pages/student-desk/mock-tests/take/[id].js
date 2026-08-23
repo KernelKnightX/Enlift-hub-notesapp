@@ -1,8 +1,10 @@
+// pages/student-desk/mock-tests/take/[id].jsx
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
-import { doc, getDoc } from 'firebase/firestore';
-import { db } from '@/firebase/config';
+import { doc, getDoc, addDoc, collection, serverTimestamp } from 'firebase/firestore';
+import { db, auth } from '@/firebase/config';
+import { recordMockAttempt, bumpMockAttemptCount } from '@/lib/officeAnalytics';
 import {
   ArrowLeft, Clock, Flag, ChevronLeft, ChevronRight, CheckCircle2, XCircle,
   ClipboardCheck, Loader2, RotateCcw, Home, Trophy, Circle
@@ -71,6 +73,8 @@ function normalizeTest(raw, fallbackTitle) {
     title: s(raw?.title, s(raw?.name, fallbackTitle || 'Mock Test')),
     subject: s(raw?.subject, s(raw?.subj, 'General Studies')),
     duration: n(raw?.duration ?? raw?.time, 30),
+    totalMarks: n(raw?.marks ?? raw?.totalMarks ?? raw?.mks, questions.length),
+    isPremium: !!(raw?.isPremium || raw?.premium),
     questions,
   };
 }
@@ -88,6 +92,7 @@ export default function TakeTest() {
   const [submitted, setSubmitted] = useState(false);
   const [timeLeft, setTimeLeft] = useState(0);
   const startedRef = useRef(false);
+  const attemptSavedRef = useRef(false);
 
   // Load test doc
   useEffect(() => {
@@ -147,6 +152,54 @@ export default function TakeTest() {
       score: Math.round((correct / test.questions.length) * 100),
     };
   }, [test, answers]);
+
+  // Record the attempt to Firestore once, when the test is submitted
+  useEffect(() => {
+    if (!submitted || !test || attemptSavedRef.current) return;
+    attemptSavedRef.current = true;
+
+    // Don't log demo runs or tests we couldn't resolve to a real doc
+    if (!auth.currentUser || test.id === 'demo' || test.id === 'unknown') return;
+
+    const obtainedMarks = Math.round((stats.correct / test.questions.length) * test.totalMarks);
+    const scorePct = test.questions.length
+      ? Math.round((stats.correct / test.questions.length) * 100)
+      : 0;
+    const uid = auth.currentUser.uid;
+
+    (async () => {
+      let userName = auth.currentUser.displayName || '';
+      try {
+        const profile = await getDoc(doc(db, 'users', uid));
+        if (profile.exists()) {
+          const data = profile.data();
+          userName = data.fullName || data.name || data.displayName || userName;
+        }
+      } catch {}
+
+      await addDoc(collection(db, 'users', uid, 'mockTestAttempts'), {
+        testId: test.id,
+        obtainedMarks,
+        totalMarks: test.totalMarks,
+        attemptedAt: serverTimestamp(),
+      }).catch((err) => {
+        if (typeof console !== 'undefined' && console.warn) {
+          console.warn('[firestore:testAttempts] write failed:', err.code || err.message);
+        }
+      });
+
+      await recordMockAttempt({
+        testId: test.id,
+        testTitle: test.title,
+        obtainedMarks,
+        totalMarks: test.totalMarks,
+        scorePct,
+        isPremium: test.isPremium,
+        userName,
+      });
+      await bumpMockAttemptCount(test.id);
+    })();
+  }, [submitted, test, stats.correct]);
 
   if (loading) {
     return (
@@ -236,7 +289,7 @@ export default function TakeTest() {
           </div>
 
           <div className="mt-8 flex flex-wrap gap-3">
-            <button onClick={() => { setAnswers({}); setCurrent(0); setSubmitted(false); startedRef.current = false; }}
+            <button onClick={() => { setAnswers({}); setCurrent(0); setSubmitted(false); startedRef.current = false; attemptSavedRef.current = false; }}
                     className="btn btn-ghost" data-testid="retry-test">
               <RotateCcw size={14} /> Retry test
             </button>

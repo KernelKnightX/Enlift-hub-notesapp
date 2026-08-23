@@ -1,6 +1,6 @@
 import Head from 'next/head';
 import Link from 'next/link';
-import { Clock3, Sparkles, ArrowRight } from 'lucide-react';
+import { Clock3, ArrowRight } from 'lucide-react';
 import { SectionHeader, ResourceLayout } from '@/components/public/SharedComponents';
 import { planningTools } from '@/data/planning-tools';
 
@@ -18,16 +18,7 @@ export default function PlanningToolsLandingPage() {
         <link rel="canonical" href="https://www.notescafe.in/planning-tools" />
       </Head>
 
-      <ResourceLayout eyebrow="Planning Tools" title="Premium planning tools for a calmer UPSC routine." description="These resources are designed to support structure, consistency, and steady momentum without creating more friction." breadcrumbs={[{ label: 'Planning Tools' }]}>
-        <section className="max-w-[1240px] mx-auto px-6 md:px-10 pb-8">
-          <div className="rounded-[28px] border p-6 md:p-8" style={{ background: 'linear-gradient(135deg, var(--color-surface) 0%, var(--color-surface-alt) 100%)', borderColor: 'var(--color-border)' }}>
-            <div className="max-w-2xl">
-              <div className="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em]" style={{ borderColor: 'var(--color-border)', background: 'var(--color-surface)', color: 'var(--color-primary)' }}><Sparkles size={13} strokeWidth={1.8} />Plan with intention</div>
-              <h2 className="mt-4 font-serif text-[28px] md:text-[34px] leading-[1.06]">Small tools that make the prep journey feel more manageable.</h2>
-              <p className="mt-3 text-[15px] leading-[1.75]" style={{ color: 'var(--color-ink-muted)' }}>Each tool is built for a specific ritual — weekly structure, timed focus, or steady review — so users can progress without pressure.</p>
-            </div>
-          </div>
-        </section>
+      <ResourceLayout eyebrow="Planning Tools" title="Premium planning tools for a calmer UPSC routine." description="These resources are designed to support structure, consistency, and steady momentum without creating more friction.">
 
         <section className="max-w-[1240px] mx-auto px-6 md:px-10 py-8 md:py-12">
           <SectionHeader eyebrow="Tool cards" title="Premium tool cards for better routines and better focus." description="These are light, useful resources made to feel part of a high-quality public product rather than a collection of utility pages." />

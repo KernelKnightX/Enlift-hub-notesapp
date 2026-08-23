@@ -4,7 +4,7 @@ import Link from "next/link";
 import { collection, onSnapshot, orderBy, query, where } from "firebase/firestore";
 import { ArrowLeft, Edit3, Landmark, Plus, Trash2 } from "lucide-react";
 import { toast } from "react-toastify";
-import AdminLayout from "@/components/admin/AdminLayout";
+import AdminLayout from "@/layouts/AdminLayout";
 import useAdminGate from "@/hooks/admin/useAdminGate";
 import { db } from "@/firebase/config";
 import { sectionLabel, isValidSection, deleteGovItem } from "@/lib/firestore/government";

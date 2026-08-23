@@ -9,6 +9,7 @@ import {
   collection, query, orderBy, onSnapshot,
   addDoc, updateDoc, deleteDoc, doc, getDoc, serverTimestamp,
 } from "firebase/firestore";
+import AdminLayout from "@/layouts/AdminLayout";
 
 const TYPES = [
   { id: "info",    label: "Info",    color: "var(--color-primary)", bg: "var(--color-primary-tint)", chip: "chip-primary" },
@@ -153,31 +154,10 @@ export default function AdminNotifications() {
   const previewType = TYPES.find(t => t.id === form.type) || TYPES[0];
 
   return (
-    <div className="min-h-screen bg-[var(--color-bg)] font-sans">
-
-      {/* Header */}
-      <div className="hairline-b bg-[var(--color-surface)] px-4 py-4 sm:px-6">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <div className="eyebrow mb-1">Content · Notifications</div>
-            <h1 className="hero-display text-xl text-[var(--color-ink)] sm:text-2xl">
-              Notifications Manager
-            </h1>
-            <div className="mt-1 text-[13px] text-[var(--color-ink-muted)]">
-              {notifications.length} total · {activeCount} active on students' dashboard
-            </div>
-          </div>
-          <div className="flex gap-2">
-            <Link href="/admin" className="btn btn-ghost">← Admin</Link>
-            <button className="btn btn-ghost" onClick={() => { logout(); router.push("/login"); }}>
-              Log out
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <div className="px-4 py-6 sm:px-6">
-
+    <AdminLayout
+      title="Homepage notices"
+      subtitle={`${notifications.length} total · ${activeCount} active. These can appear on the public homepage and student desk.`}
+    >
         {/* Stats */}
         <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-6">
           <div className="card p-4 text-center">
@@ -411,7 +391,6 @@ export default function AdminNotifications() {
             </div>
           </div>
         )}
-      </div>
-    </div>
+    </AdminLayout>
   );
 }

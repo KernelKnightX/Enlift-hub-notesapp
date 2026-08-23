@@ -12,9 +12,9 @@ export default function StudyMaterialLandingPage() {
     <>
       <Head>
         <title>UPSC Study Material and Free Resources | Notes Cafe</title>
-        <meta name="description" content="Explore free UPSC study material including the syllabus, NCERT books, standard books, notes, and magazine recommendations for better preparation." />
+        <meta name="description" content="Explore free UPSC study material including the syllabus, NCERT books, monthly magazines, and current affairs resources for better preparation." />
         <meta property="og:title" content="UPSC Study Material and Free Resources | Notes Cafe" />
-        <meta property="og:description" content="Explore free UPSC study material including the syllabus, NCERT books, standard books, notes, and magazine recommendations for better preparation." />
+        <meta property="og:description" content="Explore free UPSC study material including the syllabus, NCERT books, monthly magazines, and current affairs resources for better preparation." />
         <meta property="og:type" content="website" />
         <link rel="canonical" href="https://www.notescafe.in/study-material" />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({ '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: faqs.map((item) => ({ '@type': 'Question', name: item.q, acceptedAnswer: { '@type': 'Answer', text: item.a } })) }) }} />

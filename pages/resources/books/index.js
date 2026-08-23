@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
-import useFirestoreCollection from '@/hooks/useFirestoreCollection';
+import useFirestoreCollection from '@/hooks/shared/useFirestoreCollection';
 import {
   Search, BookOpen, Filter, Star, Download,
   ChevronRight, ArrowRight, ChevronDown

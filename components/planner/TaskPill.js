@@ -44,7 +44,10 @@ export default function TaskPill({ task, onEdit, onToggle }) {
     if (!task.resourceLink) return null;
     switch(task.resourceType) {
       case 'note':
-        return { href: `/student-desk/notes?id=${task.resourceLink}`, label: '📝 Note' };
+        return {
+          href: `/student-desk/notes/${encodeURIComponent(task.resourceLink)}`,
+          label: '📝 Notes',
+        };
       case 'pyq':
         return { href: `/student-desk/pyq?id=${task.resourceLink}`, label: '📄 PYQ' };
       default:

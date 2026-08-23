@@ -6,19 +6,24 @@ import { useAuth } from "@/contexts/AuthContext";
 import { db } from "@/firebase/config";
 import { collection, query, where, onSnapshot, doc, getDoc } from "firebase/firestore";
 import {
-  Users, FileText, Newspaper, Bell, ClipboardCheck, BookOpen, ArrowUpRight, LogOut,
-  Home, Sparkles, TrendingUp, Coffee, Shield, Loader2, Map
+  Users, FileText, Newspaper, Bell, ClipboardCheck, BookOpen, ArrowUpRight,
+  Landmark, Map, Loader2, TrendingUp,
 } from "lucide-react";
+import AdminLayout from "@/layouts/AdminLayout";
+import OfficeInsights from "@/components/admin/OfficeInsights";
 
 const ACTIONS = [
   { href:"/admin/notes",           icon:BookOpen,       label:"Notes & PDFs",    desc:"Manage study notes subjects and PDFs",    tone:"violet" },
+  { href:"/admin/books/ncert-books", icon:BookOpen,     label:"NCERT Books",     desc:"Class-wise NCERT library on the public site", tone:"blue" },
   { href:"/admin/books",           icon:BookOpen,       label:"Books Library",   desc:"Manage public UPSC book listings",       tone:"blue" },
+  { href:"/admin/monthly-magazines", icon:Newspaper,    label:"Monthly Magazines", desc:"Publish monthly current affairs PDFs", tone:"green" },
   { href:"/admin/current-affairs", icon:Newspaper,      label:"Current Affairs", desc:"Publish and manage news articles",         tone:"green" },
   { href:"/admin/maps",            icon:Map,            label:"Maps & Atlas",    desc:"Upload and publish UPSC map resources",    tone:"cyan" },
-  { href:"/admin/notifications",   icon:Bell,           label:"Notifications",   desc:"Send alerts to all students",              tone:"blue" },
+  { href:"/admin/government",      icon:Landmark,       label:"Government",      desc:"Schemes, acts, articles, ministries",     tone:"lime" },
+  { href:"/admin/notifications",   icon:Bell,           label:"Homepage notices", desc:"Notices shown on the public homepage",   tone:"blue" },
   { href:"/admin/mock-tests",      icon:ClipboardCheck, label:"Mock Tests",      desc:"Create and manage practice tests",         tone:"pink" },
   { href:"/admin/pyq",             icon:FileText,       label:"PYQ Papers",      desc:"Upload previous year questions",           tone:"amber" },
-  { href:"/admin/users",           icon:Users,          label:"Users",           desc:"Manage user accounts and roles",           tone:"cyan" },
+  { href:"/admin/users",           icon:Users,          label:"Students",        desc:"All registered student accounts from Firebase", tone:"cyan" },
 ];
 
 const TONE = {
@@ -33,11 +38,14 @@ const TONE = {
 
 export default function AdminDashboard() {
   const router = useRouter();
-  const { user, authLoading, logout } = useAuth();
+  const { user, authLoading } = useAuth();
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [stats, setStats] = useState({ users:0, currentAffairs:0, maps:0, mockTests:0, pyqs:0, notifications:0, pdfSubjects:0, books:0, bookSubjects:0 });
+  const [stats, setStats] = useState({
+    users: 0, currentAffairs: 0, maps: 0, mockTests: 0, pyqs: 0, notifications: 0,
+    pdfSubjects: 0, books: 0, bookSubjects: 0, government: 0, monthlyMagazines: 0, ncertBooks: 0,
+  });
 
   const demoMode = process.env.NEXT_PUBLIC_DEMO_MODE === 'true';
 
@@ -88,12 +96,11 @@ export default function AdminDashboard() {
     wire('pdfSubjects');
     wire('books');
     wire('bookSubjects');
+    wire('government', ['status', '==', 'published']);
+    wire('monthlyMagazines', ['isActive', '==', true]);
+    wire('ncertBooks');
     return () => unsubs.forEach(u => u());
   }, [isAdmin]);
-
-  const handleLogout = async () => {
-    try { await logout(); router.push("/login"); } catch {}
-  };
 
   if (loading || authLoading) {
     return (
@@ -107,58 +114,24 @@ export default function AdminDashboard() {
   const displayName = profile?.fullName || profile?.name || user?.email?.split("@")[0] || "Admin";
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--color-bg)' }}>
-      {/* Header */}
-      <div className="grad-ink-glow" style={{ color: 'var(--color-bg)', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-        <div className="max-w-[1240px] mx-auto px-6 md:px-10 py-6 flex items-center justify-between gap-4">
-          <Link href="/" className="flex items-center gap-2.5">
-            <div style={{
-              width: 40, height: 40, borderRadius: 12,
-              background: 'linear-gradient(135deg, #4F46E5 0%, #EC4899 100%)', color: '#fff',
-              display: 'flex', alignItems: 'center', justifyContent: 'center'
-            }}>
-              <Coffee size={20} strokeWidth={1.6} />
-            </div>
-            <div className="flex flex-col leading-none">
-              <span className="hero-display text-[20px]" style={{ color: '#fff' }}>Notes Cafe</span>
-              <span className="text-[10px] font-mono mt-0.5 flex items-center gap-1.5" style={{ color: '#B7BFB8', letterSpacing: '0.14em' }}>
-                <Shield size={10} /> ADMIN · CONTROL ROOM
-              </span>
-            </div>
+    <AdminLayout
+      title={`Hello, ${displayName}.`}
+      subtitle="This is the office. What you publish here is what the public site and student desk load from Firestore."
+      actions={(
+        <div className="flex flex-wrap gap-2">
+          <Link href="/" className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm font-semibold text-white">
+            View public site
           </Link>
-          <div className="flex items-center gap-2">
-            <Link href="/student-desk/dashboard" className="btn btn-ghost"
-                  style={{ background: 'rgba(255,255,255,0.08)', borderColor: 'rgba(255,255,255,0.15)', color: '#fff' }}
-                  data-testid="admin-view-site">
-              <Home size={14} strokeWidth={1.6} /> View site
-            </Link>
-            <button onClick={handleLogout} className="btn btn-ghost"
-                    style={{ background: 'rgba(255,255,255,0.08)', borderColor: 'rgba(255,255,255,0.15)', color: '#fff' }}
-                    data-testid="admin-logout">
-              <LogOut size={14} strokeWidth={1.6} /> Logout
-            </button>
-          </div>
+          <Link href="/student-desk/dashboard" className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm font-semibold text-white">
+            View student desk
+          </Link>
         </div>
-
-        <div className="max-w-[1240px] mx-auto px-6 md:px-10 pb-10">
-          <div className="chip" style={{ background: 'rgba(255,255,255,0.08)', color: '#fff', borderColor: 'rgba(255,255,255,0.15)' }}>
-            <Sparkles size={11} /> Welcome back
-          </div>
-          <h1 className="hero-display mt-4" style={{ fontSize: 'clamp(32px, 4vw, 52px)', color: '#fff', lineHeight: 1.05, letterSpacing: '-0.035em' }}>
-            Hello, <span className="grad-text">{displayName}</span>.<br />
-            Your control room, one place.
-          </h1>
-          <p className="mt-4 text-[15px] max-w-[560px]" style={{ color: '#B7BFB8' }}>
-            Publish an article, launch a mock, notify students. Everything you push here shows up on the student desk in real time.
-          </p>
-        </div>
-      </div>
-
-      <div className="max-w-[1240px] mx-auto px-6 md:px-10 py-10">
+      )}
+    >
         {/* Live stats */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-4">
           {[
-            { label:"Users",         value:stats.users,          tone:'cyan',   icon:Users },
+            { label:"Students",      value:stats.users,          tone:'cyan',   icon:Users },
             { label:"Note subjects", value:stats.pdfSubjects,    tone:'violet', icon:BookOpen },
             { label:"Book subjects", value:stats.bookSubjects,   tone:'blue',   icon:BookOpen },
             { label:"Books",         value:stats.books,          tone:'blue',   icon:FileText },
@@ -167,6 +140,9 @@ export default function AdminDashboard() {
             { label:"Mock tests",    value:stats.mockTests,      tone:'pink',   icon:ClipboardCheck },
             { label:"PYQs",          value:stats.pyqs,           tone:'amber',  icon:FileText },
             { label:"Notifications", value:stats.notifications,  tone:'blue',   icon:Bell },
+            { label:"Government",    value:stats.government,     tone:'lime',   icon:Landmark },
+            { label:"Magazines",     value:stats.monthlyMagazines, tone:'green', icon:Newspaper },
+            { label:"NCERT books",   value:stats.ncertBooks,     tone:'blue',   icon:BookOpen },
           ].map((s, i) => {
             const t = TONE[s.tone];
             return (
@@ -191,6 +167,8 @@ export default function AdminDashboard() {
             );
           })}
         </div>
+
+        <OfficeInsights />
 
         {/* Quick actions */}
         <div className="mt-10">
@@ -248,7 +226,7 @@ export default function AdminDashboard() {
               { icon:ClipboardCheck, title:"Mock Tests", body:"Mock Tests → Create → add questions manually or import CSV." },
               { icon:FileText,  title:"PYQ Papers",      body:"PYQ → Upload → select exam, year, and drop the PDF." },
               { icon:Bell,      title:"Notifications",   body:"Notifications → New → pick type, write message, activate." },
-              { icon:Users,     title:"User roles",      body:"Users → toggle admin, disable accounts, or check profiles." },
+              { icon:Users,     title:"Students",        body:"Students → open a profile, then grant or remove admin access." },
             ].map((g, i) => (
               <div key={i} className="p-4 rounded-2xl" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
                 <div className="flex items-center gap-2 mb-2">
@@ -260,7 +238,6 @@ export default function AdminDashboard() {
             ))}
           </div>
         </div>
-      </div>
-    </div>
+    </AdminLayout>
   );
 }

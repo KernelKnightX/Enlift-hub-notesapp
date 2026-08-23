@@ -1,5 +1,5 @@
 import { useState } from "react";
-import AdminLayout from "@/components/admin/AdminLayout";
+import AdminLayout from "@/layouts/AdminLayout";
 import useAdminGate from "@/hooks/admin/useAdminGate";
 import { useRouter } from "next/router";
 import { toast } from "react-toastify";

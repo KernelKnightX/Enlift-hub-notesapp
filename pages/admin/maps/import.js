@@ -2,7 +2,7 @@ import { useState, useMemo } from "react";
 import { useRouter } from "next/router";
 import Head from "next/head";
 import Papa from "papaparse";
-import AdminLayout from "@/components/admin/AdminLayout";
+import AdminLayout from "@/layouts/AdminLayout";
 import useAdminGate from "@/hooks/admin/useAdminGate";
 import { toast } from "react-toastify";
 import { MAP_CATEGORIES, uploadMapFile, createMap } from "@/lib/firestore/maps";

@@ -109,8 +109,8 @@ export default function TaskModal({
   const getResourceLabel = () => {
     if (!form.resourceLink) return null;
     if (form.resourceType === 'note') {
-      const note = userNotes.find(n => n.id === form.resourceLink);
-      return note?.title || 'Note';
+      const note = userNotes.find((n) => n.id === form.resourceLink || n.subjectId === form.resourceLink);
+      return note?.subjectName || note?.title || 'Study notes';
     }
     if (form.resourceType === 'pyq') {
       const pyq = userPyqs.find(p => p.id === form.resourceLink);
@@ -344,17 +344,20 @@ export default function TaskModal({
                   No notes found. Create notes first!
                 </div>
               )}
-              {form.resourceType === 'note' && userNotes.map(note => (
+              {form.resourceType === 'note' && userNotes.map((note) => (
                 <div
                   key={note.id}
-                  onClick={() => { setForm(p => ({ ...p, resourceLink: note.id })); setShowResourceModal(false); }}
+                  onClick={() => {
+                    setForm((p) => ({ ...p, resourceLink: note.subjectId || note.id }));
+                    setShowResourceModal(false);
+                  }}
                   style={{
                     padding: '12px 14px', border: '1px solid #e2ddd6', borderRadius: 8, marginBottom: 8,
-                    cursor: 'pointer', background: form.resourceLink === note.id ? '#f0d98a' : 'white'
+                    cursor: 'pointer', background: form.resourceLink === (note.subjectId || note.id) ? '#f0d98a' : 'white',
                   }}
                 >
-                  <div style={{ fontWeight: 600, fontSize: '0.85rem' }}>{note.title}</div>
-                  <div style={{ fontSize: '0.72rem', color: '#64748b' }}>{note.subject}</div>
+                  <div style={{ fontWeight: 600, fontSize: '0.85rem' }}>{note.subjectName || 'Study notes'}</div>
+                  <div style={{ fontSize: '0.72rem', color: '#64748b' }}>Subject notes</div>
                 </div>
               ))}
               

@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect, useRef } from 'react';
 import StudentLayout from '@/layouts/StudentLayout';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Lock, X, MoreHorizontal } from 'lucide-react';
-import useFirestoreCollection from '@/hooks/useFirestoreCollection';
+import useFirestoreCollection from '@/hooks/shared/useFirestoreCollection';
 
 const CAT_CHIP = {
   Polity: 'chip-violet', Economy: 'chip-blue', Environment: 'chip-green',

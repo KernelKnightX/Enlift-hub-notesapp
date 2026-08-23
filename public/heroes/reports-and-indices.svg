@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="700" viewBox="0 0 1600 700">
+  <defs>
+    <linearGradient id="g" x1="0" x2="1">
+      <stop offset="0" stop-color="#fff" stop-opacity="0.98"/>
+      <stop offset="0.25" stop-color="#fff" stop-opacity="0.6"/>
+      <stop offset="0.6" stop-color="#fff" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <rect width="1600" height="700" fill="#eaf3ea"/>
+  <g opacity="0.08">
+    <rect x="0" y="0" width="1600" height="700" fill="#bcd8c6"/>
+  </g>
+  <text x="80" y="140" font-family="Inter, Arial, sans-serif" font-size="56" fill="#0b3a2a">Placeholder Hero</text>
+  <text x="80" y="210" font-family="Inter, Arial, sans-serif" font-size="28" fill="#1f4f3a">Category preview background</text>
+  <rect x="0" y="0" width="1600" height="700" fill="url(#g)" />
+</svg>

@@ -10,6 +10,7 @@ import {
   addDoc, updateDoc, deleteDoc, serverTimestamp, orderBy
 } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import AdminLayout from "@/layouts/AdminLayout";
 
 const SUBJECT_COLORS = [
   { name: 'General Studies', color: '#6c757d', icon: '📚' },
@@ -347,28 +348,11 @@ export default function AdminNotes() {
   if (!isAdmin) return null;
 
   return (
-    <div className="min-h-screen bg-[var(--color-bg)] font-sans">
-
-      {/* Header */}
-      <div className="hairline-b bg-[var(--color-surface)] px-4 py-4 sm:px-6">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <div className="eyebrow mb-1">Content · Digital Notes</div>
-            <h1 className="hero-display text-xl text-[var(--color-ink)] sm:text-2xl">
-              Notes Management
-            </h1>
-            <div className="mt-1 text-[13px] text-[var(--color-ink-muted)]">
-              Manage subjects, PDFs and the Top Collections shown to students
-            </div>
-          </div>
-          <div className="flex gap-2">
-            <Link href="/admin" className="btn btn-ghost">← Back</Link>
-            <button className="btn btn-ghost" onClick={handleLogout}>Log out</button>
-          </div>
-        </div>
-      </div>
-
-      <div className="px-4 py-6 sm:px-6">
+    <AdminLayout
+      title="Notes & PDFs"
+      subtitle="Subjects, PDFs and Top Collections shown on the student desk."
+    >
+      <div>
 
         {/* Tabs */}
         <div className="mb-5 flex flex-wrap gap-2">
@@ -516,7 +500,7 @@ export default function AdminNotes() {
 
             {collections.length === 0 ? (
               <div className="card p-12 text-center text-[var(--color-ink-muted)]">
-                No collections yet. Create one — e.g. "NDA Complete Notes Collection".
+                No collections yet. Create one — e.g. &quot;NDA Complete Notes Collection&quot;.
               </div>
             ) : (
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -852,6 +836,7 @@ export default function AdminNotes() {
         </Modal>
       )}
 
-    </div>
+      </div>
+    </AdminLayout>
   );
 }

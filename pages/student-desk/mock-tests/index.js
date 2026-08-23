@@ -1,23 +1,25 @@
+// pages/student-desk/mock-tests/index.jsx
 import { useState, useMemo } from 'react';
-import Link from 'next/link';
 import StudentLayout from '@/layouts/StudentLayout';
 import { motion } from 'framer-motion';
 import {
-  Play, ClipboardCheck, Database, Search,
-  ClipboardList, Landmark, Globe2, FileText, Star, Leaf, BookOpen
+  Play, RotateCcw, Database, Search,
+  ClipboardList, Landmark, Globe2, FileText, Star, Leaf, BookOpen, TrendingUp, TrendingDown
 } from 'lucide-react';
-import useFirestoreCollection from '@/hooks/useFirestoreCollection';
+import useFirestoreCollection from '@/hooks/shared/useFirestoreCollection';
+import useTestAttempts from '@/hooks/student/useTestAttempts';
+import { useAuth } from '@/contexts/AuthContext';
 
 const EXAM_TABS = ['CSE Prelims', 'CSE Mains', 'CAPF', 'CDS', 'IFoS', 'ESE'];
 const DIFFICULTIES = ['Easy', 'Medium', 'Hard'];
 const TEST_TYPES = [
-  { key: 'full', label: 'Full Length Tests' },
-  { key: 'sectional', label: 'Sectional Tests' },
-  { key: 'topic', label: 'Topic Tests' },
-  { key: 'pyq', label: 'Previous Year Papers' },
+  { key: 'full', label: 'Full Length' },
+  { key: 'sectional', label: 'Sectional' },
+  { key: 'topic', label: 'Topic-wise' },
+  { key: 'pyq', label: 'Previous Year' },
 ];
 const DURATION_BUCKETS = [
-  { key: 'all', label: 'All Durations', test: () => true },
+  { key: 'all', label: 'Any', test: () => true },
   { key: 'u30', label: 'Under 30 min', test: (t) => t < 30 },
   { key: '30-60', label: '30–60 min', test: (t) => t >= 30 && t <= 60 },
   { key: '60-120', label: '60–120 min', test: (t) => t > 60 && t <= 120 },
@@ -42,7 +44,6 @@ const MOCKS = {
 };
 const ALL_MOCKS = Object.values(MOCKS).flat();
 
-// Safe primitive coercion — never render an object as React child
 const s = (v, fallback = '') => {
   if (v == null) return fallback;
   if (typeof v === 'string' || typeof v === 'number') return v;
@@ -64,16 +65,12 @@ const toMock = (d) => ({
   level: s(d.difficulty, s(d.level, 'Medium')),
   attempts: num(d.attempts, 0),
   exam: s(d.exam, s(d.examType, 'CSE Prelims')).replace(/^UPSC\s+/i, ''),
-  // type/rating/reviews are optional — real Firestore docs usually won't have
-  // them yet, so leave them undefined here and derive sensible values at
-  // render time instead of baking in fake defaults.
   type: d.type ? s(d.type) : undefined,
   rating: d.rating != null ? num(d.rating) : undefined,
   reviews: d.reviews != null ? num(d.reviews) : undefined,
+  isPremium: !!(d.isPremium || d.premium),
 });
 
-// Deterministic string hash so the same subject/name always maps to the
-// same visual "flavor" — gives cards variety even when no explicit type is set.
 function hashStr(str) {
   let h = 0;
   for (let i = 0; i < str.length; i++) h = (h * 31 + str.charCodeAt(i)) | 0;
@@ -82,6 +79,13 @@ function hashStr(str) {
 
 const TYPE_ORDER = ['full', 'sectional', 'topic', 'pyq'];
 
+const TYPE_META = {
+  full:      { label: 'Full Length',   icon: ClipboardList, colorVar: '--color-primary' },
+  sectional: { label: 'Sectional',     icon: Landmark,       colorVar: '--color-success' },
+  topic:     { label: 'Topic-wise',    icon: Globe2,         colorVar: '--color-gold' },
+  pyq:       { label: 'Previous Year', icon: FileText,       colorVar: '--color-accent' },
+};
+
 function inferType(m) {
   if (m.type && TYPE_META[m.type]) return m.type;
   const text = `${m.name} ${m.subj}`.toLowerCase();
@@ -89,38 +93,20 @@ function inferType(m) {
   if (/full[-\s]?length/.test(text)) return 'full';
   if (/section|polity|economy|history|geography|english/.test(text)) return 'sectional';
   if (/essay|answer writing|topic/.test(text)) return 'topic';
-  // No signal at all — pick a stable "random" type from the name so
-  // otherwise-identical cards (e.g. all "General Studies") still vary.
   return TYPE_ORDER[hashStr(m.name || m.subj || 'x') % TYPE_ORDER.length];
 }
 
-// --- Card styling by test type: icon, label, and accent color ---
-const TYPE_META = {
-  full:      { label: 'FULL LENGTH', icon: ClipboardList, colorVar: '--color-primary' },
-  sectional: { label: 'SECTIONAL',   icon: Landmark,       colorVar: '--color-success' },
-  topic:     { label: 'TOPIC TEST',  icon: Globe2,         colorVar: '--color-gold' },
-  pyq:       { label: 'PYQ TEST',    icon: FileText,       colorVar: '--color-accent' },
-};
-
 function typeMeta(m) {
   const type = inferType(m);
-  // subject-based icon override for a bit more personality
   if (/environ/i.test(m.subj)) return { ...TYPE_META[type], icon: Leaf };
   if (/english/i.test(m.subj)) return { ...TYPE_META[type], icon: BookOpen };
   return TYPE_META[type];
 }
 
-function AttemptCount({ count }) {
-  return (
-    <span className="text-[10.5px] font-mono" style={{ color: 'var(--color-ink-faint)' }}>
-      {count ? `${count.toLocaleString()} attempts` : 'No attempts yet'}
-    </span>
-  );
-}
-
 const EMPTY_FILTERS = { search: '', subject: 'all', types: new Set(), difficulties: new Set(), duration: 'all' };
 
 export default function MockTestsPage() {
+  const { user } = useAuth();
   const [tab, setTab] = useState('CSE Prelims');
   const [favorites, setFavorites] = useState(() => new Set());
   const [filters, setFilters] = useState(EMPTY_FILTERS);
@@ -133,8 +119,9 @@ export default function MockTestsPage() {
     transform: (docs) => docs.map(toMock),
   });
 
+  const { attemptsByTest } = useTestAttempts();
+
   const examMocks = useMemo(() => liveMocks.filter(m => m.exam === tab), [liveMocks, tab]);
-  const totalAvailable = liveMocks.length;
 
   const subjects = useMemo(
     () => Array.from(new Set(examMocks.map(m => m.subj))).sort(),
@@ -172,7 +159,13 @@ export default function MockTestsPage() {
     });
   };
 
-  const clearFilters = () => setFilters(EMPTY_FILTERS);
+  const startTest = (mock) => {
+    if (mock.isPremium && !user?.isPremium) {
+      window.alert('This is a Plus mock. Ask the office to grant Plus on your student account.');
+      return;
+    }
+    window.location.assign(`/student-desk/mock-tests/take/${encodeURIComponent(mock.id || 'demo')}`);
+  };
 
   return (
     <StudentLayout title="Mock Tests" subtitle="Calibrated to the real exam — honest analytics, no vanity scores.">
@@ -184,7 +177,7 @@ export default function MockTestsPage() {
       )}
 
       {/* Exam tabs */}
-      <div className="mt-8 flex items-center gap-2 flex-wrap" data-testid="mock-tabs">
+      <div className="mt-1 flex items-center gap-4 flex-wrap" data-testid="mock-tabs">
         {EXAM_TABS.map(t => (
           <button key={t} onClick={() => { setTab(t); clearFilters(); }}
                   className="px-4 py-2 rounded-full text-[13px]"
@@ -196,35 +189,22 @@ export default function MockTestsPage() {
                     transition: 'background-color .15s, color .15s, border-color .15s'
                   }}>{t}</button>
         ))}
- 
       </div>
 
-      {/* Filters + grid */}
-      <div className="mt-6 grid grid-cols-1 lg:grid-cols-[240px_1fr] gap-6 items-start">
-        {/* Sidebar filters */}
-        <aside className="card p-5" data-testid="mock-filters">
-          <div className="flex items-center justify-between mb-4">
-            <span className="font-serif text-[16px]">Filters</span>
-            <button onClick={clearFilters} className="text-[12px] font-semibold" style={{ color: 'var(--color-primary)' }}>
-              Clear All
-            </button>
-          </div>
+      <div className="mt-6 text-[14px]" style={{ color: 'var(--color-ink-muted)' }}>
+        <strong style={{ color: 'var(--color-ink)' }}>{list.length}</strong> tests found
+      </div>
 
-          <div className="mb-5">
-            <label className="eyebrow block mb-2">Search in results</label>
-            <div className="relative">
-              <Search size={13} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--color-ink-faint)' }} />
-              <input
-                value={filters.search}
-                onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
-                placeholder="Search tests..."
-                className="w-full text-[13px] rounded-lg"
-                style={{ padding: '0.5rem 0.6rem 0.5rem 1.8rem', border: '1px solid var(--color-border)', background: 'var(--color-surface)' }}
-              />
-            </div>
-          </div>
+      {/* Horizontal filter bar */}
+      <div className="card p-4 mt-4" data-testid="mock-filters">
+        <div className="flex items-center justify-between mb-4">
+        </div>
 
-          <div className="mb-5">
+        <div className="flex flex-wrap items-end gap-x-6 gap-y-4">
+
+
+          {/* Subject */}
+          <div style={{ minWidth: 160 }}>
             <label className="eyebrow block mb-2">Subject</label>
             <select
               value={filters.subject}
@@ -236,23 +216,28 @@ export default function MockTestsPage() {
             </select>
           </div>
 
-          <div className="mb-5">
+          {/* Test Type */}
+          <div>
             <label className="eyebrow block mb-2">Test Type</label>
-            <div className="flex flex-col gap-2">
-              {TEST_TYPES.map(t => (
-                <label key={t.key} className="flex items-center gap-2 text-[13px]" style={{ color: 'var(--color-ink)' }}>
-                  <input
-                    type="checkbox"
-                    checked={filters.types.has(t.key)}
-                    onChange={() => toggleSetFilter('types', t.key)}
-                  />
-                  {t.label}
-                </label>
-              ))}
+            <div className="flex gap-2 flex-wrap">
+              {TEST_TYPES.map(t => {
+                const active = filters.types.has(t.key);
+                return (
+                  <button key={t.key} onClick={() => toggleSetFilter('types', t.key)}
+                          className="px-3 py-1.5 rounded-full text-[12px]"
+                          style={{
+                            border: `1px solid ${active ? 'var(--color-primary)' : 'var(--color-border)'}`,
+                            background: active ? 'var(--color-primary)' : 'var(--color-surface)',
+                            color: active ? '#fff' : 'var(--color-ink)',
+                            fontWeight: 600,
+                          }}>{t.label}</button>
+                );
+              })}
             </div>
           </div>
 
-          <div className="mb-5">
+          {/* Difficulty */}
+          <div>
             <label className="eyebrow block mb-2">Difficulty</label>
             <div className="flex gap-2 flex-wrap">
               {DIFFICULTIES.map(d => {
@@ -271,7 +256,8 @@ export default function MockTestsPage() {
             </div>
           </div>
 
-          <div>
+          {/* Duration */}
+          <div style={{ minWidth: 160 }}>
             <label className="eyebrow block mb-2">Duration</label>
             <select
               value={filters.duration}
@@ -281,36 +267,43 @@ export default function MockTestsPage() {
               {DURATION_BUCKETS.map(b => <option key={b.key} value={b.key}>{b.label}</option>)}
             </select>
           </div>
-        </aside>
+        </div>
+      </div>
 
-        {/* Test grid */}
-        <div>
-          {list.length === 0 ? (
-            <div className="card p-8 text-center text-[13px]" style={{ color: 'var(--color-ink-muted)' }}>
-              No tests match these filters. Try clearing a few.
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-              {list.map((m, i) => {
-                const meta = typeMeta(m);
-                const Icon = meta.icon;
-                const color = `var(${meta.colorVar})`;
-                const isFav = favorites.has(m.id);
-                return (
-                  <motion.div key={m.id || m.name}
-                    initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: .3, delay: i * 0.03 }}
-                    className="card card-hover p-4"
-                    data-testid={`mock-card-${i}`}>
+      {/* Test grid — full width now, no sidebar */}
+      <div className="mt-6">
+        {list.length === 0 ? (
+          <div className="card p-8 text-center text-[13px]" style={{ color: 'var(--color-ink-muted)' }}>
+            No tests match these filters. Try clearing a few.
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+            {list.map((m, i) => {
+              const meta = typeMeta(m);
+              const Icon = meta.icon;
+              const color = `var(${meta.colorVar})`;
+              const isFav = favorites.has(m.id);
+              const attempt = attemptsByTest[m.id];
 
+              return (
+                <motion.div key={m.id || m.name}
+                  initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: .3, delay: i * 0.03 }}
+                  className="card card-hover overflow-hidden"
+                  style={{ padding: 0 }}
+                  data-testid={`mock-card-${i}`}>
+
+                  <div style={{ height: 4, background: color }} />
+
+                  <div className="p-4">
                     <div className="flex items-start justify-between">
-                      <div style={{
-                        width: 36, height: 36, borderRadius: 10,
+                      <span className="chip" style={{
                         background: `color-mix(in srgb, ${color} 14%, transparent)`,
-                        display: 'flex', alignItems: 'center', justifyContent: 'center'
+                        color, fontWeight: 700, fontSize: 11.5, border: 'none'
                       }}>
-                        <Icon size={16} strokeWidth={1.75} style={{ color }} />
-                      </div>
+                        {meta.label}
+                      </span>
+                      {m.isPremium ? <span className="chip chip-gold">Plus</span> : null}
                       <button
                         onClick={() => toggleFavorite(m.id)}
                         aria-label={isFav ? 'Remove from favorites' : 'Add to favorites'}
@@ -320,74 +313,70 @@ export default function MockTestsPage() {
                       </button>
                     </div>
 
-                    <div className="mt-2 text-[9.5px] font-mono font-bold" style={{ color, letterSpacing: '0.07em' }}>
-                      {meta.label}
-                    </div>
+                    <div className="mt-2 font-serif text-[16px] leading-snug" style={{ letterSpacing: '-0.01em' }}>{m.name}</div>
+                    <div className="mt-0.5 text-[12.5px]" style={{ color: 'var(--color-ink-muted)' }}>{m.subj}</div>
 
-                    <div className="mt-1.5 font-serif text-[15.5px] leading-snug" style={{ letterSpacing: '-0.01em' }}>{m.name}</div>
-                    <div className="mt-0.5 text-[12px]" style={{ color: 'var(--color-ink-muted)' }}>{m.subj}</div>
-
-                    <div className="mt-3 grid grid-cols-3 gap-1.5">
-                      <MiniStat label="Qs" val={m.qs} />
-                      <MiniStat label="Marks" val={m.mks} />
-                      <MiniStat label="Time" val={`${m.time}m`} />
-                    </div>
-
-                    <div className="mt-3 flex items-center justify-between">
-                      <AttemptCount count={m.attempts} />
-                      {m.reviews ? (
-                        <span className="flex items-center gap-1 text-[11px] font-semibold" style={{ color: 'var(--color-ink)' }}>
-                          <Star size={10} strokeWidth={0} fill="var(--color-gold)" />
-                          {(m.rating ?? 0).toFixed(1)}
-                        </span>
-                      ) : (
-                        <span className="chip" style={{ fontSize: 9.5 }}>New</span>
-                      )}
-                    </div>
-
-                    <div className="mt-3 hairline-t pt-3 flex items-center justify-between">
-                      <span className={`chip chip-${m.level === 'Hard' ? 'accent' : m.level === 'Medium' ? 'primary' : 'gold'}`} style={{ fontSize: 10.5 }}>
+                    <div className="mt-3 flex items-center gap-3 flex-wrap text-[12.5px]" style={{ color: 'var(--color-ink-muted)' }}>
+                      <span>Qs <strong style={{ color: 'var(--color-ink)' }}>{m.qs}</strong></span>
+                      <span>Marks <strong style={{ color: 'var(--color-ink)' }}>{m.mks}</strong></span>
+                      <span>{m.time}m</span>
+                      <span className={`chip chip-${m.level === 'Hard' ? 'accent' : m.level === 'Medium' ? 'primary' : 'gold'}`} style={{ fontSize: 10.5, marginLeft: 'auto' }}>
                         {m.level}
                       </span>
-                      <button onClick={() => window.location.assign(`/student-desk/mock-tests/take/${encodeURIComponent(m.id || 'demo')}`)}
-                              className="btn" style={{ padding: '0.4rem 0.8rem', fontSize: 11.5, background: color, color: '#fff', border: 'none' }}
-                              data-testid={`mock-start-${i}`}>
-                        <Play size={11} fill="currentColor" /> Start test
-                      </button>
                     </div>
-                  </motion.div>
-                );
-              })}
-            </div>
-          )}
-        </div>
+
+                    {attempt ? (
+                      <>
+                        <div className="mt-3 hairline-t pt-3 flex items-center justify-between">
+                          <div>
+                            <div className="text-[11px]" style={{ color: 'var(--color-ink-faint)' }}>Last score</div>
+                            <span className="chip" style={{
+                              marginTop: 4, fontWeight: 700, fontSize: 12.5,
+                              background: attempt.lastPct >= 50 ? 'var(--color-success-tint, #e6f6ee)' : 'var(--color-accent-tint, #fdeaea)',
+                              color: attempt.lastPct >= 50 ? 'var(--color-success)' : 'var(--color-accent)',
+                              border: 'none'
+                            }}>
+                              {attempt.lastScore} / {attempt.lastTotal} ({Math.round(attempt.lastPct)}%)
+                            </span>
+                          </div>
+                          {attempt.trend != null && (
+                            <span className="flex items-center gap-1 text-[12px] font-semibold"
+                                  style={{ color: attempt.trend >= 0 ? 'var(--color-success)' : 'var(--color-accent)' }}>
+                              {attempt.trend >= 0 ? <TrendingUp size={13} /> : <TrendingDown size={13} />}
+                              {attempt.trend >= 0 ? '+' : ''}{attempt.trend}%
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="mt-2 flex items-center gap-1.5 text-[11px]" style={{ color: 'var(--color-ink-faint)' }}>
+                          <span className="flex items-center gap-0.5">
+                            {Array.from({ length: Math.min(attempt.count, 3) }).map((_, di) => (
+                              <span key={di} style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--color-primary)', display: 'inline-block' }} />
+                            ))}
+                          </span>
+                          Attempted {attempt.count} time{attempt.count === 1 ? '' : 's'} · Last: {attempt.lastDate.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
+                        </div>
+
+                        <button onClick={() => startTest(m)}
+                                className="btn w-full mt-3" style={{ padding: '0.55rem 0.8rem', fontSize: 12.5, background: 'var(--color-primary-dark, #6d28d9)', color: '#fff', border: 'none' }}
+                                data-testid={`mock-reattempt-${i}`}>
+                          <RotateCcw size={12} /> Reattempt
+                        </button>
+                      </>
+                    ) : (
+                      <button onClick={() => startTest(m)}
+                              className="btn w-full mt-4" style={{ padding: '0.55rem 0.8rem', fontSize: 12.5, background: color, color: '#fff', border: 'none' }}
+                              data-testid={`mock-start-${i}`}>
+                        <Play size={12} fill="currentColor" /> Start Test
+                      </button>
+                    )}
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
+        )}
       </div>
     </StudentLayout>
-  );
-}
-
-function StatCard({ label, value, sub, icon: Icon, tone, test }) {
-  const color = tone === 'accent' ? 'var(--color-accent)' :
-                tone === 'gold' ? 'var(--color-gold)' :
-                tone === 'ink'  ? 'var(--color-ink-muted)' :
-                'var(--color-primary)';
-  return (
-    <div className="card p-5 md:p-6" data-testid={test}>
-      <div className="flex items-center justify-between mb-3">
-        <span className="eyebrow">{label}</span>
-        <Icon size={16} strokeWidth={1.5} style={{ color }} />
-      </div>
-      <div className="display-num text-[42px]" style={{ color }}>{value}</div>
-      <div className="mt-1 text-[12.5px]" style={{ color: 'var(--color-ink-muted)' }}>{sub}</div>
-    </div>
-  );
-}
-
-function MiniStat({ label, val }) {
-  return (
-    <div className="p-1.5 rounded-md" style={{ background: 'var(--color-surface-alt)' }}>
-      <div className="text-[8.5px] font-mono" style={{ color: 'var(--color-ink-faint)', letterSpacing: '0.1em' }}>{label.toUpperCase()}</div>
-      <div className="font-serif text-[13.5px] mt-0.5">{val}</div>
-    </div>
   );
 }

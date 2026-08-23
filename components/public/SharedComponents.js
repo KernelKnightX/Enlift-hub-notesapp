@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { ArrowRight, ArrowUpRight, BookOpen, Compass, Map, Landmark, CalendarDays, Sparkles, ChevronRight } from 'lucide-react';
+import ResourceHero from './ResourceHero';
 
 export function SectionHeader({ eyebrow, title, description, action, align = 'left' }) {
   return (
@@ -18,7 +19,8 @@ export function SectionHeader({ eyebrow, title, description, action, align = 'le
   );
 }
 
-export function ResourceCard({ icon: Icon, title, description, href, meta, tags = [], ctaLabel = 'Open', accent = 'primary' }) {
+export function ResourceCard({ icon: Icon, title, description, href, link, meta, tags = [], ctaLabel = 'Open', accent = 'primary' }) {
+  const url = href || link;
   const accentClass = accent === 'accent' ? 'chip-accent' : accent === 'gold' ? 'chip-gold' : 'chip-primary';
 
   return (
@@ -48,7 +50,7 @@ export function ResourceCard({ icon: Icon, title, description, href, meta, tags 
         </div>
       )}
 
-      <Link href={href} className="mt-6 inline-flex items-center gap-2 font-medium text-[14px]" style={{ color: 'var(--color-primary)' }}>
+      <Link href={url} className="mt-6 inline-flex items-center gap-2 font-medium text-[14px]" style={{ color: 'var(--color-primary)' }}>
         {ctaLabel} <ArrowRight size={14} strokeWidth={1.9} />
       </Link>
     </motion.article>
@@ -198,13 +200,21 @@ export function PageBanner({ eyebrow, title, description, breadcrumbs = [] }) {
   );
 }
 
-export function ResourceLayout({ children, title, description, eyebrow, breadcrumbs = [] }) {
+export function ResourceLayout({ children, title, description, eyebrow }) {
   return (
     <main style={{ background: 'var(--color-bg)' }}>
-      <section className="max-w-[1240px] mx-auto px-6 md:px-10 pt-12 md:pt-16 pb-8 md:pb-10">
-        <PageBanner eyebrow={eyebrow} title={title} description={description} breadcrumbs={breadcrumbs} />
-      </section>
+      <ResourceHero
+        title={title}
+        description={description}
+        eyebrow={eyebrow}
+        withSeo={false}
+      />
       {children}
     </main>
   );
 }
+
+export const SectionHeading = SectionHeader;
+export const ResourceTile = ResourceCard;
+export const ResourceShell = ResourceLayout;
+export const PageHero = PageBanner;

@@ -1,17 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { auth, db, storage } from '@/firebase/config';
-import {
-  signInWithEmailAndPassword,
-  signOut,
-  onAuthStateChanged
-} from 'firebase/auth';
+import { db, storage } from '@/firebase/config';
 import {
   collection,
   addDoc,
   getDocs,
   deleteDoc,
   doc,
-  getDoc,
   query,
   orderBy,
   updateDoc
@@ -22,17 +16,11 @@ import {
   getDownloadURL,
   deleteObject
 } from 'firebase/storage';
+import AdminLayout from '@/layouts/AdminLayout';
+import useAdminGate from '@/hooks/admin/useAdminGate';
 
 const AdminPYQ = () => {
-  // Auth states
-  const [user, setUser] = useState(null);
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-
-  // PYQ Data
+  const { user, loading, isAdmin } = useAdminGate();
   const [pyqs, setPyqs] = useState([]);
   const [uploading, setUploading] = useState(false);
 
@@ -49,53 +37,9 @@ const AdminPYQ = () => {
     file: null
   });
 
-  // Check admin access
-  const checkAdmin = async (uid) => {
-    try {
-      const userDoc = await getDoc(doc(db, 'users', uid));
-      return userDoc.exists() && userDoc.data().isAdmin === true;
-    } catch (err) {
-      console.error('Admin check error:', err);
-      return false;
-    }
-  };
-
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-      if (currentUser) {
-        const admin = await checkAdmin(currentUser.uid);
-        setUser(currentUser);
-        setIsAdmin(admin);
-        if (admin) loadPyqs();
-      } else {
-        setUser(null);
-        setIsAdmin(false);
-      }
-      setLoading(false);
-    });
-    return () => unsubscribe();
-  }, []);
-
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    setError('');
-    try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      const admin = await checkAdmin(userCredential.user.uid);
-      if (!admin) {
-        await signOut(auth);
-        setError('Access denied. Not an admin.');
-        return;
-      }
-      setEmail('');
-      setPassword('');
-    } catch (err) {
-      setError('Login failed. Check credentials.');
-      console.error(err);
-    }
-  };
-
-  const handleLogout = () => signOut(auth);
+    if (isAdmin) loadPyqs();
+  }, [isAdmin]);
 
   const loadPyqs = async () => {
     try {
@@ -218,81 +162,22 @@ const AdminPYQ = () => {
     );
   }
 
-  // Login screen
-  if (!user || !isAdmin) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-[var(--color-bg)] dot-grid font-sans px-4">
-        <div className="card w-full max-w-[400px] p-8 fade-up">
-          <div className="text-center mb-7">
-            <div className="w-12 h-12 mx-auto mb-4 rounded-2xl grad-hero flex items-center justify-center text-white text-xl">🔐</div>
-            <h1 className="hero-display text-2xl text-[var(--color-ink)]">Admin Login</h1>
-            <p className="text-sm text-[var(--color-ink-muted)] mt-1">Sign in to manage PYQs</p>
-          </div>
-
-          <form onSubmit={handleLogin}>
-            <div className="mb-4">
-              <label className={labelCls}>Email</label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className={inputCls}
-                placeholder="admin@example.com"
-              />
-            </div>
-
-            <div className="mb-5">
-              <label className={labelCls}>Password</label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                className={inputCls}
-                placeholder="••••••••"
-              />
-            </div>
-
-            {error && (
-              <div className="mb-4 px-3.5 py-2.5 rounded-xl bg-[var(--color-danger)]/10 border border-[var(--color-danger)]/25 text-[var(--color-danger)] text-sm">
-                {error}
-              </div>
-            )}
-
-            <button type="submit" className="btn btn-primary w-full justify-center">
-              Sign In
-            </button>
-          </form>
-        </div>
-      </div>
-    );
-  }
+  if (!isAdmin) return null;
 
   const totalFiles = pyqs.reduce((acc, pyq) => acc + (pyq.fileSize ? 1 : 0), 0);
   const totalSize = (pyqs.reduce((acc, pyq) => acc + (pyq.fileSize || 0), 0) / (1024 * 1024)).toFixed(1);
 
-  // Main Admin UI
   return (
-    <div className="min-h-screen bg-[var(--color-bg)] font-sans">
-      {/* Header */}
-      <div className="hairline-b bg-[var(--color-surface)]">
-        <div className="max-w-6xl mx-auto px-6 py-5 flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <p className="eyebrow mb-1">Admin</p>
-            <h1 className="hero-display text-2xl text-[var(--color-ink)]">📄 PYQ Management</h1>
-            <p className="text-sm text-[var(--color-ink-muted)] mt-1">
-              Upload and manage Previous Year Question papers
-            </p>
-          </div>
-          <div className="flex items-center gap-3">
-            <span className="chip">{user.email}</span>
-            <button onClick={handleLogout} className="btn btn-ghost">Logout</button>
-          </div>
-        </div>
-      </div>
-
-      <div className="max-w-6xl mx-auto px-6 py-6">
+    <AdminLayout
+      title="PYQ Papers"
+      subtitle="Upload and publish previous-year papers students download on the student desk."
+      actions={(
+        <button onClick={() => setShowUploadForm(!showUploadForm)} className="btn btn-primary" disabled={uploading}>
+          {showUploadForm ? 'Cancel' : '+ Upload PYQ'}
+        </button>
+      )}
+    >
+      <div>
         {/* Stats */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
           <div className="card p-5 flex items-center gap-4">
@@ -542,7 +427,7 @@ const AdminPYQ = () => {
           </div>
         </div>
       )}
-    </div>
+    </AdminLayout>
   );
 };
 

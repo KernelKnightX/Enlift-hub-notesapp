@@ -1,12 +1,59 @@
-import { LayoutDashboard, BookOpen, Newspaper, Users, ClipboardCheck, Bell, BarChart3, Map } from 'lucide-react';
+import {
+  LayoutDashboard,
+  BookOpen,
+  Newspaper,
+  Map,
+  Landmark,
+  FileText,
+  ClipboardCheck,
+  Bell,
+  Users,
+} from 'lucide-react';
 
-export const adminNavigation = [
-  { label: 'Dashboard', icon: LayoutDashboard, href: '/admin' },
-  { label: 'Books', icon: BookOpen, href: '/admin/books' },
-  { label: 'Current Affairs', icon: Newspaper, href: '/admin/current-affairs' },
-  { label: 'Maps & Atlas', icon: Map, href: '/admin/maps' },
-  { label: 'Users', icon: Users, href: '/admin/users' },
-  { label: 'Mock Tests', icon: ClipboardCheck, href: '/admin/mock-tests' },
-  { label: 'Notifications', icon: Bell, href: '/admin/notifications' },
-  { label: 'Analytics', icon: BarChart3, href: '/admin/analytics' },
+/** Admin office — grouped the way a CEO would walk the building. */
+export const adminNavigationGroups = [
+  {
+    heading: 'Office',
+    items: [
+      { label: 'Command center', icon: LayoutDashboard, href: '/admin' },
+    ],
+  },
+  {
+    heading: 'Library',
+    items: [
+      { label: 'NCERT Books', icon: BookOpen, href: '/admin/books/ncert-books' },
+      { label: 'Books Library', icon: BookOpen, href: '/admin/books' },
+      { label: 'Notes & PDFs', icon: FileText, href: '/admin/notes' },
+    ],
+  },
+  {
+    heading: 'Newsroom',
+    items: [
+      { label: 'Monthly Magazines', icon: Newspaper, href: '/admin/monthly-magazines' },
+      { label: 'Current Affairs', icon: Newspaper, href: '/admin/current-affairs' },
+      { label: 'Homepage notices', icon: Bell, href: '/admin/notifications' },
+    ],
+  },
+  {
+    heading: 'Atlas',
+    items: [
+      { label: 'Maps & Atlas', icon: Map, href: '/admin/maps' },
+      { label: 'Government', icon: Landmark, href: '/admin/government' },
+    ],
+  },
+  {
+    heading: 'Practice',
+    items: [
+      { label: 'Mock Tests', icon: ClipboardCheck, href: '/admin/mock-tests' },
+      { label: 'PYQ Papers', icon: FileText, href: '/admin/pyq' },
+    ],
+  },
+  {
+    heading: 'People',
+    items: [
+      { label: 'Students', icon: Users, href: '/admin/users' },
+    ],
+  },
 ];
+
+export const adminNavigation = adminNavigationGroups.flatMap((group) => group.items);

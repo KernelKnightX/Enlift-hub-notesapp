@@ -2,8 +2,8 @@ import { useMemo, useState } from 'react';
 import StudentLayout from '@/layouts/StudentLayout';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/contexts/AuthContext';
-import useFirestoreCollection from '@/hooks/useFirestoreCollection';
-import { usePlannerTasks } from '@/hooks/usePlannerTasks';
+import useFirestoreCollection from '@/hooks/shared/useFirestoreCollection';
+import { usePlannerTasks } from '@/hooks/student/usePlannerTasks';
 import TaskModal from '@/components/planner/TaskModal';
 import {
   Plus, ChevronLeft, ChevronRight, Clock, CheckCircle2, Circle

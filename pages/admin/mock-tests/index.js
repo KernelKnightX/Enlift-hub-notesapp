@@ -1,22 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { auth, db } from '@/firebase/config';
-import {
-  signInWithEmailAndPassword,
-  signOut,
-  onAuthStateChanged
-} from 'firebase/auth';
+import { db } from '@/firebase/config';
 import {
   collection,
   addDoc,
   getDocs,
   deleteDoc,
   doc,
-  getDoc,
   query,
   orderBy,
   updateDoc
 } from 'firebase/firestore';
 import Papa from 'papaparse';
+import AdminLayout from '@/layouts/AdminLayout';
+import useAdminGate from '@/hooks/admin/useAdminGate';
 
 // These must stay in sync with EXAM_TABS on the student-facing Mock Tests
 // page — a test's examType is matched exactly against that tab list, so any
@@ -69,19 +65,12 @@ const TEST_FORM_DEFAULTS = {
   marks: 0,
   type: 'full',
   duration: 60,
+  isPremium: false,
   questions: []
 };
 
 const AdminMockTests = () => {
-  // Auth states
-  const [user, setUser] = useState(null);
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-
-  // Mock Tests Data
+  const { user, loading, isAdmin } = useAdminGate();
   const [mockTests, setMockTests] = useState([]);
   const [uploading, setUploading] = useState(false);
 
@@ -107,53 +96,9 @@ const AdminMockTests = () => {
     source: ''
   });
 
-  // Check admin access
-  const checkAdmin = async (uid) => {
-    try {
-      const userDoc = await getDoc(doc(db, 'users', uid));
-      return userDoc.exists() && userDoc.data().isAdmin === true;
-    } catch (err) {
-      console.error('Admin check error:', err);
-      return false;
-    }
-  };
-
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-      if (currentUser) {
-        const admin = await checkAdmin(currentUser.uid);
-        setUser(currentUser);
-        setIsAdmin(admin);
-        if (admin) loadMockTests();
-      } else {
-        setUser(null);
-        setIsAdmin(false);
-      }
-      setLoading(false);
-    });
-    return () => unsubscribe();
-  }, []);
-
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    setError('');
-    try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      const admin = await checkAdmin(userCredential.user.uid);
-      if (!admin) {
-        await signOut(auth);
-        setError('Access denied. Not an admin.');
-        return;
-      }
-      setEmail('');
-      setPassword('');
-    } catch (err) {
-      setError('Login failed. Check credentials.');
-      console.error(err);
-    }
-  };
-
-  const handleLogout = () => signOut(auth);
+    if (isAdmin) loadMockTests();
+  }, [isAdmin]);
 
   const loadMockTests = async () => {
     try {
@@ -262,6 +207,7 @@ const AdminMockTests = () => {
       marks: test.marks ?? test.totalMarks ?? 0,
       type: TEST_TYPES.some(t => t.key === test.type) ? test.type : 'full',
       duration: test.duration || 60,
+      isPremium: !!test.isPremium,
       questions: test.questions || []
     });
     setShowCreateForm(true);
@@ -401,80 +347,26 @@ const AdminMockTests = () => {
     );
   }
 
-  // Login screen
-  if (!user || !isAdmin) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-[var(--color-bg)] dot-grid font-sans px-4">
-        <div className="card w-full max-w-[400px] p-8 fade-up">
-          <div className="text-center mb-7">
-            <div className="w-12 h-12 mx-auto mb-4 rounded-2xl grad-hero flex items-center justify-center text-white text-xl">🔐</div>
-            <h1 className="hero-display text-2xl text-[var(--color-ink)]">Admin Login</h1>
-            <p className="text-sm text-[var(--color-ink-muted)] mt-1">Sign in to manage mock tests</p>
-          </div>
-
-          <form onSubmit={handleLogin}>
-            <div className="mb-4">
-              <label className={labelCls}>Email</label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className={inputCls}
-                placeholder="admin@example.com"
-              />
-            </div>
-
-            <div className="mb-5">
-              <label className={labelCls}>Password</label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                className={inputCls}
-                placeholder="••••••••"
-              />
-            </div>
-
-            {error && (
-              <div className="mb-4 px-3.5 py-2.5 rounded-xl bg-[var(--color-danger)]/10 border border-[var(--color-danger)]/25 text-[var(--color-danger)] text-sm">
-                {error}
-              </div>
-            )}
-
-            <button type="submit" className="btn btn-primary w-full justify-center">
-              Sign In
-            </button>
-          </form>
-        </div>
-      </div>
-    );
-  }
+  if (!isAdmin) return null;
 
   const totalQuestions = mockTests.reduce((acc, test) => acc + (test.questions?.length || 0), 0);
 
-  // Main Admin UI
   return (
-    <div className="min-h-screen bg-[var(--color-bg)] font-sans">
-      {/* Header */}
-      <div className="hairline-b bg-[var(--color-surface)]">
-        <div className="max-w-6xl mx-auto px-6 py-5 flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <p className="eyebrow mb-1">Admin</p>
-            <h1 className="hero-display text-2xl text-[var(--color-ink)]">📝 Mock Tests</h1>
-            <p className="text-sm text-[var(--color-ink-muted)] mt-1">
-              Create and manage UPSC, NDA, CDS, and AFCAT practice tests
-            </p>
-          </div>
-          <div className="flex items-center gap-3">
-            <span className="chip">{user.email}</span>
-            <button onClick={handleLogout} className="btn btn-ghost">Logout</button>
-          </div>
+    <AdminLayout
+      title="Mock Tests"
+      subtitle="Create, import and publish the practice tests students take on the student desk."
+      actions={(
+        <div className="flex flex-wrap gap-2">
+          <button onClick={() => setShowCreateForm(!showCreateForm)} className="btn btn-primary" disabled={uploading}>
+            {showCreateForm ? 'Cancel' : '+ New test'}
+          </button>
+          <button onClick={() => setShowCSVUpload(!showCSVUpload)} className="btn btn-ghost" disabled={uploading}>
+            Upload CSV
+          </button>
         </div>
-      </div>
-
-      <div className="max-w-6xl mx-auto px-6 py-6">
+      )}
+    >
+      <div>
         {/* Stats */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
           <div className="card p-5 flex items-center gap-4">
@@ -710,6 +602,14 @@ const AdminMockTests = () => {
                     placeholder="Brief description of the test..."
                   />
                 </div>
+                <label className="mt-4 flex items-center gap-2 text-sm font-medium text-[var(--color-ink)]">
+                  <input
+                    type="checkbox"
+                    checked={!!testForm.isPremium}
+                    onChange={(e) => setTestForm((prev) => ({ ...prev, isPremium: e.target.checked }))}
+                  />
+                  Plus only — students need Plus to start this test
+                </label>
               </div>
 
               {/* Questions Section */}
@@ -891,6 +791,7 @@ const AdminMockTests = () => {
                     <div className="flex items-center gap-2 flex-wrap mt-2">
                       <span className="chip chip-primary">{displayExamType(test.examType)}</span>
                       {test.subject && <span className="chip">{test.subject}</span>}
+                      {test.isPremium ? <span className="chip chip-gold">Plus</span> : null}
                       {test.type && (
                         <span className="chip">{TEST_TYPES.find(t => t.key === test.type)?.label || test.type}</span>
                       )}
@@ -938,7 +839,7 @@ const AdminMockTests = () => {
           </div>
         </div>
       )}
-    </div>
+    </AdminLayout>
   );
 };
 

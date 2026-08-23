@@ -1,5 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/router';
+import SeoHead from '@/components/seo/SeoHead';
 
 import {
   MapPin,
@@ -24,6 +26,7 @@ import {
 
 
 export default function MapDetailPage({ map, relatedMaps }) {
+  const router = useRouter();
 
   if (!map) {
     return (
@@ -36,7 +39,7 @@ export default function MapDetailPage({ map, relatedMaps }) {
             href="/government"
             className="btn btn-primary"
           >
-            Back to Maps
+            Back to Government
           </Link>
         </div>
       </div>
@@ -44,12 +47,23 @@ export default function MapDetailPage({ map, relatedMaps }) {
   }
 
   const mapName = map.title?.replace('Map of ', '') || map.title;
+  const seoDescription =
+    map.upscFact ||
+    map.description ||
+    `${map.title} for UPSC polity and government studies on Notes Cafe.`;
+
   return (
     <div className="map-detail">
+      <SeoHead
+        title={`${map.title} | UPSC Government Resource | Notes Cafe`}
+        description={String(seoDescription).slice(0, 170)}
+        path={router.asPath}
+        image={map.imageUrl || map.thumbnailUrl}
+      />
       <div className="map-detail__container">
 
         <div className="map-detail__breadcrumb">
-          <Link href="/maps">Maps & Atlas</Link>
+          <Link href="/government">Government</Link>
           <ChevronRight size={14} />
           <Link href="/government">Government</Link>
           <ChevronRight size={14} />
@@ -296,7 +310,7 @@ export default function MapDetailPage({ map, relatedMaps }) {
               {relatedMaps.map((relatedMap) => (
                 <Link
                   key={relatedMap.id}
-                  href={`/government/${relatedMap.category}/${relatedMap.slug}`}
+                  href={`/government/${relatedMap.section || relatedMap.category}/${relatedMap.slug}`}
                   className="map-related-card"
                 >
                   <div className="map-related-card__image">
@@ -435,7 +449,7 @@ function HighlightCard({
 
 export async function getStaticPaths() {
   const q = query(
-    collection(db, 'maps'),
+    collection(db, 'government'),
     where('status', '==', 'published')
   );
   const snap = await getDocs(q);
@@ -443,7 +457,7 @@ export async function getStaticPaths() {
     const data = doc.data();
     return {
       params: {
-        category: data.category,
+        category: data.section,
         slug: data.slug,
       },
     };
@@ -458,9 +472,9 @@ export async function getStaticPaths() {
 export async function getStaticProps({ params }) {
   const { category, slug } = params;
   const q = query(
-    collection(db, 'maps'),
+    collection(db, 'government'),
     where('status', '==', 'published'),
-    where('category', '==', category),
+    where('section', '==', category),
     where('slug', '==', slug),
     limit(1)
   );
@@ -494,9 +508,9 @@ export async function getStaticProps({ params }) {
   let relatedMaps = [];
   if (map.region) {
     const relatedQuery = query(
-      collection(db, 'maps'),
+      collection(db, 'government'),
       where('status', '==', 'published'),
-      where('category', '==', category),
+      where('section', '==', category),
       where('region', '==', map.region),
       limit(6)
     );

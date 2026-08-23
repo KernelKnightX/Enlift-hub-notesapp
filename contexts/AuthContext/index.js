@@ -12,6 +12,7 @@ import {
   sendPasswordResetEmail
 } from "firebase/auth";
 import { doc, setDoc, onSnapshot } from "firebase/firestore";
+import { ActivityService } from "../../firebase/collection";
 
 const AuthContext = createContext();
 
@@ -45,7 +46,8 @@ export const AuthProvider = ({ children }) => {
         try {
           // Get fresh token
           await firebaseUser.getIdToken();
-          
+          await ActivityService.updateStudyStreak(firebaseUser.uid);
+
           // Use onSnapshot - with error handling for permission issues
           const userDocRef = doc(db, 'users', firebaseUser.uid);
           
@@ -204,7 +206,8 @@ export const AuthProvider = ({ children }) => {
         email: email,
         ...userData,
         createdAt: new Date(),
-        isAdmin: false // Users are not admin by default
+        isAdmin: false,
+        isPremium: false,
       });
 
       return result.user;

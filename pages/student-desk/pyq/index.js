@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import StudentLayout from '@/layouts/StudentLayout';
 import { motion } from 'framer-motion';
 import { Download, FileText, Filter, Search, Eye, ChevronRight, Sparkles, Database } from 'lucide-react';
-import useFirestoreCollection from '@/hooks/useFirestoreCollection';
+import useFirestoreCollection from '@/hooks/shared/useFirestoreCollection';
 
 const EXAMS = ['UPSC CSE Prelims', 'UPSC CSE Mains', 'UPSC CAPF', 'UPSC CDS', 'UPSC IFoS', 'UPSC ESE'];
 const YEARS = ['2024','2023','2022','2021','2020','2019','2018','2017','2016','2015'];

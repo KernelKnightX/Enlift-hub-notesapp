@@ -1,16 +1,14 @@
 export const publicNavigation = [
   { label: 'Home', href: '/' },
-  { label: 'Courses', href: '/courses' },
+  
   {
     label: 'Study Material',
     href: '/study-material',
     children: [
       { label: 'UPSC Syllabus', href: '/study-material/upsc-syllabus' },
       { label: 'NCERT Books', href: '/study-material/ncert-books' },
-      { label: 'Standard Books', href: '/study-material/standard-books' },
-      { label: 'NCERT Notes', href: '/study-material/ncert-notes' },
-      { label: 'Magazine Recommendations', href: '/study-material/magazine-recommendations' },
-      { label: 'Economic Survey', href: '/study-material/economic-survey' },
+      { label: 'Monthly Magazines', href: '/study-material/standard-books' },
+      { label: 'Current Affairs', href: '/current-affairs' },
     ],
   },
   {

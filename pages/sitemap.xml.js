@@ -1,52 +1,32 @@
-// pages/sitemap.xml.js
-// This file generates XML sitemap for SEO - helps Google index your site
+import { SITE_URL, SITEMAP_PATHS, absoluteUrl } from '@/lib/seo';
 
 export default function Sitemap() {
-  // This function is required but the actual XML is generated in getServerSideProps
+  return null;
 }
 
 export async function getServerSideProps({ res }) {
-  const siteUrl = 'https://notescafe.in';
-
-  // Static pages
-  const staticPages = [
-    '',
-    '/',
-    '/login',
-    '/register',
-    '/profile-setup',
-    '/student-desk/dashboard',
-    '/student-desk/notes',
-    '/student-desk/current-affairs',
-    '/student-desk/mock-tests',
-    '/student-desk/pyq',
-    '/student-desk/planner',
-    '/student-desk/profile',
-  ];
-
   const today = new Date().toISOString().split('T')[0];
 
-  const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  ${staticPages
-    .map((page) => {
-      const pageUrl = page === '' || page === '/' ? siteUrl : `${siteUrl}${page}`;
-      return `
+  const urls = SITEMAP_PATHS.map((path) => {
+    const loc = absoluteUrl(path);
+    const isHome = path === '/';
+    return `
   <url>
-    <loc>${pageUrl}</loc>
+    <loc>${loc}</loc>
     <lastmod>${today}</lastmod>
-    <changefreq>${page === '/' ? 'daily' : 'weekly'}</changefreq>
-    <priority>${page === '/' ? '1.0' : '0.8'}</priority>
+    <changefreq>${isHome ? 'daily' : 'weekly'}</changefreq>
+    <priority>${isHome ? '1.0' : path.split('/').length <= 2 ? '0.9' : '0.8'}</priority>
   </url>`;
-    })
-    .join('')}
+  }).join('');
+
+  const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${urls}
 </urlset>`;
 
-  res.setHeader('Content-Type', 'text/xml');
-  res.write(sitemap);
+  res.setHeader('Content-Type', 'text/xml; charset=utf-8');
+  res.setHeader('Cache-Control', 'public, s-maxage=3600, stale-while-revalidate=86400');
+  res.write(xml);
   res.end();
 
-  return {
-    props: {},
-  };
+  return { props: {} };
 }

@@ -14,6 +14,7 @@ export default function useAdminGate() {
   useEffect(() => {
     if (!authLoading && !user) {
       router.replace("/login");
+      setLoading(false);
       return;
     }
     if (!user) return;

@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { db } from "@/firebase/config";
+import AdminLayout from "@/layouts/AdminLayout";
+import useAdminGate from "@/hooks/admin/useAdminGate";
 
 
 import {
@@ -41,6 +43,7 @@ function emptyBook() {
    ================================================================ */
 
 export default function AdminNcertBooks() {
+  const { loading: gateLoading, isAdmin } = useAdminGate();
   const [books, setBooks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -159,7 +162,20 @@ export default function AdminNcertBooks() {
     }
   }
 
+  if (gateLoading) {
+    return (
+      <div className="grid min-h-screen place-items-center bg-[var(--color-bg)]">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-[var(--color-border-strong)] border-t-[var(--color-primary)]" />
+      </div>
+    );
+  }
+  if (!isAdmin) return null;
+
   return (
+    <AdminLayout
+      title="NCERT Books"
+      subtitle="Manage the class-wise NCERT library shown on the public page."
+    >
     <div className="admin-ncert-page">
       <header className="admin-ncert-header">
         <div>
@@ -425,5 +441,6 @@ export default function AdminNcertBooks() {
         </div>
       )}
     </div>
+    </AdminLayout>
   );
 }

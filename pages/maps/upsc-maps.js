@@ -3,6 +3,7 @@ import Head from "next/head";
 import Link from "next/link";
 import { ArrowRight, ChevronRight, Search, Target } from "lucide-react";
 import { getPublishedMaps } from "@/lib/firestore/maps";
+import ResourceHero from "@/components/public/ResourceHero";
 
 const FALLBACK_STATES = [
   { id: "andhra-pradesh", title: "Andhra Pradesh", region: "South India", slug: "andhra-pradesh" },
@@ -106,28 +107,12 @@ export default function UpscMapsPage() {
       </Head>
 
       <main className="maps-upsc">
-        <section className="maps-upsc__hero">
-          <div className="maps-upsc__container maps-upsc__hero-inner">
-            <div className="maps-upsc__hero-content">
-              <span className="maps-upsc__eyebrow">Maps &amp; Atlas</span>
-              <h1 className="maps-upsc__title">
-                Explore India through <span>Maps</span>
-              </h1>
-              <p className="maps-upsc__description">
-                Browse state-wise maps and visual geography resources.             </p>
-            </div>
-            <div
-              className="maps-upsc__hero-art"
-              aria-hidden="true"
-              style={{
-                backgroundImage: `linear-gradient(90deg, rgba(255,255,255,0.98) 0%, rgba(255,255,255,0.92) 12%, rgba(255,255,255,0.78) 26%, rgba(255,255,255,0.45) 44%, rgba(255,255,255,0) 62%), url("/maps/upsc-maps-hero-bg.png")`,
-                backgroundRepeat: 'no-repeat',
-                backgroundPosition: 'left center, right center',
-                backgroundSize: '100% 100%, cover',
-              }}
-            />
-          </div>
-        </section>
+        <ResourceHero
+          withSeo={false}
+          eyebrow="Maps & Atlas"
+          title="Explore India through Maps"
+          description="Browse state-wise maps and visual geography resources."
+        />
 
         <section className="maps-upsc__container maps-upsc__maps-section">
           <div className="maps-upsc__section-header">

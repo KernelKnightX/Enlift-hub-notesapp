@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import Head from "next/head";
 import Link from "next/link";
 import { ArrowRight, ChevronRight, Search, Target } from "lucide-react";
-import { getPublishedMaps } from "@/lib/firestore/government";
+import { getPublishedMaps } from "@/lib/firestore/maps";
 
 const FALLBACK_CARDS = [
   { id: "gov-1", title: "Government Map A", region: "National", slug: "government-map-a" },

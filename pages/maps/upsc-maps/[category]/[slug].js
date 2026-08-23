@@ -2,6 +2,8 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/router';
+import SeoHead from '@/components/seo/SeoHead';
 
 import {
   MapPin,
@@ -26,6 +28,7 @@ import {
 
 
 export default function MapDetailPage({ map, relatedMaps }) {
+  const router = useRouter();
 
   // --------------------------------------------------
   // MAP NOT FOUND
@@ -51,8 +54,19 @@ export default function MapDetailPage({ map, relatedMaps }) {
 
 
   const mapName = map.title?.replace('Map of ', '') || map.title;
+  const seoDescription =
+    map.upscFact ||
+    map.description ||
+    `${map.title} map for UPSC geography and map-based questions. Notes Cafe atlas.`;
+
   return (
     <div className="map-detail">
+      <SeoHead
+        title={`${map.title} | UPSC Map | Notes Cafe`}
+        description={String(seoDescription).slice(0, 170)}
+        path={router.asPath}
+        image={map.imageUrl || map.thumbnailUrl}
+      />
       <div className="map-detail__container">
 
         {/* =====================================================

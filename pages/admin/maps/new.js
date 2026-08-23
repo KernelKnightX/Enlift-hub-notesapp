@@ -1,4 +1,4 @@
-import AdminLayout from "@/components/admin/AdminLayout";
+import AdminLayout from "@/layouts/AdminLayout";
 import MapForm from "@/components/admin/MapForm";
 import useAdminGate from "@/hooks/admin/useAdminGate";
 

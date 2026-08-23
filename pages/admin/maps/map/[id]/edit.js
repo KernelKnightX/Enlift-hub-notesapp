@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import { toast } from "react-toastify";
-import AdminLayout from "@/components/admin/AdminLayout";
+import AdminLayout from "@/layouts/AdminLayout";
 import MapForm from "@/components/admin/MapForm";
 import useAdminGate from "@/hooks/admin/useAdminGate";
 import { getMapById } from "@/lib/firestore/maps";

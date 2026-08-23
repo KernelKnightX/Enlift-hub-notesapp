@@ -30,7 +30,7 @@ Recommended extensions are listed in `.vscode/extensions.json`.
 
 For the cleanest personal setup, open `enlift-hub.code-workspace` in VS Code instead of opening the folder directly. It includes Explorer nesting, search ignores, and project-specific defaults.
 
-Use `WORKSPACE_MAP.md` as the quick guide for where admin, student app, Firebase, Jest, env, package, and deployment files live.
+Use `docs/WORKSPACE_MAP.md` as the quick guide for where admin, student app, Firebase, Jest, env, package, and deployment files live.
 
 Useful VS Code tasks:
 

@@ -3,7 +3,7 @@ import Link from "next/link";
 import { collection, onSnapshot, orderBy, query } from "firebase/firestore";
 import { Edit3, Map, Plus, Trash2 } from "lucide-react";
 import { toast } from "react-toastify";
-import AdminLayout from "@/components/admin/AdminLayout";
+import AdminLayout from "@/layouts/AdminLayout";
 import useAdminGate from "@/hooks/admin/useAdminGate";
 import { db } from "@/firebase/config";
 import { MAP_CATEGORIES, categoryLabel, deleteMap } from "@/lib/firestore/maps";

@@ -1,51 +1,7 @@
 import PublicPageLayout from './PublicPageLayout';
+import ResourceHero from './ResourceHero';
 
 const contentBySlug = {
-  'ncert-notes': {
-    eyebrow: 'Study Material',
-    icon: 'book',
-    seoTitle: 'NCERT Notes for UPSC Preparation | Notes Cafe',
-    metaDescription: 'Access high-quality NCERT notes for UPSC preparation with a concise and structured approach for history, polity, geography, and economy.',
-    heroTitle: 'NCERT notes for UPSC preparation in a cleaner, easier format.',
-    heroDescription: 'Use concise and structured notes to reinforce your understanding of core concepts without adding unnecessary noise to your study routine.',
-    breadcrumbs: [{ label: 'Study Material', href: '/study-material' }, { label: 'NCERT Notes' }],
-    stats: [{ value: 'Free', label: 'Resource access' }, { value: 'Concise', label: 'Note format' }, { value: 'Fast', label: 'Revision support' }],
-    highlights: [{ title: 'Revision-friendly', body: 'Great for quick review before tests, revision cycles, and regular practice.' }, { title: 'Structured for clarity', body: 'The content is designed to support aspirants who want strong fundamentals without clutter.' }],
-    cards: [{ kicker: 'Core', title: 'Foundational Notes', body: 'Short summaries that help anchor your preparation around the most important ideas.' }, { kicker: 'Revision', title: 'Quick Review', body: 'Best used to revisit concepts before mock tests and current affairs integration.' }, { kicker: 'Support', title: 'Study Flow', body: 'Links naturally to books, syllabus, and planning tools for a better learning sequence.' }],
-    checklist: ['Concise note-based learning support', 'Organised for quick revision and retention', 'Connected to the broader public resource structure'],
-    related: [{ label: 'UPSC Syllabus PDF', href: '/study-material/upsc-syllabus' }, { label: 'Best NCERT books for UPSC', href: '/study-material/ncert-books' }, { label: 'UPSC study planner', href: '/planning-tools/study-planner' }],
-    faqs: [{ q: 'Are these notes enough on their own?', a: 'They work best as revision support alongside books, NCERTs, and a structured study plan.' }, { q: 'Who should use them?', a: 'They are ideal for aspirants who want concise recall material without drowning in long notes.' }],
-  },
-  'magazine-recommendations': {
-    eyebrow: 'Study Material',
-    icon: 'book',
-    seoTitle: 'Magazine Recommendations for UPSC Preparation | Notes Cafe',
-    metaDescription: 'Discover the best magazine recommendations for UPSC current affairs and mains preparation with a clear and practical shortlist.',
-    heroTitle: 'Magazine recommendations that make current affairs easier to manage.',
-    heroDescription: 'Choose a balanced set of reliable magazines and editorial resources to strengthen your current affairs habit without feeling overwhelmed.',
-    breadcrumbs: [{ label: 'Study Material', href: '/study-material' }, { label: 'Magazine Recommendations' }],
-    stats: [{ value: 'Curated', label: 'resource list' }, { value: 'Current', label: 'affairs focus' }, { value: 'Free', label: 'guidance' }],
-    highlights: [{ title: 'Better habits', body: 'Support daily reading with a more focused and manageable source list.' }, { title: 'Exam relevance', body: 'Choose high-value magazines that support both prelims and mains preparation.' }],
-    cards: [{ kicker: 'Current Affairs', title: 'Editorial Focus', body: 'Use magazines to develop a deeper understanding of policy and governance topics.' }, { kicker: 'Mains', title: 'Answer Context', body: 'Build better context for essay and GS writing through consistent current affairs reading.' }, { kicker: 'Planning', title: 'Weekly Rhythm', body: 'Pair magazine reading with a study planner for a steady and sustainable routine.' }],
-    checklist: ['Curated magazine recommendations for serious preparation', 'Better support for current affairs and mains writing', 'Public-first guidance that fits the SEO experience'],
-    related: [{ label: 'UPSC syllabus PDF', href: '/study-material/upsc-syllabus' }, { label: 'Government schemes', href: '/government/schemes' }, { label: 'UPSC calendar', href: '/planning-tools/upsc-calendar' }],
-    faqs: [{ q: 'How many magazines should I follow?', a: 'It is better to follow one or two reliable sources well than to spread yourself too thin.' }, { q: 'Can beginners use this?', a: 'Yes. The main value is building an intelligent reading habit rather than just collecting reading material.' }],
-  },
-  'economic-survey': {
-    eyebrow: 'Study Material',
-    icon: 'book',
-    seoTitle: 'Economic Survey Summary for UPSC Preparation | Notes Cafe',
-    metaDescription: 'Explore an accessible Economic Survey guide for UPSC preparation with key themes, summaries, and policy-focused insights.',
-    heroTitle: 'Economic Survey simplified for UPSC preparation.',
-    heroDescription: 'Use a clear guide to understand the Economic Survey in a practical way that supports exam preparation, current affairs learning, and revision.',
-    breadcrumbs: [{ label: 'Study Material', href: '/study-material' }, { label: 'Economic Survey' }],
-    stats: [{ value: 'Policy', label: 'focused insights' }, { value: 'Exam', label: 'relevant themes' }, { value: 'Free', label: 'summary support' }],
-    highlights: [{ title: 'Policy understanding', body: 'The economic survey helps aspirants connect government policy with macroeconomic themes.' }, { title: 'Relevant for mains', body: 'It is a strong source for governance, economy, and current affairs preparation.' }],
-    cards: [{ kicker: 'Economy', title: 'Macro Themes', body: 'Explore the central themes that matter most for UPSC economy preparation.' }, { kicker: 'Current Affairs', title: 'Policy Context', body: 'Use current affairs and policy context together for stronger revision.' }, { kicker: 'Revision', title: 'Quick Summary', body: 'Perfect for structured review and consolidation before tests.' }],
-    checklist: ['Simple, structured Economic Survey guidance', 'Helpful links to schemes, policies, and current affairs work', 'Built for public discovery and SEO value'],
-    related: [{ label: 'Budget Highlights', href: '/study-material' }, { label: 'Government schemes', href: '/government/schemes' }, { label: 'UPSC calendar', href: '/planning-tools/upsc-calendar' }],
-    faqs: [{ q: 'Do I need the full Economic Survey?', a: 'For high-level preparation, a structured summary and selected themes are often more practical than reading everything at once.' }, { q: 'How does it help?', a: 'It gives aspirants the policy context necessary for both mains and current affairs-based study.' }],
-  },
   'budget-highlights': {
     eyebrow: 'Study Material',
     icon: 'book',
@@ -58,7 +14,7 @@ const contentBySlug = {
     highlights: [{ title: 'Exam-oriented', body: 'Focus on the themes and allocations that matter most in the broader UPSC context.' }, { title: 'Simplified', body: 'Compress a large topic into a more digestible format for learning and recall.' }],
     cards: [{ kicker: 'Finance', title: 'Budget Themes', body: 'Understand the central themes and how they connect to economics and governance.' }, { kicker: 'Policy', title: 'Government Focus', body: 'Use the highlights to connect budget issues with current affairs and schemes.' }, { kicker: 'Revision', title: 'Short Notes', body: 'Great for revising the structure and key themes quickly.' }],
     checklist: ['A simplified breakdown of budget highlights', 'Useful connections to economy and governance topics', 'A premium public experience for trust and discovery'],
-    related: [{ label: 'Economic Survey', href: '/study-material/economic-survey' }, { label: 'Government schemes', href: '/government/schemes' }, { label: 'Study planner', href: '/planning-tools/study-planner' }],
+    related: [{ label: 'Monthly Magazines', href: '/study-material/standard-books' }, { label: 'Government schemes', href: '/government/schemes' }, { label: 'Study planner', href: '/planning-tools/study-planner' }],
     faqs: [{ q: 'Is the budget important for prelims?', a: 'It helps with current affairs and general awareness, especially as the government’s priorities evolve over time.' }, { q: 'How should I study it?', a: 'Start with the major allocations, schemes, and policy themes, then connect them to current news.' }],
   },
   'government-reports': {
@@ -283,7 +239,7 @@ const contentBySlug = {
     highlights: [{ title: 'Useful for mains', body: 'Good for adding substance and examples to analytical answers and current affairs work.' }, { title: 'Trustworthy source lens', body: 'The public-facing resource helps aspirants connect official materials to exam preparation.' }],
     cards: [{ kicker: 'Data', title: 'Official Metrics', body: 'Understand the value of static and dynamic data in policy and governance prep.' }, { kicker: 'Current Affairs', title: 'Up-to-date Context', body: 'Use these reports to support the knowledge behind new developments.' }, { kicker: 'Revision', title: 'Simple Notes', body: 'Perfect for building quick and reliable review material.' }],
     checklist: ['A public page for reports and indices', 'Helpful for governance, policy, and mains preparation', 'Connected to the wider government content experience'],
-    related: [{ label: 'Government schemes', href: '/government/schemes' }, { label: 'Constitutional bodies', href: '/government/constitutional-bodies' }, { label: 'Economic Survey', href: '/study-material/economic-survey' }],
+    related: [{ label: 'Government schemes', href: '/government/schemes' }, { label: 'Constitutional bodies', href: '/government/constitutional-bodies' }, { label: 'Monthly Magazines', href: '/study-material/standard-books' }],
     faqs: [{ q: 'Why are reports important?', a: 'They provide evidence, context, and policy grounding that makes answers more credible.' }, { q: 'How should I use them?', a: 'Read the summary first, then focus on what matters most for your current preparation stage.' }],
   },
   'ministries': {
@@ -343,7 +299,7 @@ const contentBySlug = {
     highlights: [{ title: 'Useful for governance and economy', body: 'Policy topics sit at the intersection of governance, economy, and current affairs preparation.' }, { title: 'Structured for clarity', body: 'A focused layout helps aspirants see the big picture without drowning in detail.' }],
     cards: [{ kicker: 'Governance', title: 'Policy Themes', body: 'Understand core policy themes in a practical and exam-relevant way.' }, { kicker: 'Economy', title: 'Development Focus', body: 'Connect policy ideas to economic development and public administration questions.' }, { kicker: 'Review', title: 'Short Notes', body: 'Great for mindful revision and steady knowledge building.' }],
     checklist: ['A public page for government policies', 'Useful for governance, economy, and current affairs prep', 'Connected to the wider public government experience'],
-    related: [{ label: 'Government schemes', href: '/government/schemes' }, { label: 'Reports & Indices', href: '/government/reports-and-indices' }, { label: 'Economic Survey', href: '/study-material/economic-survey' }],
+    related: [{ label: 'Government schemes', href: '/government/schemes' }, { label: 'Reports & Indices', href: '/government/reports-and-indices' }, { label: 'Monthly Magazines', href: '/study-material/standard-books' }],
     faqs: [{ q: 'Why study government policies?', a: 'Because policy understanding is central to governance and to answering many UPSC questions with greater depth.' }, { q: 'How should I approach them?', a: 'Learn the objective, the main tools, and the impact before moving into more detailed study.' }],
   },
   'study-planner': {
@@ -455,5 +411,18 @@ const contentBySlug = {
 
 export default function GenericPublicPage({ slug, pageData }) {
   const page = pageData || contentBySlug[slug] || contentBySlug['study-planner'];
-  return <PublicPageLayout page={page} />;
+  const path = `/planning-tools/${slug}`;
+
+  return (
+    <>
+      <ResourceHero
+        withSeo={false}
+        eyebrow={page.eyebrow}
+        title={page.heroTitle}
+        description={page.heroDescription}
+        path={path}
+      />
+      <PublicPageLayout page={page} hideHero />
+    </>
+  );
 }

@@ -1,369 +1,513 @@
-// pages/admin/users/index.jsx
-import React, { useEffect, useState } from "react";
-import Link from "next/link";
-import { useRouter } from "next/router";
-import { toast } from "react-toastify";
-
-import { useAuth } from "../../../contexts/AuthContext";
-
-import { db } from "../../../firebase/config";
+import { useEffect, useMemo, useState } from 'react';
+import { toast } from 'react-toastify';
 import {
   collection,
-  query,
-  orderBy,
   onSnapshot,
   doc,
-  getDoc,
   updateDoc,
   serverTimestamp,
-  getDocs,
-  where,
-} from "firebase/firestore";
+} from 'firebase/firestore';
+import {
+  Search,
+  Users,
+  Shield,
+  Crown,
+  GraduationCap,
+  Mail,
+  Phone,
+  MapPin,
+  Calendar,
+  X,
+  Copy,
+  Check,
+  Flame,
+  UserRound,
+} from 'lucide-react';
+import AdminLayout from '@/layouts/AdminLayout';
+import useAdminGate from '@/hooks/admin/useAdminGate';
+import { db } from '@/firebase/config';
 
-function UsersAdmin() {
-  const router = useRouter();
-  const { user, logout } = useAuth();
+const EXAM_LABELS = {
+  UPSC_CSE_PRELIMS: 'CSE Prelims',
+  UPSC_CSE_MAINS: 'CSE Mains',
+  UPSC_CAPF: 'CAPF',
+  UPSC_CDS: 'CDS',
+  UPSC_IFOS: 'IFoS',
+  UPSC_ESE: 'ESE',
+  OTHER: 'Other',
+};
 
-  const [loading, setLoading] = useState(true);
-  const [profile, setProfile] = useState(null);
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [users, setUsers] = useState([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterRole, setFilterRole] = useState('all'); // all, admin, user
-  const [updating, setUpdating] = useState(null);
+const AVATAR_TONES = [
+  { bg: 'var(--cat-violet-t)', fg: 'var(--cat-violet)' },
+  { bg: 'var(--cat-blue-t)', fg: 'var(--cat-blue)' },
+  { bg: 'var(--cat-green-t)', fg: 'var(--cat-green)' },
+  { bg: 'var(--cat-cyan-t)', fg: 'var(--cat-cyan)' },
+  { bg: 'var(--cat-pink-t)', fg: 'var(--cat-pink)' },
+  { bg: 'var(--cat-amber-t)', fg: '#B45309' },
+  { bg: 'var(--cat-lime-t)', fg: 'var(--cat-lime)' },
+  { bg: 'var(--color-accent-tint)', fg: 'var(--color-accent)' },
+];
 
-  /* ------------------------- Auth guard ------------------------- */
-  useEffect(() => {
-    if (!user) {
-      router.replace("/");
-      return;
-    }
+function toDate(value) {
+  if (!value) return null;
+  if (typeof value.toDate === 'function') return value.toDate();
+  if (value instanceof Date) return value;
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
 
-    let cancelled = false;
-    (async () => {
-      try {
-        const ref = doc(db, "users", user.uid);
-        const snap = await getDoc(ref);
-        if (!snap.exists()) {
-          if (!cancelled) router.replace("/");
-          return;
-        }
+function formatDate(value) {
+  const date = toDate(value);
+  if (!date) return '—';
+  return date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+}
 
-        const userData = snap.data();
-        if (!userData.isAdmin) {
-          toast.error("Access denied. Admin privileges required.");
-          if (!cancelled) router.replace("/");
-          return;
-        }
+function displayName(user) {
+  return user.fullName || user.name || user.displayName || 'Unnamed student';
+}
 
-        if (!cancelled) {
-          setProfile(userData);
-          setIsAdmin(true);
-        }
-      } catch (e) {
-        console.error("Profile fetch error:", e);
-        if (!cancelled) router.replace("/");
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    })();
+function initials(user) {
+  return displayName(user)
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join('')
+    .toUpperCase();
+}
 
-    return () => {
-      cancelled = true;
-    };
-  }, [user, router]);
+function examLabel(user) {
+  return EXAM_LABELS[user.examType] || user.examType || 'Not set';
+}
 
-  /* ------------------------- Load Users ------------------------- */
-  useEffect(() => {
-    if (!isAdmin) return;
+function avatarTone(user) {
+  const seed = String(user.id || displayName(user));
+  let hash = 0;
+  for (let i = 0; i < seed.length; i += 1) hash = (hash + seed.charCodeAt(i)) % AVATAR_TONES.length;
+  return AVATAR_TONES[hash];
+}
 
-    const qRef = query(
-      collection(db, "users"),
-      orderBy("createdAt", "desc")
-    );
-
-    const unsub = onSnapshot(qRef, (snap) => {
-      const usersList = [];
-      snap.forEach((d) => {
-        const userData = d.data();
-        usersList.push({
-          id: d.id,
-          ...userData,
-          createdAt: userData.createdAt?.toDate?.() || new Date(),
-          lastLogin: userData.lastLogin?.toDate?.() || null,
-        });
-      });
-      setUsers(usersList);
-    });
-
-    return () => unsub();
-  }, [isAdmin]);
-
-  const handleToggleAdmin = async (userId, currentStatus) => {
-    if (userId === user.uid) {
-      toast.error("You cannot modify your own admin status.");
-      return;
-    }
-
-    if (!window.confirm(`Are you sure you want to ${currentStatus ? 'remove' : 'grant'} admin privileges for this user?`)) return;
-
-    setUpdating(userId);
-    try {
-      await updateDoc(doc(db, "users", userId), {
-        isAdmin: !currentStatus,
-        updatedAt: serverTimestamp(),
-        updatedBy: user.uid,
-      });
-      toast.success(`Admin privileges ${!currentStatus ? 'granted' : 'removed'} successfully!`);
-    } catch (error) {
-      console.error("Toggle admin error:", error);
-      toast.error("Failed to update user privileges.");
-    } finally {
-      setUpdating(null);
-    }
-  };
-
-  const handleLogout = async () => {
-    try {
-      await logout();
-      toast.success("Logged out successfully!");
-      router.push("/");
-    } catch (e) {
-      console.error("Logout error:", e);
-      toast.error("Error logging out. Please try again.");
-    }
-  };
-
-  // Filter users based on search and role
-  const filteredUsers = users.filter(u => {
-    const matchesSearch = !searchTerm ||
-      u.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      u.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      u.name?.toLowerCase().includes(searchTerm.toLowerCase());
-
-    const matchesRole = filterRole === 'all' ||
-      (filterRole === 'admin' && u.isAdmin) ||
-      (filterRole === 'user' && !u.isAdmin);
-
-    return matchesSearch && matchesRole;
-  });
-
-  const getUserStats = () => {
-    const total = users.length;
-    const admins = users.filter(u => u.isAdmin).length;
-    const active = users.filter(u => u.lastLogin).length;
-    return { total, admins, active };
-  };
-
-  const stats = getUserStats();
-
-  if (loading) {
-    return (
-      <div className="min-vh-100 d-flex align-items-center justify-content-center" style={{ background: "#f8f9fa" }}>
-        <div className="text-center">
-          <div className="spinner-border text-success" role="status" style={{ width: '3rem', height: '3rem' }} />
-          <div className="mt-3 text-muted fw-semibold">Loading Users Admin...</div>
-        </div>
-      </div>
-    );
-  }
-
-  if (!isAdmin) {
-    return null; // Will redirect
-  }
-
+function LoadingScreen() {
   return (
-    <div className="container-fluid py-3 px-2 px-md-4" style={{ background: "#f8f9fa", minHeight: "100vh" }}>
-      {/* Header */}
-      <div className="card shadow-sm border-0 mb-3" style={{ background: "white" }}>
-        <div className="card-body p-3">
-          <div className="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3">
-            <div className="w-100 w-md-auto">
-              <h1 className="h5 mb-2 fw-bold" style={{ color: "#2d3748" }}>
-                👥 User Management
-              </h1>
-              <div className="d-flex flex-wrap align-items-center gap-2 small">
-                <span className="badge bg-danger text-white">Administrator</span>
-                <span className="d-none d-sm-inline text-muted">•</span>
-                <span style={{ color: "#10b981" }}>Total Users: {stats.total}</span>
-              </div>
-            </div>
-            <div className="d-flex align-items-center gap-2">
-              <Link href="/admin" className="btn btn-sm fw-semibold d-flex align-items-center gap-1" style={{ background: "#6b7280", color: "white", border: "none", padding: "6px 16px" }}>
-                <span>⬅️</span>
-                <span>Back to Admin</span>
-              </Link>
-              <button
-                className="btn btn-sm fw-semibold d-flex align-items-center gap-1"
-                style={{
-                  background: "#ef4444",
-                  color: "white",
-                  border: "none",
-                  padding: "6px 16px"
-                }}
-                onClick={handleLogout}
-              >
-                <span>🚪</span>
-                <span>Logout</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Stats Cards */}
-      <div className="row g-2 g-md-3 mb-3">
-        <div className="col-6 col-md-4">
-          <div className="card h-100 border-0 shadow-sm" style={{ background: "white" }}>
-            <div className="card-body p-3 text-center">
-              <div className="fs-3 mb-2">👥</div>
-              <div className="h5 fw-bold text-primary mb-1">{stats.total}</div>
-              <div className="small text-muted">Total Users</div>
-            </div>
-          </div>
-        </div>
-        <div className="col-6 col-md-4">
-          <div className="card h-100 border-0 shadow-sm" style={{ background: "white" }}>
-            <div className="card-body p-3 text-center">
-              <div className="fs-3 mb-2">👑</div>
-              <div className="h5 fw-bold text-danger mb-1">{stats.admins}</div>
-              <div className="small text-muted">Administrators</div>
-            </div>
-          </div>
-        </div>
-        <div className="col-6 col-md-4">
-          <div className="card h-100 border-0 shadow-sm" style={{ background: "white" }}>
-            <div className="card-body p-3 text-center">
-              <div className="fs-3 mb-2">✅</div>
-              <div className="h5 fw-bold text-success mb-1">{stats.active}</div>
-              <div className="small text-muted">Active Users</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Filters */}
-      <div className="card shadow-sm border-0 mb-3" style={{ background: "white" }}>
-        <div className="card-body p-3">
-          <div className="row g-3 align-items-end">
-            <div className="col-md-6">
-              <label className="form-label fw-semibold">Search Users</label>
-              <input
-                type="text"
-                className="form-control"
-                placeholder="Search by name or email..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
-            <div className="col-md-4">
-              <label className="form-label fw-semibold">Filter by Role</label>
-              <select
-                className="form-select"
-                value={filterRole}
-                onChange={(e) => setFilterRole(e.target.value)}
-              >
-                <option value="all">All Users</option>
-                <option value="admin">Administrators Only</option>
-                <option value="user">Regular Users Only</option>
-              </select>
-            </div>
-            <div className="col-md-2">
-              <button
-                className="btn btn-outline-secondary w-100"
-                onClick={() => {
-                  setSearchTerm('');
-                  setFilterRole('all');
-                }}
-              >
-                Clear Filters
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Users Table */}
-      <div className="card shadow-sm border-0" style={{ background: "white" }}>
-        <div className="card-header bg-primary text-white">
-          <h5 className="mb-0 fw-bold">Users ({filteredUsers.length})</h5>
-        </div>
-        <div className="card-body p-0">
-          {filteredUsers.length === 0 ? (
-            <div className="text-center py-5">
-              <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🔍</div>
-              <h5 className="text-muted">No users found</h5>
-              <p className="text-muted">Try adjusting your search or filter criteria</p>
-            </div>
-          ) : (
-            <div className="table-responsive">
-              <table className="table table-hover mb-0">
-                <thead className="table-light">
-                  <tr>
-                    <th className="border-0 px-3 py-3">User</th>
-                    <th className="border-0 px-3 py-3">Role</th>
-                    <th className="border-0 px-3 py-3">Status</th>
-                    <th className="border-0 px-3 py-3">Joined</th>
-                    <th className="border-0 px-3 py-3">Last Login</th>
-                    <th className="border-0 px-3 py-3">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredUsers.map((u) => (
-                    <tr key={u.id}>
-                      <td className="px-3 py-3">
-                        <div className="d-flex align-items-center gap-3">
-                          <div className="rounded-circle bg-primary d-flex align-items-center justify-content-center"
-                               style={{ width: '40px', height: '40px', color: 'white' }}>
-                            {(u.fullName || u.name || u.email || 'U').charAt(0).toUpperCase()}
-                          </div>
-                          <div>
-                            <div className="fw-semibold">{u.fullName || u.name || 'Unnamed User'}</div>
-                            <div className="small text-muted">{u.email}</div>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-3 py-3">
-                        <span className={`badge ${u.isAdmin ? 'bg-danger' : 'bg-secondary'}`}>
-                          {u.isAdmin ? 'Administrator' : 'User'}
-                        </span>
-                      </td>
-                      <td className="px-3 py-3">
-                        <span className={`badge ${u.isProfileComplete ? 'bg-success' : 'bg-warning'}`}>
-                          {u.isProfileComplete ? 'Complete' : 'Incomplete'}
-                        </span>
-                      </td>
-                      <td className="px-3 py-3 small text-muted">
-                        {u.createdAt?.toLocaleDateString() || 'Unknown'}
-                      </td>
-                      <td className="px-3 py-3 small text-muted">
-                        {u.lastLogin?.toLocaleDateString() || 'Never'}
-                      </td>
-                      <td className="px-3 py-3">
-                        <button
-                          className={`btn btn-sm ${u.isAdmin ? 'btn-danger' : 'btn-success'}`}
-                          onClick={() => handleToggleAdmin(u.id, u.isAdmin)}
-                          disabled={updating === u.id || u.id === user.uid}
-                        >
-                          {updating === u.id ? (
-                            <span className="spinner-border spinner-border-sm" />
-                          ) : u.isAdmin ? (
-                            'Remove Admin'
-                          ) : (
-                            'Make Admin'
-                          )}
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
-      </div>
+    <div className="grid min-h-screen place-items-center bg-[var(--color-bg)]">
+      <div className="h-8 w-8 animate-spin rounded-full border-2 border-[var(--color-border-strong)] border-t-[var(--color-primary)]" />
     </div>
   );
 }
 
-export default UsersAdmin;
+function Avatar({ user, size = 44 }) {
+  const tone = avatarTone(user);
+  return (
+    <div
+      className="grid shrink-0 place-items-center rounded-2xl text-sm font-semibold"
+      style={{
+        width: size,
+        height: size,
+        background: tone.bg,
+        color: tone.fg,
+        fontSize: size > 56 ? 22 : 13,
+      }}
+    >
+      {initials(user)}
+    </div>
+  );
+}
+
+function CopyField({ label, value }) {
+  const [copied, setCopied] = useState(false);
+  if (!value) return null;
+
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(value);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1200);
+    } catch {
+      toast.error('Could not copy.');
+    }
+  };
+
+  return (
+    <button
+      type="button"
+      onClick={copy}
+      className="flex w-full items-center justify-between gap-3 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-alt)] px-3 py-2 text-left transition hover:border-[var(--color-border-strong)]"
+    >
+      <div className="min-w-0">
+        <div className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--color-ink-faint)]">{label}</div>
+        <div className="truncate font-mono text-[12px] text-[var(--color-ink)]">{value}</div>
+      </div>
+      {copied ? <Check size={14} className="text-[var(--cat-green)]" /> : <Copy size={14} className="text-[var(--color-ink-muted)]" />}
+    </button>
+  );
+}
+
+function Fact({ icon: Icon, label, value, href }) {
+  const content = (
+    <div className="flex items-start gap-3 rounded-xl px-1 py-2">
+      <div
+        className="mt-0.5 grid h-8 w-8 place-items-center rounded-lg"
+        style={{ background: 'var(--color-surface-alt)', color: 'var(--color-ink-muted)' }}
+      >
+        <Icon size={14} />
+      </div>
+      <div className="min-w-0">
+        <div className="text-[11px] font-medium text-[var(--color-ink-faint)]">{label}</div>
+        <div className="truncate text-sm font-semibold text-[var(--color-ink)]">{value || '—'}</div>
+      </div>
+    </div>
+  );
+  if (!href || !value || value === '—') return content;
+  return (
+    <a href={href} className="block rounded-xl hover:bg-[var(--color-surface-alt)]">
+      {content}
+    </a>
+  );
+}
+
+export default function UsersAdmin() {
+  const { user, loading, isAdmin } = useAdminGate();
+  const [mounted, setMounted] = useState(false);
+  const [students, setStudents] = useState([]);
+  const [listError, setListError] = useState('');
+  const [search, setSearch] = useState('');
+  const [roleFilter, setRoleFilter] = useState('students');
+  const [selectedId, setSelectedId] = useState(null);
+  const [updatingId, setUpdatingId] = useState(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!isAdmin) return undefined;
+    const unsubscribe = onSnapshot(
+      collection(db, 'users'),
+      (snapshot) => {
+        const rows = snapshot.docs.map((item) => ({ id: item.id, ...item.data() }));
+        rows.sort((a, b) => (toDate(b.createdAt)?.getTime() || 0) - (toDate(a.createdAt)?.getTime() || 0));
+        setStudents(rows);
+        setListError('');
+      },
+      (error) => {
+        console.error(error);
+        setListError('Could not load students. Deploy the latest Firestore rules so admins can read the users collection.');
+      },
+    );
+    return () => unsubscribe();
+  }, [isAdmin]);
+
+  const stats = useMemo(() => {
+    const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+    const studentRows = students.filter((item) => !item.isAdmin);
+    return {
+      total: students.length,
+      students: studentRows.length,
+      admins: students.filter((item) => item.isAdmin).length,
+      premium: students.filter((item) => item.isPremium).length,
+      newThisWeek: students.filter((item) => (toDate(item.createdAt)?.getTime() || 0) >= weekAgo).length,
+    };
+  }, [students]);
+
+  const filtered = useMemo(() => {
+    const query = search.trim().toLowerCase();
+    return students.filter((item) => {
+      if (roleFilter === 'students' && item.isAdmin) return false;
+      if (roleFilter === 'admins' && !item.isAdmin) return false;
+      if (roleFilter === 'premium' && !item.isPremium) return false;
+      if (!query) return true;
+      const haystack = [
+        displayName(item),
+        item.email,
+        item.phoneNumber,
+        item.city,
+        item.examType,
+        item.targetYear,
+        item.id,
+      ]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase();
+      return haystack.includes(query);
+    });
+  }, [students, search, roleFilter]);
+
+  const selected = students.find((item) => item.id === selectedId) || null;
+
+  const toggleAdmin = async (target) => {
+    if (target.id === user?.uid) {
+      toast.error('You cannot change your own admin role.');
+      return;
+    }
+    const next = !target.isAdmin;
+    const ok = window.confirm(
+      next
+        ? `Make ${displayName(target)} an admin? They will get the full office.`
+        : `Remove admin access for ${displayName(target)}?`,
+    );
+    if (!ok) return;
+    setUpdatingId(target.id);
+    try {
+      await updateDoc(doc(db, 'users', target.id), {
+        isAdmin: next,
+        updatedAt: serverTimestamp(),
+        updatedBy: user.uid,
+      });
+      toast.success(next ? 'Admin access granted.' : 'Admin access removed.');
+    } catch (error) {
+      console.error(error);
+      toast.error('Could not update this account. Check Firestore rules.');
+    } finally {
+      setUpdatingId(null);
+    }
+  };
+
+  const togglePremium = async (target) => {
+    const next = !target.isPremium;
+    const ok = window.confirm(
+      next
+        ? `Grant Plus to ${displayName(target)}? They will unlock Plus mock tests.`
+        : `Remove Plus from ${displayName(target)}?`,
+    );
+    if (!ok) return;
+    setUpdatingId(target.id);
+    try {
+      await updateDoc(doc(db, 'users', target.id), {
+        isPremium: next,
+        premiumAt: next ? serverTimestamp() : null,
+        updatedAt: serverTimestamp(),
+        updatedBy: user.uid,
+      });
+      toast.success(next ? 'Plus granted.' : 'Plus removed.');
+    } catch (error) {
+      console.error(error);
+      toast.error('Could not update Plus on this account.');
+    } finally {
+      setUpdatingId(null);
+    }
+  };
+
+  if (!mounted || loading) return <LoadingScreen />;
+  if (!isAdmin) return <LoadingScreen />;
+
+  const statCards = [
+    { label: 'Registered', value: stats.total, icon: Users, bg: 'var(--cat-blue-t)', fg: 'var(--cat-blue)' },
+    { label: 'Students', value: stats.students, icon: GraduationCap, bg: 'var(--cat-green-t)', fg: 'var(--cat-green)' },
+    { label: 'Admins', value: stats.admins, icon: Shield, bg: 'var(--cat-violet-t)', fg: 'var(--cat-violet)' },
+    { label: 'Plus members', value: stats.premium, icon: Crown, bg: 'var(--cat-amber-t)', fg: '#B45309' },
+  ];
+
+  return (
+    <AdminLayout
+      title="Students"
+      subtitle="Live roster of every Firebase account. Open a profile to grant office access."
+    >
+      <div className="grid grid-cols-2 gap-3 xl:grid-cols-4 mb-6">
+        {statCards.map((item) => (
+          <div key={item.label} className="card p-4 md:p-5">
+            <div
+              className="mb-3 grid h-9 w-9 place-items-center rounded-[10px]"
+              style={{ background: item.bg, color: item.fg }}
+            >
+              <item.icon size={16} strokeWidth={1.7} />
+            </div>
+            <div className="display-num text-[28px] leading-none text-[var(--color-ink)]">{item.value}</div>
+            <div className="mt-1.5 text-[12px] text-[var(--color-ink-muted)]">{item.label}</div>
+          </div>
+        ))}
+      </div>
+
+      {listError ? (
+        <div className="mb-6 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+          {listError}
+        </div>
+      ) : null}
+
+      <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_380px]">
+        <section className="card overflow-hidden">
+          <div className="border-b border-[var(--color-border)] bg-white p-4 md:p-5">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-center">
+              <label className="relative flex-1">
+                <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--color-ink-faint)]" />
+                <input
+                  className="w-full rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface-alt)] py-2.5 pl-10 pr-3 text-sm outline-none transition focus:border-[var(--color-primary)] focus:bg-white"
+                  placeholder="Search name, email, phone, city, UID…"
+                  value={search}
+                  onChange={(event) => setSearch(event.target.value)}
+                />
+              </label>
+              <div className="flex rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface-alt)] p-1">
+                {[
+                  { id: 'students', label: 'Students' },
+                  { id: 'premium', label: 'Plus' },
+                  { id: 'admins', label: 'Admins' },
+                  { id: 'all', label: 'Everyone' },
+                ].map((item) => (
+                  <button
+                    key={item.id}
+                    type="button"
+                    className="rounded-xl px-3.5 py-1.5 text-[12.5px] font-semibold transition"
+                    style={{
+                      background: roleFilter === item.id ? '#0f172a' : 'transparent',
+                      color: roleFilter === item.id ? '#fff' : 'var(--color-ink-muted)',
+                    }}
+                    onClick={() => setRoleFilter(item.id)}
+                  >
+                    {item.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="mt-3 text-[12px] text-[var(--color-ink-muted)]">
+              Showing <span className="font-semibold text-[var(--color-ink)]">{filtered.length}</span> of {students.length} accounts
+            </div>
+          </div>
+
+          {filtered.length === 0 ? (
+            <div className="grid place-items-center px-6 py-16 text-center">
+              <div className="grid h-14 w-14 place-items-center rounded-2xl bg-[var(--color-surface-alt)] text-[var(--color-ink-muted)]">
+                <UserRound size={22} />
+              </div>
+              <p className="mt-4 max-w-sm text-sm text-[var(--color-ink-muted)]">
+                {students.length === 0
+                  ? 'No accounts in Firestore yet. New sign-ups on /register appear here automatically.'
+                  : 'No accounts match this search. Try another name or switch the filter.'}
+              </p>
+            </div>
+          ) : (
+            <ul className="max-h-[70vh] divide-y divide-[var(--color-border)] overflow-y-auto">
+              {filtered.map((item) => {
+                const active = item.id === selectedId;
+                return (
+                  <li key={item.id}>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedId(item.id)}
+                      className="flex w-full items-center gap-4 px-4 py-3.5 text-left transition md:px-5"
+                      style={{
+                        background: active ? 'linear-gradient(90deg, #EEF0FF 0%, #fff 55%)' : 'transparent',
+                        boxShadow: active ? 'inset 3px 0 0 #4F46E5' : 'none',
+                      }}
+                    >
+                      <Avatar user={item} />
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className="truncate text-[15px] font-semibold text-[var(--color-ink)]">
+                            {displayName(item)}
+                          </span>
+                          <span className={`chip ${item.isAdmin ? 'chip-violet' : 'chip-green'}`}>
+                            {item.isAdmin ? 'Admin' : 'Student'}
+                          </span>
+                          {item.isPremium ? <span className="chip chip-gold">Plus</span> : null}
+                        </div>
+                        <div className="mt-0.5 truncate text-[12.5px] text-[var(--color-ink-muted)]">
+                          {item.email || 'No email'}
+                          {item.city ? ` · ${item.city}` : ''}
+                        </div>
+                      </div>
+                      <div className="hidden shrink-0 text-right sm:block">
+                        <div className="text-[12.5px] font-medium text-[var(--color-ink)]">
+                          {examLabel(item)}
+                          {item.targetYear ? ` · ${item.targetYear}` : ''}
+                        </div>
+                        <div className="mt-0.5 text-[11.5px] text-[var(--color-ink-faint)]">
+                          Joined {formatDate(item.createdAt)}
+                        </div>
+                      </div>
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </section>
+
+        <aside className="card overflow-hidden xl:sticky xl:top-6 h-fit">
+          {!selected ? (
+            <div className="grid place-items-center px-6 py-16 text-center">
+              <div className="grid h-14 w-14 place-items-center rounded-2xl bg-[var(--color-surface-alt)] text-[var(--color-ink-muted)]">
+                <Users size={22} />
+              </div>
+              <p className="mt-4 text-sm text-[var(--color-ink-muted)]">Select a student to open their profile.</p>
+            </div>
+          ) : (
+            <div>
+              <div
+                className="relative px-5 pb-6 pt-6"
+                style={{ background: 'linear-gradient(160deg, #0f172a 0%, #2563eb 100%)' }}
+              >
+                <button
+                  type="button"
+                  className="absolute right-4 top-4 grid h-8 w-8 place-items-center rounded-full bg-white/10 text-white xl:hidden"
+                  onClick={() => setSelectedId(null)}
+                  aria-label="Close profile"
+                >
+                  <X size={15} />
+                </button>
+                <Avatar user={selected} size={64} />
+                <h2 className="mt-4 text-xl font-semibold tracking-tight text-white">{displayName(selected)}</h2>
+                <p className="mt-1 text-sm text-slate-200">{selected.email || 'No email on file'}</p>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <span className={`chip ${selected.isAdmin ? 'chip-violet' : 'chip-green'}`}>
+                    {selected.isAdmin ? 'Office admin' : 'Student'}
+                  </span>
+                  {selected.isPremium ? <span className="chip chip-gold">Plus</span> : null}
+                  {selected.targetYear ? <span className="chip chip-cyan">Target {selected.targetYear}</span> : null}
+                </div>
+              </div>
+
+              <div className="space-y-1 p-5">
+                <Fact icon={GraduationCap} label="Exam" value={`${examLabel(selected)}${selected.targetYear ? ` · ${selected.targetYear}` : ''}`} />
+                <Fact icon={Phone} label="Phone" value={selected.phoneNumber} href={selected.phoneNumber ? `tel:${selected.phoneNumber}` : undefined} />
+                <Fact icon={MapPin} label="City" value={selected.city} />
+                <Fact icon={Mail} label="Email" value={selected.email} href={selected.email ? `mailto:${selected.email}` : undefined} />
+                <Fact icon={Calendar} label="Date of birth" value={formatDate(selected.dateOfBirth)} />
+                <Fact icon={Calendar} label="Joined" value={formatDate(selected.createdAt)} />
+                {selected.studyStreak || selected.bestStreak ? (
+                  <Fact
+                    icon={Flame}
+                    label="Study streak"
+                    value={`${selected.studyStreak || 0} current · ${selected.bestStreak || 0} best`}
+                  />
+                ) : null}
+
+                <div className="space-y-2 pt-3">
+                  <CopyField label="Firebase UID" value={selected.id} />
+                </div>
+
+                <button
+                  type="button"
+                  className="mt-5 w-full rounded-2xl px-4 py-3 text-sm font-semibold text-white transition disabled:opacity-50"
+                  style={{ background: selected.isAdmin ? '#E11D48' : '#0f172a' }}
+                  disabled={updatingId === selected.id || selected.id === user?.uid}
+                  onClick={() => toggleAdmin(selected)}
+                >
+                  {updatingId === selected.id
+                    ? 'Saving…'
+                    : selected.id === user?.uid
+                      ? 'This is you'
+                      : selected.isAdmin
+                        ? 'Remove admin access'
+                        : 'Make office admin'}
+                </button>
+                <button
+                  type="button"
+                  className="mt-2 w-full rounded-2xl border border-[var(--color-border)] px-4 py-3 text-sm font-semibold transition disabled:opacity-50"
+                  style={{ background: selected.isPremium ? '#fff' : '#F59E0B', color: selected.isPremium ? 'var(--color-ink)' : '#fff' }}
+                  disabled={updatingId === selected.id}
+                  onClick={() => togglePremium(selected)}
+                >
+                  {updatingId === selected.id
+                    ? 'Saving…'
+                    : selected.isPremium
+                      ? 'Remove Plus'
+                      : 'Grant Plus'}
+                </button>
+              </div>
+            </div>
+          )}
+        </aside>
+      </div>
+    </AdminLayout>
+  );
+}

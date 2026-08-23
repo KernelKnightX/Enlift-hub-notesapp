@@ -10,6 +10,7 @@ import {
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import Link from "next/link";
 import { createEmptyBookForm, createEmptySubjectForm, buildBookPayload, buildSubjectPayload } from "@/utils/adminBooks";
+import AdminLayout from "@/layouts/AdminLayout";
 
 const inputCls =
   "w-full rounded-[12px] border border-[var(--color-border)] bg-[var(--color-surface)] px-3.5 py-2.5 text-sm text-[var(--color-ink)] placeholder:text-[var(--color-ink-faint)] outline-none transition-colors focus:border-[var(--color-primary)]";
@@ -249,20 +250,16 @@ export default function AdminBooks() {
   if (!isAdmin) return null;
 
   return (
-    <div className="min-h-screen bg-[var(--color-bg)] text-[var(--color-ink)]">
-      <div className="max-w-[1200px] mx-auto p-6">
-        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6">
-          <div>
-            <h1 className="text-3xl font-semibold">Books Library Admin</h1>
-            <p className="text-sm text-[var(--color-ink-muted)]">Manage public UPSC book subjects, listings, and cover images.</p>
-          </div>
-          <div className="flex flex-wrap gap-3">
-            <button className="btn btn-primary" onClick={() => openSubjectModal()}>Add subject</button>
-            <button className="btn btn-secondary" disabled={!bookSubjects.length} onClick={() => openBookModal()}>Add book</button>
-            <button className="btn btn-ghost" onClick={handleLogout}>Logout</button>
-          </div>
-        </div>
-
+    <AdminLayout
+      title="Books Library"
+      subtitle="Manage public UPSC book subjects, listings, and cover images."
+      actions={(
+        <>
+          <button className="btn btn-primary" onClick={() => openSubjectModal()}>Add subject</button>
+          <button className="btn btn-secondary" disabled={!bookSubjects.length} onClick={() => openBookModal()}>Add book</button>
+        </>
+      )}
+    >
         <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
           <div className="space-y-4">
             <div className="card p-5">
@@ -322,7 +319,6 @@ export default function AdminBooks() {
             </div>
           </div>
         </div>
-      </div>
 
       {showSubjectModal && (
         <Modal title={editingSubjectId ? 'Edit Book Subject' : 'Add Book Subject'} onClose={resetSubjectModal}>
@@ -402,6 +398,6 @@ export default function AdminBooks() {
           </form>
         </Modal>
       )}
-    </div>
+    </AdminLayout>
   );
 }

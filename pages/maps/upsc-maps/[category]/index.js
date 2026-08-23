@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { ArrowRight, Map } from "lucide-react";
 import { getPublishedMaps } from "@/lib/firestore/maps";
+import ResourceHero from "@/components/public/ResourceHero";
 
 const CATEGORY_LABELS = {
   "india-states": {
@@ -14,7 +15,6 @@ const CATEGORY_LABELS = {
     sectionDescription: "Explore state-wise administrative maps and important geographic details.",
     metaTitle: "India States Maps | UPSC Maps and Atlas Resources | Notes Cafe",
     metaDescription: "Explore India state maps for UPSC preparation.",
-    heroImage: "/maps/india-states-hero-bg.svg",
   },
   "biosphere-reserves": {
     eyebrow: "Maps & Atlas · India",
@@ -24,7 +24,6 @@ const CATEGORY_LABELS = {
     sectionDescription: "Discover India's biosphere reserves and their ecological significance.",
     metaTitle: "Biosphere Reserves Maps | UPSC Maps and Atlas Resources | Notes Cafe",
     metaDescription: "Explore India's biosphere reserves for UPSC geography preparation.",
-    heroImage: "/maps/biosphere-reserves-hero-bg.svg",
   },
   "river-systems": {
     eyebrow: "Maps & Atlas · India",
@@ -34,7 +33,6 @@ const CATEGORY_LABELS = {
     sectionDescription: "Discover India's river systems and their importance for UPSC.",
     metaTitle: "River Systems Maps | UPSC Maps and Atlas Resources | Notes Cafe",
     metaDescription: "Explore India's river systems for UPSC geography preparation.",
-    heroImage: "/maps/river-systems-hero-bg.svg",
   },
   "mountain-ranges": {
     eyebrow: "Maps & Atlas · India",
@@ -44,7 +42,6 @@ const CATEGORY_LABELS = {
     sectionDescription: "Discover India's mountain ranges and their geographical features.",
     metaTitle: "Mountain Ranges Maps | UPSC Maps and Atlas Resources | Notes Cafe",
     metaDescription: "Explore India's mountain ranges for UPSC geography preparation.",
-    heroImage: "/maps/mountain-ranges-hero-bg.svg",
   },
   "national-parks": {
     eyebrow: "Maps & Atlas · India",
@@ -54,7 +51,6 @@ const CATEGORY_LABELS = {
     sectionDescription: "Discover India's national parks and their ecological importance.",
     metaTitle: "National Parks Maps | UPSC Maps and Atlas Resources | Notes Cafe",
     metaDescription: "Explore India's national parks for UPSC geography preparation.",
-    heroImage: "/maps/national-parks-hero-bg.svg",
   },
 };
 
@@ -72,17 +68,14 @@ const getCategoryConfig = (category) => {
     sectionDescription: `Discover ${formatted.toLowerCase()} for UPSC preparation.`,
     metaTitle: `${formatted} Maps | UPSC Maps and Atlas Resources | Notes Cafe`,
     metaDescription: `Explore ${formatted.toLowerCase()} for UPSC geography preparation.`,
-    heroImage: `/maps/${category}-hero-bg.svg`,
   };
 };
 
-export default function UpscMapsPage({ heroImage: propHeroImage }) {
+export default function UpscMapsPage() {
   const router = useRouter();
   const { category } = router.query;
   const config = getCategoryConfig(category);
-  const heroFromConfig = config?.heroImage;
-  const hero = propHeroImage || heroFromConfig || "/maps/upsc-maps-hero-bg.svg";
-  
+
   const [maps, setMaps] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -142,36 +135,12 @@ export default function UpscMapsPage({ heroImage: propHeroImage }) {
             HERO
         ====================================================== */}
 
-        <section className="maps-upsc__hero">
-          <div className="maps-upsc__container">
-            <div className="maps-upsc__hero-inner">
-              <div className="maps-upsc__hero-content">
-                <div className="maps-upsc__eyebrow">
-                  {config.eyebrow}
-                </div>
-
-                <h1 className="maps-upsc__title">
-                  {config.title}
-                </h1>
-
-                <p className="maps-upsc__description">
-                  {config.description}
-                </p>
-              </div>
-
-              <div
-                className="maps-upsc__hero-art"
-                aria-hidden="true"
-                style={{
-                  backgroundImage: `linear-gradient(90deg, rgba(255,255,255,0.98) 0%, rgba(255,255,255,0.92) 12%, rgba(255,255,255,0.78) 26%, rgba(255,255,255,0.45) 44%, rgba(255,255,255,0) 62%), url("${hero}")`,
-                  backgroundRepeat: 'no-repeat',
-                  backgroundPosition: 'left center, right center',
-                  backgroundSize: '100% 100%, cover',
-                }}
-              />
-            </div>
-          </div>
-        </section>
+        <ResourceHero
+          withSeo={false}
+          eyebrow={config.eyebrow}
+          title={config.title}
+          description={config.description}
+        />
 
         {/* =====================================================
             CATEGORY SECTION
@@ -292,47 +261,9 @@ export async function getStaticPaths() {
   };
 }
 
-export async function getStaticProps({ params }) {
-  const { category } = params || {};
-  let heroImage = "/maps/upsc-maps-hero-bg.svg";
-
-  try {
-    const fs = require('fs');
-    const path = require('path');
-    if (category) {
-      const mapsDir = path.join(process.cwd(), 'public', 'maps');
-      const exts = ['svg', 'png', 'jpg', 'jpeg', 'webp'];
-
-      // 1) exact match: <category>-hero-bg.<ext>
-      for (const ext of exts) {
-        const candidate = path.join(mapsDir, `${category}-hero-bg.${ext}`);
-        if (fs.existsSync(candidate)) {
-          heroImage = `/maps/${category}-hero-bg.${ext}`;
-          break;
-        }
-      }
-
-      // 2) relaxed match: any file containing category and 'hero-bg'
-      if (heroImage === "/maps/upsc-maps-hero-bg.svg") {
-        const files = fs.readdirSync(mapsDir);
-        // Build a relaxed regex that matches any token from the category (allow optional trailing 's')
-        const tokens = category.split('-').map(t => t.replace(/[-\\/\\^$*+?.()|[\]{}]/g, '\\$&'));
-        const tokenPatterns = tokens.map(t => `${t}(?:s)?`);
-        const regex = new RegExp(`(?:${tokenPatterns.join('|')}).*hero-bg\\.(` + exts.join('|') + `)$`, 'i');
-        const match = files.find((f) => regex.test(f));
-        if (match) {
-          heroImage = `/maps/${match}`;
-        } else if (CATEGORY_LABELS[category]?.heroImage) {
-          heroImage = CATEGORY_LABELS[category].heroImage;
-        }
-      }
-    }
-  } catch (e) {
-    // ignore
-  }
-
+export async function getStaticProps() {
   return {
-    props: { heroImage },
+    props: {},
     revalidate: 60,
   };
 }

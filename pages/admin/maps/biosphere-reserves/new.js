@@ -1,5 +1,5 @@
 import { useState } from "react";
-import AdminLayout from "@/components/admin/AdminLayout";
+import AdminLayout from "@/layouts/AdminLayout";
 import useAdminGate from "@/hooks/admin/useAdminGate";
 import { toast } from "react-toastify";
 import { createMap, uploadMapFile, slugify } from "@/lib/firestore/maps";

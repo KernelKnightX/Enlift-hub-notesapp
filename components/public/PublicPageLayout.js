@@ -1,6 +1,8 @@
-import Head from 'next/head';
+import { useRouter } from 'next/router';
 import Link from 'next/link';
 import * as Lucide from 'lucide-react';
+import ResourceHero from './ResourceHero';
+import SeoHead from '@/components/seo/SeoHead';
 
 function renderIcon(iconName) {
   switch (iconName) {
@@ -19,7 +21,8 @@ function renderIcon(iconName) {
   }
 }
 
-export default function PublicPageLayout({ page, children }) {
+export default function PublicPageLayout({ page, children, hideHero = false }) {
+  const router = useRouter();
   if (!page) return null;
 
   const HeroIcon = renderIcon(page.icon);
@@ -39,20 +42,12 @@ export default function PublicPageLayout({ page, children }) {
 
   return (
     <>
-      <Head>
-        <title>{page.seoTitle}</title>
-        <meta name="description" content={page.metaDescription} />
-        <meta name="robots" content="index,follow" />
-        <meta property="og:title" content={page.seoTitle} />
-        <meta property="og:description" content={page.metaDescription} />
-        <meta property="og:type" content="website" />
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify(faqSchema),
-          }}
-        />
-      </Head>
+      <SeoHead
+        title={page.seoTitle}
+        description={page.metaDescription}
+        path={router.asPath || '/'}
+        jsonLd={page.faqs?.length ? [faqSchema] : []}
+      />
 
       {children ? (
         // If a page supplies custom children, render them directly
@@ -62,6 +57,15 @@ export default function PublicPageLayout({ page, children }) {
         // Fallback to the generic public page template
         // when no children are provided.
         <main style={{ background: 'var(--color-bg)' }}>
+          {hideHero ? null : (
+            <ResourceHero
+              title={page.heroTitle || page.seoTitle}
+              description={page.heroDescription || page.metaDescription}
+              eyebrow={page.eyebrow}
+              withSeo={false}
+              path={router.pathname}
+            />
+          )}
           <section className="max-w-[1240px] mx-auto px-6 md:px-10 pt-16 pb-12 md:pt-24 md:pb-20">
             <nav
               aria-label="Breadcrumb"
@@ -75,7 +79,7 @@ export default function PublicPageLayout({ page, children }) {
                 Home
               </Link>
 
-              {page.breadcrumbs?.map((crumb, index) => (
+              {page.breadcrumbs?.map((crumb) => (
                 <span
                   key={crumb.label}
                   className="flex items-center gap-2"
@@ -114,20 +118,6 @@ export default function PublicPageLayout({ page, children }) {
                   <HeroIcon size={14} />
                   {page.eyebrow}
                 </div>
-
-                <h1
-                  className="mt-5 font-serif text-[34px] md:text-[46px] leading-[1.08]"
-                  style={{ letterSpacing: '-0.02em' }}
-                >
-                  {page.heroTitle}
-                </h1>
-
-                <p
-                  className="mt-4 text-[16px] leading-[1.75] max-w-[720px]"
-                  style={{ color: 'var(--color-ink-muted)' }}
-                >
-                  {page.heroDescription}
-                </p>
 
                 <div className="mt-8 flex flex-wrap gap-3">
                   <Link href="/register" className="btn btn-primary">

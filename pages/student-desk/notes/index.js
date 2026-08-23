@@ -7,7 +7,7 @@ import {
   Landmark, Clock, Globe, TrendingUp, FlaskConical, Leaf, Shield, Newspaper,
   Scale, Users, Network, Brain, Sigma, FileText, ExternalLink, Library
 } from 'lucide-react';
-import useFirestoreCollection from '@/hooks/useFirestoreCollection';
+import useFirestoreCollection from '@/hooks/shared/useFirestoreCollection';
 
 // ---- Subject palette --------------------------------------------------
 // Each subject gets an icon + a soft bg / ink color pair, matching the
@@ -113,7 +113,8 @@ export default function NotesPage() {
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {visibleSubjects.map((subj, i) => {
-              const Icon = subj.icon || FileText;
+              const isEmoji = typeof subj.icon === 'string' && subj.icon.length <= 4;
+              const Icon = isEmoji ? FileText : (subj.icon || FileText);
               return (
                 <motion.div
                   key={subj.id || subj.code || i}
@@ -126,7 +127,20 @@ export default function NotesPage() {
                     data-testid={`subject-${subj.code}`}
                   >
                     <div className="flex items-center gap-3 min-w-0 flex-1">
-                      <IconTile tone={subj.tone} Icon={Icon} />
+                      {isEmoji ? (
+                        <div
+                          style={{
+                            width: 40, height: 40, borderRadius: 12,
+                            background: PALETTE[subj.tone]?.bg || PALETTE.blue.bg,
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            fontSize: 20, flexShrink: 0,
+                          }}
+                        >
+                          {subj.icon}
+                        </div>
+                      ) : (
+                        <IconTile tone={subj.tone} Icon={Icon} />
+                      )}
                       <div className="min-w-0 flex-1">
                         <div className="truncate text-[14px] font-semibold text-[var(--color-ink)]">{subj.name}</div>
                         <div className="text-[12px] mt-1" style={{ color: 'var(--color-ink-muted)' }}>{subj.count} Notes</div>

@@ -16,6 +16,7 @@ node_modules/
 
 # local Python environments
 /env/
+/enbv/
 /venv/
 /.venv/
 /abc/

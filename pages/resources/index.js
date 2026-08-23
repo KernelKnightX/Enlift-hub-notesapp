@@ -1,6 +1,6 @@
 import Link from 'next/link';
 
-const ITEMS = ['Syllabus','Books','NCERT Notes','Important Reports','Government Schemes','Polity','History','Geography','Economy','Environment','Science & Technology','International Relations','Ethics','Security','Agriculture','Art & Culture'];
+const ITEMS = ['Syllabus','Books','Important Reports','Government Schemes','Polity','History','Geography','Economy','Environment','Science & Technology','International Relations','Ethics','Security','Agriculture','Art & Culture'];
 
 export default function ResourcesIndex() {
   return (

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { collection, onSnapshot, orderBy, query, where } from "firebase/firestore";
 import { Map, Edit3, Trash2 } from "lucide-react";
-import AdminLayout from "@/components/admin/AdminLayout";
+import AdminLayout from "@/layouts/AdminLayout";
 import useAdminGate from "@/hooks/admin/useAdminGate";
 import { db } from "@/firebase/config";
 import { deleteMap } from "@/lib/firestore/maps";

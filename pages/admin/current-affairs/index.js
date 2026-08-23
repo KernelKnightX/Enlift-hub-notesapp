@@ -4,12 +4,13 @@ import { useRouter } from "next/router";
 import { toast } from "react-toastify";
 
 import { useAuth } from "../../../contexts/AuthContext";
-import { db } from "../../../firebase/config";
+import { db, storage } from "../../../firebase/config";
 import {
   collection, query, orderBy, onSnapshot,
   addDoc, updateDoc, deleteDoc, doc, getDoc, serverTimestamp,
 } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import AdminLayout from "@/layouts/AdminLayout";
 
 // Starter suggestions only — admins can type any subject they want and it
 // becomes a real, filterable category the moment an article uses it. This
@@ -238,36 +239,10 @@ export default function AdminCurrentAffairs() {
   const subjectsInUse = Array.from(new Set(affairs.map((a) => a.category).filter(Boolean)));
 
   return (
-    <div className="min-h-screen bg-[var(--color-bg)] font-sans">
-
-      {/* Header */}
-      <div className="hairline-b bg-[var(--color-surface)] px-4 py-4 sm:px-6">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <div className="eyebrow mb-1">Content · Current Affairs</div>
-            <h1 className="hero-display text-xl text-[var(--color-ink)] sm:text-2xl">
-              Current Affairs Manager
-            </h1>
-            <div className="mt-1 text-[13px] text-[var(--color-ink-muted)]">
-              {affairs.length} articles · {publishedCount} published · {draftCount} drafts
-            </div>
-          </div>
-          <div className="flex gap-2">
-            <Link href="/admin" className="btn btn-ghost">
-              ← Admin
-            </Link>
-            <button
-              className="btn btn-ghost"
-              onClick={() => { logout(); router.push("/login"); }}
-            >
-              Log out
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <div className="px-4 py-6 sm:px-6">
-
+    <AdminLayout
+      title="Current Affairs"
+      subtitle={`${affairs.length} articles · ${publishedCount} published · ${draftCount} drafts`}
+    >
         {/* Stats */}
         <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
           <div className="card p-4 text-center">
@@ -513,7 +488,6 @@ export default function AdminCurrentAffairs() {
             </div>
           </div>
         )}
-      </div>
-    </div>
+    </AdminLayout>
   );
 }

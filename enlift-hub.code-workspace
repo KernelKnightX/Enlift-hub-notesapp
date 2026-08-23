@@ -12,13 +12,13 @@
     "explorer.fileNesting.enabled": true,
     "explorer.fileNesting.expand": false,
     "explorer.fileNesting.patterns": {
-      "package.json": "package-lock.json, yarn.lock",
+      "package.json": "package-lock.json",
       "next.config.mjs": "next-env.d.ts, jsconfig.json",
       "eslint.config.mjs": ".editorconfig",
       ".env.example": ".env.local",
       "firebase.json": "firestore.rules, firestore.indexes.json, firebase-service-account.json",
       "jest.config.js": "jest.setup.js, __tests__, __mocks__",
-      "README.md": "CONTRIBUTING.md, DEPLOYMENT.md, VERCEL_DEPLOYMENT_GUIDE.md, FIXES_SUMMARY.md"
+      "README.md": "CONTRIBUTING.md, docs"
     },
     "files.exclude": {
       "**/.DS_Store": true,
@@ -28,6 +28,7 @@
       "**/node_modules": true,
       "**/abc": true,
       "**/env": true,
+      "**/enbv": true,
       "**/venv": true,
       "**/.venv": true
     },
@@ -38,10 +39,10 @@
       "**/node_modules": true,
       "**/abc": true,
       "**/env": true,
+      "**/enbv": true,
       "**/venv": true,
       "**/.venv": true,
-      "package-lock.json": true,
-      "yarn.lock": true
+      "package-lock.json": true
     }
   }
 }

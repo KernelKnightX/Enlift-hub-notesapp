@@ -836,7 +836,6 @@ export default function AdminNotes() {
         </Modal>
       )}
 
-      </div>
     </AdminLayout>
   );
 }

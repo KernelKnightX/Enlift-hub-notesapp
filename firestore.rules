@@ -102,6 +102,22 @@ service cloud.firestore {
       match /mockTestAttempts/{attemptId} {
         allow read, write: if isOwner(userId);
       }
+
+      match /mistakes/{mistakeId} {
+        allow read, create, update, delete: if isOwner(userId);
+      }
+
+      match /topicStats/{topicId} {
+        allow read, create, update, delete: if isOwner(userId);
+      }
+
+      match /studyPlan/{dateId} {
+        allow read, create, update, delete: if isOwner(userId);
+      }
+
+      match /studySettings/{settingsId} {
+        allow read, create, update, delete: if isOwner(userId);
+      }
     }
 
     match /admins/{adminId} {
@@ -164,8 +180,7 @@ service cloud.firestore {
     match /mockAttempts/{attemptId} {
       allow create: if isAuthenticated()
         && request.resource.data.userId == request.auth.uid;
-      allow read: if isAdmin()
-        || (isAuthenticated() && resource.data.userId == request.auth.uid);
+      allow read: if isAuthenticated();
       allow update, delete: if isAdmin();
     }
 
@@ -212,6 +227,12 @@ service cloud.firestore {
     match /leaderboard/{entryId} {
       allow read: if isAuthenticated();
       allow write: if isAdmin();
+    }
+
+    // Motivational quotes shown on the student dashboard
+    match /topperTips/{tipId} {
+      allow read: if isAuthenticated();
+      allow create, update, delete: if isAdmin();
     }
 
     match /adminNotifications/{notificationId} {

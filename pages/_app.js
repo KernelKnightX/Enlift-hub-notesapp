@@ -15,7 +15,6 @@ import "../styles/maps/map-detail.css";
 import "../styles/maps/maps-upsc.css";
 import "../styles/resource-hero.css";
 import "../styles/notes-editor.css";
-import "../styles/about.module.css";
 function App({ Component, pageProps }) {
   const router = useRouter();
   const isStudentRoute = router.pathname.startsWith('/student-desk');

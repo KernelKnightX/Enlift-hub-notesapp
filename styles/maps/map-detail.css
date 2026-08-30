@@ -551,6 +551,37 @@
   scrollbar-width: thin;
 }
 
+.map-related--single-row .map-related-grid {
+  grid-auto-columns: unset;
+  grid-auto-flow: row;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  overflow-x: visible;
+  gap: 12px;
+}
+
+.map-related--single-row .map-related-card {
+  width: auto;
+}
+
+.map-related--single-row .map-related-card__content {
+  padding: 10px;
+}
+
+.map-related--single-row .map-related-card__title {
+  font-size: 12px;
+}
+
+.map-related--single-row .map-related-card__region {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.map-related--single-row .map-related-card__image {
+  aspect-ratio: 1 / 0.72;
+}
+
 .map-related-card {
   display: block;
   width: 180px;
@@ -630,6 +661,406 @@
 }
 
 /* =========================================================
+   CONTENT-AWARE DETAIL PAGES
+   ========================================================= */
+
+.content-detail {
+  --detail-accent: var(--color-primary);
+  --detail-tint: var(--color-primary-tint);
+  --detail-soft-border: rgba(79, 70, 229, 0.16);
+}
+
+.content-detail--river {
+  --detail-accent: var(--cat-cyan);
+  --detail-tint: var(--cat-cyan-t);
+  --detail-soft-border: rgba(8, 145, 178, 0.18);
+}
+
+.content-detail--mountain {
+  --detail-accent: var(--cat-amber);
+  --detail-tint: var(--cat-amber-t);
+  --detail-soft-border: rgba(217, 119, 6, 0.18);
+}
+
+.content-detail--park,
+.content-detail--reserve {
+  --detail-accent: var(--cat-green);
+  --detail-tint: var(--cat-green-t);
+  --detail-soft-border: rgba(22, 163, 74, 0.18);
+}
+
+.content-detail--location {
+  --detail-accent: var(--cat-blue);
+  --detail-tint: var(--cat-blue-t);
+  --detail-soft-border: rgba(37, 99, 235, 0.18);
+}
+
+.content-detail--constitution,
+.content-detail--acts {
+  --detail-accent: var(--cat-violet);
+  --detail-tint: var(--cat-violet-t);
+  --detail-soft-border: rgba(124, 58, 237, 0.18);
+}
+
+.content-detail--committee,
+.content-detail--ministry,
+.content-detail--government {
+  --detail-accent: var(--color-accent);
+  --detail-tint: var(--color-accent-tint);
+  --detail-soft-border: rgba(14, 165, 233, 0.18);
+}
+
+.content-detail__hero {
+  display: grid;
+  grid-template-columns: minmax(260px, 430px) minmax(0, 1fr);
+  gap: 34px;
+  align-items: stretch;
+  margin-bottom: 28px;
+}
+
+.content-detail--river .content-detail__hero {
+  grid-template-columns: minmax(0, 1.05fr) minmax(320px, 0.95fr);
+  margin-bottom: 18px;
+}
+
+.content-detail--river .content-detail__visual {
+  min-height: 360px;
+}
+
+.content-detail--compact .map-detail__container {
+  padding-bottom: 40px;
+}
+
+.content-detail--compact .content-detail__hero {
+  margin-bottom: 16px;
+}
+
+.content-detail--compact.content-detail--river .content-detail__visual,
+.content-detail--compact.content-detail--river .content-detail__placeholder {
+  min-height: 340px;
+}
+
+.content-detail--compact .content-detail__quick-note {
+  margin-bottom: 18px;
+  padding: 14px 16px;
+}
+
+.content-detail--compact .content-detail__quick-text {
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.content-detail--compact .map-detail__section-header {
+  margin-bottom: 12px;
+}
+
+.content-detail--compact .map-related {
+  margin-top: 0;
+}
+
+.content-detail--constitution .content-detail__hero,
+.content-detail--acts .content-detail__hero,
+.content-detail--committee .content-detail__hero,
+.content-detail--ministry .content-detail__hero {
+  grid-template-columns: minmax(0, 0.82fr) minmax(0, 1.18fr);
+}
+
+.content-detail__visual {
+  position: relative;
+  min-height: 360px;
+  overflow: hidden;
+  background: var(--detail-tint);
+  border: 1px solid var(--detail-soft-border);
+  border-radius: 8px;
+}
+
+.content-detail__image {
+  object-fit: cover;
+}
+
+.content-detail--state .content-detail__image {
+  object-fit: contain;
+  padding: 18px;
+}
+
+.content-detail--river .content-detail__image,
+.content-detail--location .content-detail__image {
+  object-fit: contain;
+  padding: 16px;
+}
+
+.content-detail__placeholder {
+  display: grid;
+  width: 100%;
+  height: 100%;
+  min-height: 360px;
+  place-items: center;
+  color: var(--detail-accent);
+}
+
+.content-detail__visual-label {
+  position: absolute;
+  left: 16px;
+  bottom: 16px;
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 7px 10px;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid var(--detail-soft-border);
+  border-radius: 8px;
+  color: var(--detail-accent);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.content-detail__intro {
+  min-width: 0;
+  padding: 8px 0;
+}
+
+.content-detail__eyebrow {
+  color: var(--detail-accent);
+}
+
+.content-detail__title {
+  max-width: 860px;
+}
+
+.content-detail__summary {
+  max-width: 760px;
+  margin: 0 0 22px;
+  color: var(--color-ink-muted);
+  font-size: 16px;
+  line-height: 1.75;
+}
+
+.content-detail__fact-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.content-detail__fact-tile {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 0.72fr) minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+  min-height: 58px;
+  padding: 12px 14px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+}
+
+.content-detail__fact-tile svg {
+  color: var(--detail-accent);
+}
+
+.content-detail__fact-tile span {
+  color: var(--color-ink-faint);
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.content-detail__fact-tile strong {
+  min-width: 0;
+  color: var(--color-ink);
+  font-size: 13px;
+  font-weight: 750;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.content-detail__hero-list {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--color-border);
+}
+
+.content-detail__hero-list-title {
+  margin: 0 0 10px;
+  color: var(--color-ink);
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.content-detail__hero-list-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.content-detail__hero-list-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 34px;
+  padding: 6px 12px;
+  border: 1px solid var(--detail-soft-border);
+  border-radius: 999px;
+  background: var(--color-surface);
+  color: var(--color-ink);
+  font-size: 12.5px;
+  font-weight: 650;
+  line-height: 1.2;
+}
+
+.content-detail__hero-list-chip svg {
+  flex-shrink: 0;
+  color: var(--detail-accent);
+}
+
+.content-detail__quick-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  margin-bottom: 30px;
+  padding: 18px 20px;
+  background: var(--detail-tint);
+  border: 1px solid var(--detail-soft-border);
+  border-radius: 8px;
+}
+
+.content-detail__quick-icon {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  flex: 0 0 auto;
+  place-items: center;
+  background: var(--color-surface);
+  border-radius: 8px;
+  color: var(--detail-accent);
+}
+
+.content-detail__quick-title {
+  margin: 0 0 4px;
+  color: var(--detail-accent);
+}
+
+.content-detail__quick-text {
+  margin: 0;
+  color: var(--color-ink-2);
+  font-size: 14px;
+  line-height: 1.65;
+}
+
+.content-detail__body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 330px;
+  gap: 30px;
+  align-items: start;
+}
+
+.content-detail__section {
+  padding: 24px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+}
+
+.content-detail__profile-grid,
+.content-detail__section-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.content-detail__info-block,
+.content-detail__list-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  min-width: 0;
+  padding: 14px;
+  background: var(--color-surface-alt);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+}
+
+.content-detail__info-icon,
+.content-detail__list-icon {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  flex: 0 0 auto;
+  place-items: center;
+  background: var(--detail-tint);
+  border-radius: 8px;
+  color: var(--detail-accent);
+}
+
+.content-detail__info-label {
+  margin: 0 0 4px;
+  color: var(--color-ink-faint);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.content-detail__info-value,
+.content-detail__list-title {
+  margin: 0;
+  color: var(--color-ink);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.content-detail__list {
+  display: grid;
+  gap: 10px;
+}
+
+.content-detail__list-description {
+  margin: 4px 0 0;
+  color: var(--color-ink-muted);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.content-detail__side {
+  position: sticky;
+  top: 112px;
+  display: grid;
+  gap: 14px;
+}
+
+.content-detail__side-panel {
+  overflow: hidden;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+}
+
+.content-detail__side-panel .map-info__title {
+  display: block;
+  margin: 0;
+  padding: 18px 20px 8px;
+  color: var(--detail-accent);
+}
+
+.content-detail__side-panel .map-info__label svg {
+  color: var(--detail-accent);
+}
+
+.content-detail__pdf {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 48px;
+  padding: 12px 14px;
+  background: var(--detail-accent);
+  border-radius: 8px;
+  color: white;
+  font-size: 13px;
+  font-weight: 750;
+}
+
+/* =========================================================
    RESPONSIVE
    ========================================================= */
 
@@ -645,6 +1076,15 @@
 
   .map-glance-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .content-detail__hero,
+  .content-detail--river .content-detail__hero,
+  .content-detail--constitution .content-detail__hero,
+  .content-detail--acts .content-detail__hero,
+  .content-detail--committee .content-detail__hero,
+  .content-detail--ministry .content-detail__hero {
+    grid-template-columns: minmax(250px, 360px) minmax(0, 1fr);
   }
 }
 
@@ -672,6 +1112,20 @@
 
   .map-highlight-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .content-detail__hero,
+  .content-detail--river .content-detail__hero,
+  .content-detail--constitution .content-detail__hero,
+  .content-detail--acts .content-detail__hero,
+  .content-detail--committee .content-detail__hero,
+  .content-detail--ministry .content-detail__hero,
+  .content-detail__body {
+    grid-template-columns: 1fr;
+  }
+
+  .content-detail__side {
+    position: static;
   }
 }
 
@@ -777,8 +1231,39 @@
     grid-auto-columns: 160px;
   }
 
+  .map-related--single-row .map-related-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    overflow-x: auto;
+    grid-auto-flow: column;
+    grid-auto-columns: 150px;
+  }
+
   .map-related-card {
     width: 160px;
+  }
+
+  .content-detail__hero {
+    gap: 20px;
+  }
+
+  .content-detail__visual,
+  .content-detail--river .content-detail__visual,
+  .content-detail__placeholder {
+    min-height: 280px;
+  }
+
+  .content-detail__fact-grid,
+  .content-detail__profile-grid,
+  .content-detail__section-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .content-detail__fact-tile {
+    grid-template-columns: 20px minmax(0, 0.6fr) minmax(0, 1fr);
+  }
+
+  .content-detail__section {
+    padding: 18px;
   }
 }
 
@@ -789,4 +1274,3 @@
     transition: none;
   }
 }
-

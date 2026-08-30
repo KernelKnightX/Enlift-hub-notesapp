@@ -55,6 +55,7 @@ function MapCard({ item, index, isFallback }) {
   return (
     <Link href={href} className="maps-upsc__card">
       <div className="maps-upsc__card-image">
+        <span className="maps-upsc__card-badge">Atlas map</span>
         {!isFallback && (item.thumbnailUrl || item.imageUrl) ? (
           <img src={item.thumbnailUrl || item.imageUrl} alt={item.title} />
         ) : (
@@ -62,8 +63,10 @@ function MapCard({ item, index, isFallback }) {
         )}
       </div>
       <div className="maps-upsc__card-content">
-        <h2 className="maps-upsc__card-title">{item.title}</h2>
-        <p className="maps-upsc__card-region">{item.region || "India map"}</p>
+        <div className="maps-upsc__card-body">
+          <h2 className="maps-upsc__card-title">{item.title}</h2>
+          <p className="maps-upsc__card-meta">{item.region || "India map"}</p>
+        </div>
         <span className="maps-upsc__card-action">
           Open map <ArrowRight size={14} strokeWidth={1.8} />
         </span>

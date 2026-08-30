@@ -6,8 +6,7 @@
 .maps-upsc {
   width: 100%;
   min-height: 100vh;
-  background:
-    linear-gradient(180deg, #fbfbff 0%, #ffffff 42%, #fbfbff 100%);
+  background: linear-gradient(180deg, #fbfbff 0%, #ffffff 42%, #fbfbff 100%);
   color: var(--color-ink);
 }
 
@@ -25,7 +24,11 @@
   overflow: hidden;
   border-bottom: 1px solid rgba(224, 226, 238, 0.72);
   background:
-    radial-gradient(circle at 78% 18%, rgba(94, 70, 245, 0.12), transparent 28%),
+    radial-gradient(
+      circle at 78% 18%,
+      rgba(94, 70, 245, 0.12),
+      transparent 28%
+    ),
     linear-gradient(90deg, #fbfbff 0%, #f8f8ff 46%, #f4f2ff 100%);
 }
 
@@ -86,12 +89,23 @@
   pointer-events: none;
   /* white highlight overlay on top of the full-bleed image */
   background-image:
-    linear-gradient(90deg, rgba(255,255,255,0.98) 0%, rgba(255,255,255,0.92) 12%, rgba(255,255,255,0.78) 26%, rgba(255,255,255,0.45) 44%, rgba(255,255,255,0) 62%),
+    linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.98) 0%,
+      rgba(255, 255, 255, 0.92) 12%,
+      rgba(255, 255, 255, 0.78) 26%,
+      rgba(255, 255, 255, 0.45) 44%,
+      rgba(255, 255, 255, 0) 62%
+    ),
     url("/maps/upsc-maps-hero-bg.svg");
   background-repeat: no-repeat;
   /* highlight on left, image aligned to right of viewport */
-  background-position: left center, right center;
-  background-size: 100% 100%, cover;
+  background-position:
+    left center,
+    right center;
+  background-size:
+    100% 100%,
+    cover;
   transition: background-image 240ms ease;
   z-index: 1;
 }
@@ -166,7 +180,8 @@
   position: relative;
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 16px;
+  gap: 18px;
+  align-items: stretch;
 }
 
 /* =========================================================
@@ -176,15 +191,15 @@
 .maps-upsc__card {
   display: flex;
   min-width: 0;
-  min-height: 28px;
+  min-height: 372px;
   flex-direction: column;
   overflow: hidden;
   color: inherit;
   text-decoration: none;
   background: #ffffff;
   border: 1px solid #e5e7f0;
-  border-radius: 8px;
-  box-shadow: 0 12px 30px rgba(31, 41, 55, 0.04);
+  border-radius: 14px;
+  box-shadow: 0 10px 28px rgba(31, 41, 55, 0.05);
   transition:
     transform 0.18s ease,
     border-color 0.18s ease,
@@ -192,32 +207,74 @@
 }
 
 .maps-upsc__card:hover {
-  transform: translateY(-3px);
-  border-color: rgba(77, 56, 245, 0.26);
-  box-shadow: 0 18px 34px rgba(31, 41, 55, 0.08);
+  transform: translateY(-4px);
+  border-color: rgba(77, 56, 245, 0.28);
+  box-shadow: 0 20px 36px rgba(47, 33, 244, 0.12);
 }
 
 .maps-upsc__card-image {
   position: relative;
+  display: flex;
   width: 100%;
-  height: 260px;
+  height: 220px;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
   overflow: hidden;
+  border-bottom: 1px solid #e8eaf4;
   background:
-    radial-gradient(circle at 50% 42%, rgba(248, 250, 252, 0.4), transparent 52%),
-    #ffffff;
+    linear-gradient(rgba(77, 56, 245, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(77, 56, 245, 0.035) 1px, transparent 1px),
+    linear-gradient(180deg, #fafbff 0%, #f3f5ff 100%);
+  background-size: 18px 18px, 18px 18px, 100% 100%;
+}
+
+.maps-upsc__card-badge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.88);
+  color: #3426f4;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  backdrop-filter: blur(8px);
 }
 
 .maps-upsc__card-image img {
   display: block;
-  width: 100%;
-  height: 100%;
+  width: calc(100% - 24px);
+  height: calc(100% - 24px);
   object-fit: contain;
-  padding: 10px;
-  transition: transform 0.3s ease;
+  padding: 8px;
+  border: 1px solid rgba(229, 231, 240, 0.95);
+  border-radius: 10px;
+  background: #ffffff;
+  box-shadow: 0 10px 24px rgba(31, 41, 55, 0.08);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .maps-upsc__card:hover .maps-upsc__card-image img {
-  transform: scale(1.025);
+  transform: scale(1.02);
+  box-shadow: 0 14px 28px rgba(47, 33, 244, 0.14);
+}
+
+.maps-upsc__card-placeholder {
+  display: grid;
+  width: calc(100% - 24px);
+  height: calc(100% - 24px);
+  place-items: center;
+  border: 1px dashed #d8dcf0;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.88);
+  color: #8b93a7;
 }
 
 .maps-upsc__mini-map {
@@ -242,26 +299,37 @@
 
 .maps-upsc__card-content {
   display: flex;
-  min-height: 92px;
+  min-height: 152px;
   flex: 1;
   flex-direction: column;
-  padding: 0 14px 16px;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 16px 18px;
+}
+
+.maps-upsc__card-body {
+  min-width: 0;
 }
 
 .maps-upsc__card-title {
   margin: 0;
   color: #111827;
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 800;
-  line-height: 1.3;
-  letter-spacing: 0;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
 }
 
-.maps-upsc__card-region {
-  margin: 7px 0 0;
+.maps-upsc__card-region,
+.maps-upsc__card-meta {
+  margin: 8px 0 0;
   color: #5c667a;
-  font-size: 13px;
-  line-height: 1.35;
+  font-size: 12.5px;
+  line-height: 1.45;
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
 }
 
 .maps-upsc__card-action {
@@ -269,11 +337,21 @@
   width: max-content;
   align-items: center;
   gap: 6px;
-  margin-top: auto;
-  padding-top: 16px;
+  margin-top: 0;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(47, 33, 244, 0.08);
   color: #2f21f4;
-  font-size: 13px;
+  font-size: 12.5px;
   font-weight: 800;
+  transition:
+    background 0.18s ease,
+    color 0.18s ease,
+    transform 0.18s ease;
+}
+
+.maps-upsc__card:hover .maps-upsc__card-action {
+  background: rgba(47, 33, 244, 0.14);
 }
 
 .maps-upsc__card-action svg {
@@ -328,7 +406,12 @@
   border-radius: 8px;
   background:
     radial-gradient(circle at 10% 20%, rgba(79, 70, 229, 0.1), transparent 24%),
-    linear-gradient(90deg, rgba(246, 244, 255, 0.96) 0%, rgba(255, 255, 255, 0.98) 56%, rgba(244, 241, 255, 0.94) 100%);
+    linear-gradient(
+      90deg,
+      rgba(246, 244, 255, 0.96) 0%,
+      rgba(255, 255, 255, 0.98) 56%,
+      rgba(244, 241, 255, 0.94) 100%
+    );
 }
 
 .maps-upsc__revision-icon {
@@ -474,8 +557,12 @@
     height: 310px;
     opacity: 0.95;
     transform: translateX(50%);
-    background-position: center center, center bottom;
-    background-size: 0 0, contain;
+    background-position:
+      center center,
+      center bottom;
+    background-size:
+      0 0,
+      contain;
   }
 
   .maps-upsc__grid,
@@ -503,8 +590,8 @@
   }
 
   .maps-upsc__hero-inner {
-    min-height: 530px;
-    padding: 34px 0 230px;
+    min-height: 0;
+    padding: 30px 0 188px;
   }
 
   .maps-upsc__eyebrow {
@@ -513,7 +600,7 @@
   }
 
   .maps-upsc__title {
-    font-size: 33px;
+    font-size: clamp(29px, 8.5vw, 33px);
     line-height: 1.14;
   }
 
@@ -564,6 +651,24 @@
 
   .maps-upsc__revision-copy h2 {
     font-size: 20px;
+  }
+
+  .maps-upsc__revision-action {
+    min-width: 0;
+  }
+}
+
+@media (max-width: 380px) {
+  .maps-upsc__hero-inner {
+    padding-bottom: 170px;
+  }
+
+  .maps-upsc__hero-art {
+    height: 210px;
+  }
+
+  .maps-upsc__card-content {
+    padding-inline: 12px;
   }
 }
 

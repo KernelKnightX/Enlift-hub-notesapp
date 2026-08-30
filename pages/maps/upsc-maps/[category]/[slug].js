@@ -1,50 +1,26 @@
-// pages/maps/upsc-maps/[category]/[slug].js
-
-import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import SeoHead from '@/components/seo/SeoHead';
-
-import {
-  MapPin,
-  Landmark,
-  Grid3x3,
-  Ruler,
-  Waves,
-  Languages,
-  Lightbulb,
-  ChevronRight,
-} from 'lucide-react';
-
+import ContentDetailPage from '@/components/public/ContentDetailPage';
+import { normalizeLengthKm } from '@/lib/firestore/maps';
 import { db } from '@/firebase/config';
-
 import {
   collection,
-  query,
-  where,
   getDocs,
   limit,
+  query,
+  where,
 } from 'firebase/firestore';
-
 
 export default function MapDetailPage({ map, relatedMaps }) {
   const router = useRouter();
-
-  // --------------------------------------------------
-  // MAP NOT FOUND
-  // --------------------------------------------------
 
   if (!map) {
     return (
       <div className="map-detail">
         <div className="map-detail__empty">
-          <p className="map-detail__empty-text">
-            This map could not be found.
-          </p>
-          <Link
-            href="/maps/upsc-maps"
-            className="btn btn-primary"
-          >
+          <p className="map-detail__empty-text">This map could not be found.</p>
+          <Link href="/maps/upsc-maps" className="btn btn-primary">
             Back to Maps
           </Link>
         </div>
@@ -52,11 +28,10 @@ export default function MapDetailPage({ map, relatedMaps }) {
     );
   }
 
-
-  const mapName = map.title?.replace('Map of ', '') || map.title;
   const seoDescription =
     map.upscFact ||
     map.description ||
+    map.summary ||
     `${map.title} map for UPSC geography and map-based questions. Notes Cafe atlas.`;
 
   return (
@@ -67,453 +42,16 @@ export default function MapDetailPage({ map, relatedMaps }) {
         path={router.asPath}
         image={map.imageUrl || map.thumbnailUrl}
       />
-      <div className="map-detail__container">
-
-        {/* =====================================================
-            BREADCRUMB
-        ====================================================== */}
-
-        <div className="map-detail__breadcrumb">
-          <Link href="/maps">
-            Maps & Atlas
-          </Link>
-          <ChevronRight size={14} />
-          <Link href="/maps/upsc-maps">
-            India
-          </Link>
-          <ChevronRight size={14} />
-          <Link href={`/maps/upsc-maps/${map.category}`}>
-            States
-          </Link>
-          <ChevronRight size={14} />
-          <span className="map-detail__breadcrumb-current">
-            {mapName}
-          </span>
-        </div>
-
-
-        {/* =====================================================
-            HEADER
-        ====================================================== */}
-
-        <div className="map-detail__header">
-          {/* LEFT SIDE */}
-          <div className="map-detail__heading">
-            <h1 className="map-detail__title">
-              {map.title}
-            </h1>   
-
-
-            <div className="map-detail__tags">
-
-              {map.region && (
-                <span className="chip">
-                  {map.region}
-                </span>
-              )}
-
-            </div>
-
-          </div>
-
-
-          {/* QUICK FACT */}
-
-          {map.upscFact && (
-            <div className="map-detail__quick-fact">
-              <div className="map-detail__quick-fact-header">
-                <div className="map-detail__quick-fact-icon">
-                  <Lightbulb size={15} />
-                </div>
-                <span className="eyebrow map-detail__quick-fact-title">
-                  UPSC Quick Fact
-                </span>
-              </div>
-              <p className="map-detail__quick-fact-text">
-                {map.upscFact}
-              </p>
-            </div>
-          )}
-        </div>
-
-        {/* =====================================================
-            MAP + KEY INFORMATION
-        ====================================================== */}
-
-        <div className="map-detail__content-grid">
-
-
-          {/* MAP VIEWER */}
-
-          <div className="map-viewer">
-
-            <div className="map-viewer__canvas">
-
-              <Image
-                src={map.imageUrl}
-                alt={map.title}
-                fill
-                priority
-                className="map-viewer__image"
-                sizes="(max-width: 900px) 100vw, 850px"
-              />
-            </div>
-          </div>
-
-          {/* KEY INFORMATION */}
-
-          <div className="map-info">
-            <h2 className="eyebrow map-info__title">
-              Key Information
-            </h2>
-
-            <div className="map-info__list">
-              <InfoRow
-                icon={Landmark}
-                label="Capital"
-                value={map.capital}
-              />
-              <InfoRow
-                icon={MapPin}
-                label="Largest City"
-                value={map.largestCity}
-              />
-              <InfoRow
-                icon={Grid3x3}
-                label="Districts"
-                value={map.districtsCount}
-              />
-              <InfoRow
-                icon={Ruler}
-                label="Area"
-                value={map.area}
-              />
-              <InfoRow
-                icon={Grid3x3}
-                label="Region"
-                value={map.region}
-              />
-              <InfoRow
-                icon={Waves}
-                label="Coastline"
-                value={map.coastlineKm}
-              />
-              <InfoRow
-                icon={Languages}
-                label="Official Language"
-                value={map.officialLanguage}
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* =====================================================
-            AT A GLANCE
-        ====================================================== */}
-
-        <section className="map-detail__section">
-          <div className="map-detail__section-header">
-            <h2 className="map-detail__section-title">
-              {mapName} at a Glance
-            </h2>
-          </div>
-
-          <div className="map-glance-grid">
-            <GlanceCard
-              icon={Landmark}
-              label="Capital"
-              value={map.capital}
-            />
-
-            <GlanceCard
-              icon={MapPin}
-              label="Largest City"
-              value={map.largestCity}
-            />
-
-            <GlanceCard
-              icon={Grid3x3}
-              label="Districts"
-              value={map.districtsCount}
-            />
-
-            <GlanceCard
-              icon={Ruler}
-              label="Area"
-              value={map.area}
-            />
-
-            <GlanceCard
-              icon={Waves}
-              label="Coastline"
-              value={map.coastlineKm}
-            />
-
-            <GlanceCard
-              icon={Languages}
-              label="Official Language"
-              value={map.officialLanguage}
-            />
-
-          </div>
-
-        </section>
-
-
-        {/* =====================================================
-            MAP HIGHLIGHTS
-        ====================================================== */}
-
-        {(map.districtsCount || map.coastlineKm) && (
-          <section className="map-detail__section">
-            <div className="map-detail__section-header">
-              <h2 className="map-detail__section-title">
-                Map Highlights
-              </h2>
-            </div>
-
-            <div className="map-highlight-grid">
-
-
-              {map.districtsCount && (
-                <HighlightCard
-                  color="violet"
-                  value={map.districtsCount}
-                  label="Districts"
-                  sub="Administrative Districts"
-                />
-              )}
-
-
-              {map.coastlineKm && (
-                <HighlightCard
-                  color="cyan"
-                  value={map.coastlineKm}
-                  label="Coastline"
-                  sub={`Along ${map.region || 'the region'}`}
-                />
-              )}
-
-              {map.region && (
-                <HighlightCard
-                  color="green"
-                  value={map.region}
-                  label="Region"
-                  sub="Geographical Region"
-                />
-              )}
-            </div>
-          </section>
-        )}
-
-        {/* =====================================================
-            IMPORTANT LOCATIONS
-        ====================================================== */}
-
-        {map.importantLocations?.length > 0 && (
-          <section className="map-detail__section">
-            <div className="map-detail__section-header">
-              <h2 className="map-detail__section-title">
-                Important Locations
-              </h2>
-            </div>
-
-            <div className="map-location-grid">
-              {map.importantLocations.map((location, index) => (
-                <div
-                  key={`${location.name}-${index}`}
-                  className="map-location-card"
-                >
-                  <div className="map-location-card__icon">
-                    <MapPin size={16} />
-                  </div>
-
-                  <div className="map-location-card__content">
-                    <p className="map-location-card__name">
-                      {location.name}
-                    </p>
-
-                    {location.description && (
-                      <p className="map-location-card__description">
-                        {location.description}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
-
-
-        {/* =====================================================
-            EXPLORE MORE MAPS
-        ====================================================== */}
-
-        {relatedMaps?.length > 0 && (
-          <section className="map-detail__section map-related">
-            <div className="map-detail__section-header">
-              <h2 className="map-detail__section-title">
-                Explore More Maps
-              </h2>
-            </div>
-
-            <div className="map-related-grid">
-              {relatedMaps.map((relatedMap) => (
-                <Link
-                  key={relatedMap.id}
-                  href={`/maps/upsc-maps/${relatedMap.category}/${relatedMap.slug}`}
-                  className="map-related-card"
-                >
-                  <div className="map-related-card__image">
-                    <Image
-                      src={
-                        relatedMap.thumbnailUrl ||
-                        relatedMap.imageUrl
-                      }
-                      alt={relatedMap.title}
-                      fill
-                      sizes="180px"
-                    />
-                  </div>
-                  <div className="map-related-card__content">
-
-                    <p className="map-related-card__title">
-                      {relatedMap.title?.replace(
-                        'Map of ',
-                        ''
-                      )}
-                    </p>
-
-
-                    {relatedMap.region && (
-
-                      <p className="map-related-card__region">
-                        {relatedMap.region}
-                      </p>
-
-                    )}
-
-
-                    <span className="map-related-card__link">
-                      View Map →
-                    </span>
-
-                  </div>
-
-                </Link>
-
-              ))}
-
-            </div>
-
-          </section>
-
-        )}
-
-      </div>
-
+      <ContentDetailPage
+        item={map}
+        relatedItems={relatedMaps}
+        type="maps"
+        baseHref="/maps/upsc-maps"
+        baseLabel="Maps & Atlas"
+      />
     </div>
   );
 }
-
-
-/* =========================================================
-   INFO ROW
-========================================================= */
-
-function InfoRow({
-  icon: Icon,
-  label,
-  value,
-}) {
-
-  if (!value) {
-    return null;
-  }
-
-  return (
-    <div className="map-info__row">
-
-      <span className="map-info__label">
-
-        <Icon size={15} />
-
-        {label}
-
-      </span>
-
-
-      <span className="map-info__value">
-        {value}
-      </span>
-
-    </div>
-  );
-}
-
-
-/* =========================================================
-   GLANCE CARD
-========================================================= */
-
-function GlanceCard({
-  icon: Icon,
-  label,
-  value,
-}) {
-  if (!value) {
-    return null;
-  }
-  return (
-    <div className="map-glance-card">
-      <div className="map-glance-card__icon">
-        <Icon size={16} />
-      </div>
-      <p className="map-glance-card__label">
-        {label}
-      </p>
-      <p className="map-glance-card__value">
-        {value}
-      </p>
-    </div>
-  );
-}
-
-
-/* =========================================================
-   HIGHLIGHT CARD
-========================================================= */
-
-function HighlightCard({
-  color,
-  value,
-  label,
-  sub,
-}) {
-  return (
-    <div
-      className={`map-highlight-card map-highlight-card--${color}`}
-    >
-      <p className="map-highlight-card__value">
-        {value}
-      </p>
-      <p className="map-highlight-card__label">
-        {label}
-      </p>
-      <p className="map-highlight-card__sub">
-        {sub}
-      </p>
-      <div className="map-highlight-card__icon">
-        <Waves size={18} />
-      </div>
-    </div>
-  );
-}
-
-/* =========================================================
-   DATA FETCHING
-========================================================= */
 
 export async function getStaticPaths() {
   const q = query(
@@ -530,12 +68,12 @@ export async function getStaticPaths() {
       },
     };
   });
+
   return {
     paths,
     fallback: 'blocking',
   };
 }
-
 
 export async function getStaticProps({ params }) {
   const { category, slug } = params;
@@ -556,65 +94,27 @@ export async function getStaticProps({ params }) {
   }
 
   const doc = snap.docs[0];
-  const map = {
+  const map = serializeItem({
     id: doc.id,
     ...doc.data(),
-  };
-
-
-  // --------------------------------------------------
-  // SERIALIZE TIMESTAMPS
-  // --------------------------------------------------
-
-  if (map.createdAt?.toDate) {
-    map.createdAt =
-      map.createdAt.toDate().toISOString();
-  }
-
-  if (map.updatedAt?.toDate) {
-    map.updatedAt =
-      map.updatedAt.toDate().toISOString();
-  }
-
-
-  // --------------------------------------------------
-  // RELATED MAPS
-  // --------------------------------------------------
+  });
 
   let relatedMaps = [];
-  if (map.region) {
-    const relatedQuery = query(
-      collection(db, 'maps'),
-      where('status', '==', 'published'),
-      where('category', '==', category),
-      where('region', '==', map.region),
-      limit(6)
-    );
+  const relatedQuery = query(
+    collection(db, 'maps'),
+    where('status', '==', 'published'),
+    where('category', '==', category),
+    limit(12)
+  );
+  const relatedSnap = await getDocs(relatedQuery);
+  relatedMaps = relatedSnap.docs
+    .map((relatedDoc) => serializeItem({
+      id: relatedDoc.id,
+      ...relatedDoc.data(),
+    }))
+    .filter((item) => item.slug !== slug)
+    .slice(0, 7);
 
-    const relatedSnap =
-      await getDocs(relatedQuery);
-    relatedMaps = relatedSnap.docs
-
-      .map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }))
-
-      .filter((item) => item.slug !== slug)
-      .slice(0, 5)
-      .map((item) => {
-        if (item.createdAt?.toDate) {
-          item.createdAt =
-            item.createdAt.toDate().toISOString();
-        }
-        if (item.updatedAt?.toDate) {
-          item.updatedAt =
-            item.updatedAt.toDate().toISOString();
-        }
-        return item;
-      });
-
-  }
   return {
     props: {
       map,
@@ -622,4 +122,14 @@ export async function getStaticProps({ params }) {
     },
     revalidate: 60,
   };
+}
+
+function serializeItem(item) {
+  return Object.fromEntries(
+    Object.entries(item).map(([key, value]) => {
+      if (value?.toDate) return [key, value.toDate().toISOString()];
+      if (key === 'lengthKm') return [key, normalizeLengthKm(value)];
+      return [key, value];
+    }).filter(([, value]) => value !== undefined)
+  );
 }

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { doc, getDoc, addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { db, auth } from '@/firebase/config';
 import { recordMockAttempt, bumpMockAttemptCount } from '@/lib/officeAnalytics';
+import { processMockTestResults, bumpMockStats } from '@/lib/weaknessMastery';
 import {
   ArrowLeft, Clock, Flag, ChevronLeft, ChevronRight, CheckCircle2, XCircle,
   ClipboardCheck, Loader2, RotateCcw, Home, Trophy, Circle
@@ -23,6 +24,8 @@ const DEMO_TEST = {
       options: ['Article 19', 'Article 21', 'Article 32', 'Article 44'],
       correctAnswer: 2,
       explanation: 'Article 32 gives citizens the right to move the Supreme Court for enforcement of Fundamental Rights. Dr. B. R. Ambedkar called it the "heart and soul" of the Constitution.',
+      subject: 'polity',
+      topic: 'Fundamental Rights',
     },
     {
       id: 'q2',
@@ -30,6 +33,8 @@ const DEMO_TEST = {
       options: ['Rajasthan', 'Odisha', 'Chhattisgarh', 'Tripura'],
       correctAnswer: 1,
       explanation: 'The Tropic of Cancer passes through 8 Indian states — Gujarat, Rajasthan, Madhya Pradesh, Chhattisgarh, Jharkhand, West Bengal, Tripura and Mizoram. Odisha is NOT one of them.',
+      subject: 'geography',
+      topic: 'Indian Geography',
     },
     {
       id: 'q3',
@@ -37,6 +42,8 @@ const DEMO_TEST = {
       options: ['Doctrine of Lapse', 'Introduction of the Enfield rifle', 'Annexation of Awadh', 'Economic policies of Dalhousie'],
       correctAnswer: 1,
       explanation: 'The greased cartridges of the new Enfield rifle, rumoured to be laced with cow and pig fat, sparked the mutiny at Meerut in May 1857.',
+      subject: 'history',
+      topic: 'Modern India',
     },
     {
       id: 'q4',
@@ -44,6 +51,8 @@ const DEMO_TEST = {
       options: ['SEBI', 'Ministry of Finance', 'RBI', 'NITI Aayog'],
       correctAnswer: 2,
       explanation: 'Repo rate is the rate at which RBI lends short-term money to commercial banks; it is a key MPC tool for inflation control.',
+      subject: 'economy',
+      topic: 'Monetary Policy',
     },
     {
       id: 'q5',
@@ -51,6 +60,8 @@ const DEMO_TEST = {
       options: ['Migratory birds', 'Wetlands', 'Wildlife trade', 'Ocean acidification'],
       correctAnswer: 1,
       explanation: 'The Ramsar Convention on Wetlands of International Importance was signed in Ramsar, Iran (1971) and is the intergovernmental treaty focused on wetland conservation.',
+      subject: 'environment',
+      topic: 'Conventions',
     },
   ],
 };
@@ -66,6 +77,8 @@ function normalizeTest(raw, fallbackTitle) {
         options: Array.isArray(q.options) ? q.options.map((o) => s(o, '')) : [],
         correctAnswer: n(q.correctAnswer ?? q.correct ?? q.answer, 0),
         explanation: s(q.explanation, s(q.solution, '')),
+        subject: s(q.subject, ''),
+        topic: s(q.topic, s(q.subTopic, '')),
       }))
     : [];
   return {
@@ -198,8 +211,15 @@ export default function TakeTest() {
         userName,
       });
       await bumpMockAttemptCount(test.id);
+      await processMockTestResults({
+        userId: uid,
+        test,
+        answers,
+        sourceTestId: test.id,
+      });
+      await bumpMockStats(uid, scorePct);
     })();
-  }, [submitted, test, stats.correct]);
+  }, [submitted, test, stats.correct, answers]);
 
   if (loading) {
     return (
@@ -289,6 +309,11 @@ export default function TakeTest() {
           </div>
 
           <div className="mt-8 flex flex-wrap gap-3">
+            {stats.wrong > 0 && (
+              <Link href="/student-desk/mistake-notebook" className="btn btn-accent" data-testid="view-mistakes">
+                <XCircle size={14} /> Review {stats.wrong} mistake{stats.wrong === 1 ? '' : 's'}
+              </Link>
+            )}
             <button onClick={() => { setAnswers({}); setCurrent(0); setSubmitted(false); startedRef.current = false; attemptSavedRef.current = false; }}
                     className="btn btn-ghost" data-testid="retry-test">
               <RotateCcw size={14} /> Retry test

@@ -126,7 +126,7 @@ export default function AdminMapsPage() {
                   <div className="mt-1 text-[12px] text-[var(--color-ink-muted)]">/{item.slug}</div>
                 </div>
                 <div className="flex gap-2">
-                  <Link href={`/admin/maps/${item.id}/edit`} className="btn btn-ghost !px-3 !py-2 text-[13px]">
+                  <Link href={`/admin/maps/map/${item.id}/edit`} className="btn btn-ghost !px-3 !py-2 text-[13px]">
                     <Edit3 size={14} /> Edit
                   </Link>
                   <button

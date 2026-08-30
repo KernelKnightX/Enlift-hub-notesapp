@@ -50,6 +50,8 @@ const labelCls = "mb-1.5 block text-[13px] font-semibold text-[var(--color-ink-2
 const inputCls = "map-form-input";
 const fileInputCls = "map-form-input map-form-file";
 
+const asText = (value) => String(value ?? "").trim();
+
 export default function MapForm({ initialMap = null, user }) {
   const router = useRouter();
   const isEditing = Boolean(initialMap?.id);
@@ -72,11 +74,11 @@ export default function MapForm({ initialMap = null, user }) {
       area: initialMap.area || "",
       origin: initialMap.origin || "",
       mouth: initialMap.mouth || "",
-      lengthKm: initialMap.lengthKm || "",
+      lengthKm: initialMap.lengthKm ?? "",
       statesCovered: initialMap.statesCovered || "",
       tributaries: initialMap.tributaries || "",
       highestPeak: initialMap.highestPeak || "",
-      mountainLengthKm: initialMap.mountainLengthKm || "",
+      mountainLengthKm: initialMap.mountainLengthKm ?? "",
       mountainStatesCovered: initialMap.mountainStatesCovered || "",
       formedEra: initialMap.formedEra || "",
       parkState: initialMap.parkState || "",
@@ -122,7 +124,7 @@ export default function MapForm({ initialMap = null, user }) {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    if (!form.title.trim() || !form.slug.trim() || !form.category) {
+    if (!asText(form.title) || !asText(form.slug) || !form.category) {
       toast.error("Title, slug, and category are required.");
       return;
     }
@@ -141,33 +143,33 @@ export default function MapForm({ initialMap = null, user }) {
       if (pdfFile) pdfUrl = await uploadMapFile(pdfFile, cleanSlug, "pdf");
 
       const payload = {
-        title: form.title.trim(),
+        title: asText(form.title),
         slug: cleanSlug,
         category: form.category,
-        region: form.region.trim(),
-        capital: form.capital.trim(),
-        area: form.area.trim(),
-        origin: form.origin.trim(),
-        mouth: form.mouth.trim(),
-        lengthKm: form.lengthKm.trim(),
-        statesCovered: form.statesCovered.trim(),
-        tributaries: form.tributaries.trim(),
-        highestPeak: form.highestPeak.trim(),
-        mountainLengthKm: form.mountainLengthKm.trim(),
-        mountainStatesCovered: form.mountainStatesCovered.trim(),
-        formedEra: form.formedEra.trim(),
-        parkState: form.parkState.trim(),
-        establishedYear: form.establishedYear.trim(),
-        parkArea: form.parkArea.trim(),
-        famousFor: form.famousFor.trim(),
-        reserveStates: form.reserveStates.trim(),
-        reserveEstablishedYear: form.reserveEstablishedYear.trim(),
-        coreArea: form.coreArea.trim(),
-        unescoStatus: form.unescoStatus.trim(),
-        locationState: form.locationState.trim(),
-        significance: form.significance.trim(),
-        nearbyLandmark: form.nearbyLandmark.trim(),
-        upscFact: form.upscFact.trim(),
+        region: asText(form.region),
+        capital: asText(form.capital),
+        area: asText(form.area),
+        origin: asText(form.origin),
+        mouth: asText(form.mouth),
+        lengthKm: asText(form.lengthKm),
+        statesCovered: asText(form.statesCovered),
+        tributaries: asText(form.tributaries),
+        highestPeak: asText(form.highestPeak),
+        mountainLengthKm: asText(form.mountainLengthKm),
+        mountainStatesCovered: asText(form.mountainStatesCovered),
+        formedEra: asText(form.formedEra),
+        parkState: asText(form.parkState),
+        establishedYear: asText(form.establishedYear),
+        parkArea: asText(form.parkArea),
+        famousFor: asText(form.famousFor),
+        reserveStates: asText(form.reserveStates),
+        reserveEstablishedYear: asText(form.reserveEstablishedYear),
+        coreArea: asText(form.coreArea),
+        unescoStatus: asText(form.unescoStatus),
+        locationState: asText(form.locationState),
+        significance: asText(form.significance),
+        nearbyLandmark: asText(form.nearbyLandmark),
+        upscFact: asText(form.upscFact),
         imageUrl,
         pdfUrl,
         thumbnailUrl: imageUrl,
@@ -178,6 +180,12 @@ export default function MapForm({ initialMap = null, user }) {
 
       if (form.districtsCount !== "") {
         payload.districtsCount = Number(form.districtsCount);
+      }
+      if (payload.lengthKm) {
+        payload.lengthKm = Number(payload.lengthKm);
+      }
+      if (payload.mountainLengthKm) {
+        payload.mountainLengthKm = Number(payload.mountainLengthKm);
       }
 
       Object.keys(payload).forEach((key) => {

@@ -29,15 +29,14 @@ export default function GoogleAnalytics({ GA_MEASUREMENT_ID }) {
       page_path: router.pathname,
     });
 
-    // Cleanup on unmount
+    // Cleanup on unmount — script may already be detached during HMR
     return () => {
       try {
-        if (script && script.parentNode) {
+        if (script?.parentNode) {
           script.parentNode.removeChild(script);
         }
-      } catch (e) {
-        // Ignore if DOM elements are already gone or inaccessible
-        // (defensive guard against rare hydration/unmount races)
+      } catch {
+        // Ignore DOM races during fast refresh
       }
     };
   }, [GA_MEASUREMENT_ID, router.pathname]);

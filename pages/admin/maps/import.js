@@ -5,7 +5,11 @@ import Papa from "papaparse";
 import AdminLayout from "@/layouts/AdminLayout";
 import useAdminGate from "@/hooks/admin/useAdminGate";
 import { toast } from "react-toastify";
-import { MAP_CATEGORIES, createMap, normalizeLengthKm } from "@/lib/firestore/maps";
+import {
+  MAP_CATEGORIES,
+  createMap,
+  normalizeLengthKm,
+} from "@/lib/firestore/maps";
 
 const COMMON_OPTIONAL = ["region", "upscFact", "imageFilename", "pdfFilename"];
 
@@ -19,35 +23,65 @@ Maharashtra,maharashtra,published,india-states,Mumbai,36,"307,713 sq km",West In
   },
   "river-systems": {
     label: "River System fields",
-    columns: ["origin", "mouth", "lengthKm", "statesCovered", "tributaries", ...COMMON_OPTIONAL],
+    columns: [
+      "origin",
+      "mouth",
+      "lengthKm",
+      "statesCovered",
+      "tributaries",
+      ...COMMON_OPTIONAL,
+    ],
     example: `title,slug,status,category,origin,mouth,lengthKm,statesCovered,tributaries,upscFact,imageFilename,pdfFilename
 Ganga,ganga,published,river-systems,"Gangotri Glacier, Uttarakhand",Bay of Bengal,2525,"Uttarakhand, Uttar Pradesh, Bihar","Yamuna, Ghaghara, Gandak","India's longest river...",ganga.jpg,ganga.pdf
 Yamuna,yamuna,published,river-systems,"Yamunotri Glacier, Uttarakhand",Confluence with Ganga at Prayagraj,1376,"Uttarakhand, Delhi, Uttar Pradesh","Chambal, Betwa, Ken","Longest tributary of the Ganga...",yamuna.jpg,yamuna.pdf`,
   },
   "mountain-ranges": {
     label: "Mountain Range fields",
-    columns: ["highestPeak", "mountainLengthKm", "mountainStatesCovered", "formedEra", ...COMMON_OPTIONAL],
+    columns: [
+      "highestPeak",
+      "mountainLengthKm",
+      "mountainStatesCovered",
+      "formedEra",
+      ...COMMON_OPTIONAL,
+    ],
     example: `title,slug,status,category,highestPeak,mountainLengthKm,mountainStatesCovered,formedEra,upscFact,imageFilename,pdfFilename
 Himalayas,himalayas,published,mountain-ranges,Mount Everest,2400,"Jammu & Kashmir, Himachal Pradesh, Uttarakhand, Sikkim, Arunachal Pradesh",Alpine-Himalayan orogeny,"Young fold mountains forming India's northern boundary...",himalayas.jpg,himalayas.pdf
 Aravalli Range,aravalli-range,published,mountain-ranges,Guru Shikhar,692,"Rajasthan, Gujarat, Haryana, Delhi",Proterozoic,"One of the oldest fold mountain systems in India...",aravalli.jpg,aravalli.pdf`,
   },
   "national-parks": {
     label: "National Park fields",
-    columns: ["parkState", "establishedYear", "parkArea", "famousFor", ...COMMON_OPTIONAL],
+    columns: [
+      "parkState",
+      "establishedYear",
+      "parkArea",
+      "famousFor",
+      ...COMMON_OPTIONAL,
+    ],
     example: `title,slug,status,category,parkState,establishedYear,parkArea,famousFor,upscFact
 Jim Corbett National Park,jim-corbett-national-park,published,national-parks,Uttarakhand,1936,520 sq km,Tigers and elephants,India's first national park
 Kaziranga National Park,kaziranga-national-park,published,national-parks,Assam,1974,430 sq km,One-horned rhinoceros,UNESCO World Heritage Site`,
   },
   "biosphere-reserves": {
     label: "Biosphere Reserve fields",
-    columns: ["reserveStates", "reserveEstablishedYear", "coreArea", "unescoStatus", ...COMMON_OPTIONAL],
+    columns: [
+      "reserveStates",
+      "reserveEstablishedYear",
+      "coreArea",
+      "unescoStatus",
+      ...COMMON_OPTIONAL,
+    ],
     example: `title,slug,status,category,reserveStates,reserveEstablishedYear,coreArea,unescoStatus,upscFact
 Nilgiri Biosphere Reserve,nilgiri-biosphere-reserve,published,biosphere-reserves,"Tamil Nadu, Kerala, Karnataka",1986,1240 sq km,Yes,First biosphere reserve in India
 Sundarbans Biosphere Reserve,sundarbans-biosphere-reserve,published,biosphere-reserves,West Bengal,1989,1330 sq km,Yes,Famous for mangroves and Royal Bengal tigers`,
   },
   "important-locations": {
     label: "Important Location fields",
-    columns: ["locationState", "significance", "nearbyLandmark", ...COMMON_OPTIONAL],
+    columns: [
+      "locationState",
+      "significance",
+      "nearbyLandmark",
+      ...COMMON_OPTIONAL,
+    ],
     example: `title,slug,status,category,locationState,significance,nearbyLandmark,upscFact
 Kanyakumari,kanyakumari,published,important-locations,Tamil Nadu,Southernmost tip of mainland India,Indian Ocean confluence,Important for geography map-based questions
 Wagah Border,wagah-border,published,important-locations,Punjab,India-Pakistan border crossing near Amritsar,Attari,Strategic location on Grand Trunk Road`,
@@ -83,7 +117,9 @@ export default function AdminMapsImportPage() {
 
   const importConfig = useMemo(() => {
     if (!selectedCategory) return DEFAULT_IMPORT_CONFIG;
-    return CATEGORY_IMPORT_CONFIG[selectedCategory.value] || DEFAULT_IMPORT_CONFIG;
+    return (
+      CATEGORY_IMPORT_CONFIG[selectedCategory.value] || DEFAULT_IMPORT_CONFIG
+    );
   }, [selectedCategory]);
 
   if (loading) return null;
@@ -93,18 +129,23 @@ export default function AdminMapsImportPage() {
     setCsvFile(event.target.files?.[0] || null);
   };
 
-  const normalizeCsvKey = (key = "") => (
+  const normalizeCsvKey = (key = "") =>
     String(key)
       .trim()
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, "")
-      .replace(/^the/, "")
-  );
+      .replace(/^the/, "");
 
   const resolveCsvValue = (row, aliases) => {
     for (const alias of aliases) {
-      const key = Object.keys(row).find((entry) => normalizeCsvKey(entry) === normalizeCsvKey(alias));
-      if (key !== undefined && row[key] !== undefined && String(row[key]).trim() !== "") {
+      const key = Object.keys(row).find(
+        (entry) => normalizeCsvKey(entry) === normalizeCsvKey(alias),
+      );
+      if (
+        key !== undefined &&
+        row[key] !== undefined &&
+        String(row[key]).trim() !== ""
+      ) {
         return String(row[key]).trim();
       }
     }
@@ -116,7 +157,10 @@ export default function AdminMapsImportPage() {
       ["region", ["region", "Region"]],
       ["upscFact", ["upscFact", "upscfact", "upsc fact", "fact"]],
       ["capital", ["capital", "Capital"]],
-      ["districtsCount", ["districtsCount", "districtscount", "districts count", "districts"]],
+      [
+        "districtsCount",
+        ["districtsCount", "districtscount", "districts count", "districts"],
+      ],
       ["area", ["area", "Area"]],
       ["origin", ["origin", "Origin", "source"]],
       ["mouth", ["mouth", "Mouth", "outlet"]],
@@ -124,20 +168,54 @@ export default function AdminMapsImportPage() {
       ["statesCovered", ["statesCovered", "statescovered", "states covered"]],
       ["tributaries", ["tributaries", "tributary", "major tributaries"]],
       ["highestPeak", ["highestPeak", "highestpeak", "highest peak", "peak"]],
-      ["mountainLengthKm", ["mountainLengthKm", "mountainlengthkm", "mountain length km", "lengthKm", "length"]],
-      ["mountainStatesCovered", ["mountainStatesCovered", "mountainstatescovered", "states covered", "statesCovered"]],
+      [
+        "mountainLengthKm",
+        [
+          "mountainLengthKm",
+          "mountainlengthkm",
+          "mountain length km",
+          "lengthKm",
+          "length",
+        ],
+      ],
+      [
+        "mountainStatesCovered",
+        [
+          "mountainStatesCovered",
+          "mountainstatescovered",
+          "states covered",
+          "statesCovered",
+        ],
+      ],
       ["formedEra", ["formedEra", "formed era", "formation era"]],
       ["parkState", ["parkState", "parkstate", "park state", "state"]],
-      ["establishedYear", ["establishedYear", "establishedyear", "established year", "year"]],
+      [
+        "establishedYear",
+        ["establishedYear", "establishedyear", "established year", "year"],
+      ],
       ["parkArea", ["parkArea", "parkarea", "park area", "area"]],
       ["famousFor", ["famousFor", "famousfor", "famous for"]],
       ["reserveStates", ["reserveStates", "reservestates", "states"]],
-      ["reserveEstablishedYear", ["reserveEstablishedYear", "reserveestablishedyear", "established year", "year"]],
+      [
+        "reserveEstablishedYear",
+        [
+          "reserveEstablishedYear",
+          "reserveestablishedyear",
+          "established year",
+          "year",
+        ],
+      ],
       ["coreArea", ["coreArea", "corearea", "core area"]],
       ["unescoStatus", ["unescoStatus", "unescostatus", "unesco status"]],
-      ["locationState", ["locationState", "locationstate", "location state", "state"]],
+      [
+        "locationState",
+        ["locationState", "locationstate", "location state", "state"],
+      ],
       ["significance", ["significance", "Significance"]],
-      ["nearbyLandmark", ["nearbyLandmark", "nearbylandmark", "nearby landmark"]],
+      [
+        "nearbyLandmark",
+        ["nearbyLandmark", "nearbylandmark", "nearby landmark"],
+      ],
     ];
 
     mappings.forEach(([field, aliases]) => {
@@ -153,7 +231,8 @@ export default function AdminMapsImportPage() {
     const slug = resolveCsvValue(row, ["slug", "Slug"]);
     const status = resolveCsvValue(row, ["status", "Status"]);
 
-    if (!title || !slug || !status) return "Missing required field (title/slug/status)";
+    if (!title || !slug || !status)
+      return "Missing required field (title/slug/status)";
     row.title = title;
     row.slug = slug;
     row.status = status;
@@ -167,7 +246,9 @@ export default function AdminMapsImportPage() {
     }
 
     if (!row.category) return "Missing category for row";
-    const categoryOk = MAP_CATEGORIES.some((category) => category.value === row.category);
+    const categoryOk = MAP_CATEGORIES.some(
+      (category) => category.value === row.category,
+    );
     if (!categoryOk) return `Unknown category: ${row.category}`;
     return null;
   };
@@ -201,8 +282,10 @@ export default function AdminMapsImportPage() {
     if (row.category === "mountain-ranges") {
       if (row.highestPeak) doc.highestPeak = row.highestPeak;
       const mountainLengthKm = normalizeLengthKm(row.mountainLengthKm);
-      if (mountainLengthKm !== undefined) doc.mountainLengthKm = mountainLengthKm;
-      if (row.mountainStatesCovered) doc.mountainStatesCovered = row.mountainStatesCovered;
+      if (mountainLengthKm !== undefined)
+        doc.mountainLengthKm = mountainLengthKm;
+      if (row.mountainStatesCovered)
+        doc.mountainStatesCovered = row.mountainStatesCovered;
       if (row.formedEra) doc.formedEra = row.formedEra;
     }
 
@@ -215,7 +298,8 @@ export default function AdminMapsImportPage() {
 
     if (row.category === "biosphere-reserves") {
       if (row.reserveStates) doc.reserveStates = row.reserveStates;
-      if (row.reserveEstablishedYear) doc.reserveEstablishedYear = row.reserveEstablishedYear;
+      if (row.reserveEstablishedYear)
+        doc.reserveEstablishedYear = row.reserveEstablishedYear;
       if (row.coreArea) doc.coreArea = row.coreArea;
       if (row.unescoStatus) doc.unescoStatus = row.unescoStatus;
     }
@@ -239,7 +323,8 @@ export default function AdminMapsImportPage() {
       complete: async (resultsCsv) => {
         setParsing(false);
         const rows = resultsCsv.data;
-        if (!rows || rows.length === 0) return toast.error("CSV contains no rows.");
+        if (!rows || rows.length === 0)
+          return toast.error("CSV contains no rows.");
         setRunning(true);
         const out = [];
 
@@ -257,7 +342,12 @@ export default function AdminMapsImportPage() {
 
           const error = validateRow(trimmed);
           if (error) {
-            out.push({ row: index + 1, slug: trimmed.slug || "", status: "error", message: error });
+            out.push({
+              row: index + 1,
+              slug: trimmed.slug || "",
+              status: "error",
+              message: error,
+            });
             continue;
           }
 
@@ -295,25 +385,40 @@ export default function AdminMapsImportPage() {
   return (
     <>
       <Head>
-        <title>{selectedCategory ? `Import ${selectedCategory.label}` : "Import Maps"}</title>
+        <title>
+          {selectedCategory
+            ? `Import ${selectedCategory.label}`
+            : "Import Maps"}
+        </title>
       </Head>
 
       <AdminLayout
-        title={selectedCategory ? `Import ${selectedCategory.label} (CSV)` : "Import maps (CSV)"}
+        title={
+          selectedCategory
+            ? `Import ${selectedCategory.label} (CSV)`
+            : "Import maps (CSV)"
+        }
         subtitle="Upload a CSV file only"
       >
         <div className="card p-6">
           <div className="mb-5 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-alt)] p-4">
-            <div className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--color-ink-muted)]">Import target</div>
-            <div className="mt-2 text-xl font-semibold text-[var(--color-ink)]">{currentTarget}</div>
+            <div className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--color-ink-muted)]">
+              Import target
+            </div>
+            <div className="mt-2 text-xl font-semibold text-[var(--color-ink)]">
+              {currentTarget}
+            </div>
             <div className="mt-2 text-sm text-[var(--color-ink-muted)]">
-              This import is locked to the selected category. Rows from another category will be rejected.
+              This import is locked to the selected category. Rows from another
+              category will be rejected.
             </div>
           </div>
 
           <div className="space-y-6">
             <div className="rounded-xl border border-[var(--color-border)] bg-white p-4">
-              <div className="mb-3 text-base font-semibold text-[var(--color-ink)]">1) Upload CSV file</div>
+              <div className="mb-3 text-base font-semibold text-[var(--color-ink)]">
+                1) Upload CSV file
+              </div>
               <input
                 type="file"
                 accept=".csv,text/csv"
@@ -326,10 +431,14 @@ export default function AdminMapsImportPage() {
             </div>
 
             <div className="rounded-xl border border-[var(--color-border)] bg-white p-4">
-              <div className="mb-3 text-base font-semibold text-[var(--color-ink)]">2) Use the correct columns</div>
+              <div className="mb-3 text-base font-semibold text-[var(--color-ink)]">
+                2) Use the correct columns
+              </div>
               <div className="grid gap-4 md:grid-cols-2">
                 <div>
-                  <div className="mb-2 text-sm font-semibold text-[var(--color-ink)]">Required</div>
+                  <div className="mb-2 text-sm font-semibold text-[var(--color-ink)]">
+                    Required
+                  </div>
                   <ul className="list-disc space-y-1 pl-5 text-sm text-[var(--color-ink-muted)]">
                     <li>title</li>
                     <li>slug</li>
@@ -337,7 +446,9 @@ export default function AdminMapsImportPage() {
                   </ul>
                 </div>
                 <div>
-                  <div className="mb-2 text-sm font-semibold text-[var(--color-ink)]">{importConfig.label}</div>
+                  <div className="mb-2 text-sm font-semibold text-[var(--color-ink)]">
+                    {importConfig.label}
+                  </div>
                   <ul className="list-disc space-y-1 pl-5 text-sm text-[var(--color-ink-muted)]">
                     {importConfig.columns.map((column) => (
                       <li key={column}>{column}</li>
@@ -377,11 +488,23 @@ export default function AdminMapsImportPage() {
             </div>
 
             <div className="rounded-xl border border-[var(--color-border)] bg-white p-4">
-              <div className="mb-2 text-base font-semibold text-[var(--color-ink)]">Progress</div>
-              {parsing && <div className="text-sm text-[var(--color-ink-muted)]">Parsing CSV…</div>}
-              {running && <div className="text-sm text-[var(--color-ink-muted)]">Uploading and creating documents…</div>}
+              <div className="mb-2 text-base font-semibold text-[var(--color-ink)]">
+                Progress
+              </div>
+              {parsing && (
+                <div className="text-sm text-[var(--color-ink-muted)]">
+                  Parsing CSV…
+                </div>
+              )}
+              {running && (
+                <div className="text-sm text-[var(--color-ink-muted)]">
+                  Uploading and creating documents…
+                </div>
+              )}
               {!parsing && !running && results.length === 0 && (
-                <div className="text-sm text-[var(--color-ink-muted)]">No import run yet.</div>
+                <div className="text-sm text-[var(--color-ink-muted)]">
+                  No import run yet.
+                </div>
               )}
 
               {results.length > 0 && (
@@ -397,7 +520,12 @@ export default function AdminMapsImportPage() {
                     </thead>
                     <tbody>
                       {results.map((result, index) => (
-                        <tr key={index} className={result.status === "error" ? "text-red-600" : ""}>
+                        <tr
+                          key={index}
+                          className={
+                            result.status === "error" ? "text-red-600" : ""
+                          }
+                        >
                           <td className="py-2">{result.row}</td>
                           <td>{result.slug}</td>
                           <td>{result.status}</td>

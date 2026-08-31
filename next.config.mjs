@@ -1,5 +1,5 @@
-import path from 'path';
-import { fileURLToPath } from 'url';
+import path from "path";
+import { fileURLToPath } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -19,20 +19,20 @@ const nextConfig = {
   async headers() {
     return [
       {
-        source: '/api/(.*)',
+        source: "/api/(.*)",
         headers: [
           {
-            key: 'Cache-Control',
-            value: 'no-cache',
+            key: "Cache-Control",
+            value: "no-cache",
           },
         ],
       },
       {
-        source: '/_next/static/(.*)',
+        source: "/_next/static/(.*)",
         headers: [
           {
-            key: 'Cache-Control',
-            value: 'public, max-age=31536000, immutable',
+            key: "Cache-Control",
+            value: "public, max-age=31536000, immutable",
           },
         ],
       },
@@ -40,36 +40,18 @@ const nextConfig = {
   },
 
   images: {
-    formats: ['image/webp', 'image/avif'],
+    formats: ["image/webp", "image/avif"],
 
-    deviceSizes: [
-      640,
-      750,
-      828,
-      1080,
-      1200,
-      1920,
-      2048,
-      3840,
-    ],
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
 
-    imageSizes: [
-      16,
-      32,
-      48,
-      64,
-      96,
-      128,
-      256,
-      384,
-    ],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
 
     remotePatterns: [
       {
-        protocol: 'https',
-        hostname: '**',
-        port: '',
-        pathname: '/**',
+        protocol: "https",
+        hostname: "**",
+        port: "",
+        pathname: "/**",
       },
     ],
   },

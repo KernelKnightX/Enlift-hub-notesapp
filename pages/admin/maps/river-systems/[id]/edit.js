@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import { toast } from "react-toastify";
 import AdminLayout from "@/layouts/AdminLayout";
-import RiverSystemForm from "@/components/admin/RiverSystemForm";
+import CategoryMapForm from "@/components/admin/CategoryMapForm";
 import useAdminGate from "@/hooks/admin/useAdminGate";
 import { getMapById } from "@/lib/firestore/maps";
 
@@ -26,8 +26,7 @@ export default function EditRiverSystemPage() {
           return;
         }
         if (found.category !== "river-systems") {
-          toast.error("This entry is not a river system.");
-          router.replace("/admin/maps/river-systems");
+          router.replace(`/admin/maps/${found.category}/${found.id}/edit`);
           return;
         }
         if (!cancelled) setRiver(found);
@@ -60,7 +59,7 @@ export default function EditRiverSystemPage() {
       subtitle={river.title}
       backHref="/admin/maps/river-systems"
     >
-      <RiverSystemForm initialMap={river} user={user} />
+      <CategoryMapForm category="river-systems" initialMap={river} user={user} />
     </AdminLayout>
   );
 }

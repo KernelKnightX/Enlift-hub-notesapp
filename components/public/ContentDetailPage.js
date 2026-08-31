@@ -44,7 +44,7 @@ const splitList = (value) => {
 };
 
 const displayValue = (value, fieldKey = '') => {
-  if (fieldKey === 'lengthKm' && hasValue(value)) {
+  if ((fieldKey === 'lengthKm' || fieldKey === 'mountainLengthKm') && hasValue(value)) {
     const formatted = formatLengthKm(value);
     if (formatted) return formatted;
   }
@@ -66,21 +66,30 @@ const categoryProfiles = {
     tone: 'state',
     eyebrow: 'Indian State',
     visualLabel: 'State Map',
-    introTitle: 'State Profile',
     factTitle: 'UPSC State Hook',
     primaryFields: [
       ['Capital', 'capital', Landmark],
       ['Region', 'region', Compass],
       ['Districts', 'districtsCount', Layers],
       ['Area', 'area', Map],
-      ['Official Language', 'officialLanguage', Languages],
-      ['Coastline', 'coastlineKm', Waves],
     ],
-    sections: [
-      { title: 'Administrative Snapshot', fields: [['Capital', 'capital', Landmark], ['Districts', 'districtsCount', Layers], ['Largest City', 'largestCity', Building2]] },
-      { title: 'Geography Notes', fields: [['Region', 'region', Compass], ['Area', 'area', Map], ['Coastline', 'coastlineKm', Waves]] },
-      { title: 'Important Locations', listKey: 'importantLocations', icon: MapPin },
+    sections: [],
+    hideIntroSection: true,
+    hideRevisionFrame: true,
+    compactLayout: true,
+  },
+  world: {
+    tone: 'map',
+    eyebrow: 'World Map',
+    visualLabel: 'World Atlas',
+    factTitle: 'UPSC Geography Hook',
+    primaryFields: [
+      ['Region', 'region', Compass],
     ],
+    sections: [],
+    hideIntroSection: true,
+    hideRevisionFrame: true,
+    compactLayout: true,
   },
   'river-systems': {
     tone: 'river',
@@ -104,7 +113,6 @@ const categoryProfiles = {
     tone: 'mountain',
     eyebrow: 'Mountain Range',
     visualLabel: 'Relief Map',
-    introTitle: 'Topography Profile',
     factTitle: 'Mountain Quick Fact',
     primaryFields: [
       ['Highest Peak', 'highestPeak', Mountain],
@@ -113,16 +121,15 @@ const categoryProfiles = {
       ['Formation Era', 'formedEra', Layers],
       ['Region', 'region', Compass],
     ],
-    sections: [
-      { title: 'Topographic Facts', fields: [['Highest Peak', 'highestPeak', Mountain], ['Length', 'mountainLengthKm', Route], ['Formation Era', 'formedEra', Layers]] },
-      { title: 'Location and Spread', fields: [['Region', 'region', Compass], ['States Covered', 'mountainStatesCovered', Map]] },
-    ],
+    sections: [],
+    hideIntroSection: true,
+    hideRevisionFrame: true,
+    compactLayout: true,
   },
   'national-parks': {
     tone: 'park',
     eyebrow: 'National Park',
     visualLabel: 'Protected Area',
-    introTitle: 'Park Profile',
     factTitle: 'Environment Quick Fact',
     primaryFields: [
       ['State', 'parkState', MapPin],
@@ -131,16 +138,15 @@ const categoryProfiles = {
       ['Famous For', 'famousFor', Trees],
       ['Region', 'region', Compass],
     ],
-    sections: [
-      { title: 'Protected Area Snapshot', fields: [['State', 'parkState', MapPin], ['Established', 'establishedYear', Landmark], ['Area', 'parkArea', Map]] },
-      { title: 'Wildlife and Significance', fields: [['Famous For', 'famousFor', Trees], ['UPSC Fact', 'upscFact', Lightbulb]] },
-    ],
+    sections: [],
+    hideIntroSection: true,
+    hideRevisionFrame: true,
+    compactLayout: true,
   },
   'biosphere-reserves': {
     tone: 'reserve',
     eyebrow: 'Biosphere Reserve',
     visualLabel: 'Reserve Map',
-    introTitle: 'Reserve Profile',
     factTitle: 'Biodiversity Quick Fact',
     primaryFields: [
       ['States', 'reserveStates', MapPin],
@@ -149,16 +155,15 @@ const categoryProfiles = {
       ['UNESCO Status', 'unescoStatus', Trees],
       ['Region', 'region', Compass],
     ],
-    sections: [
-      { title: 'Conservation Profile', fields: [['States', 'reserveStates', MapPin], ['Core Area', 'coreArea', ShieldCheck], ['UNESCO Status', 'unescoStatus', Trees]] },
-      { title: 'Exam Relevance', fields: [['Established', 'reserveEstablishedYear', Landmark], ['UPSC Fact', 'upscFact', Lightbulb]] },
-    ],
+    sections: [],
+    hideIntroSection: true,
+    hideRevisionFrame: true,
+    compactLayout: true,
   },
   'important-locations': {
     tone: 'location',
     eyebrow: 'Important Location',
     visualLabel: 'Location Map',
-    introTitle: 'Location Profile',
     factTitle: 'Location Quick Fact',
     primaryFields: [
       ['State', 'locationState', MapPin],
@@ -166,16 +171,15 @@ const categoryProfiles = {
       ['Nearby Landmark', 'nearbyLandmark', Compass],
       ['Region', 'region', Map],
     ],
-    sections: [
-      { title: 'Location Identity', fields: [['State', 'locationState', MapPin], ['Region', 'region', Map], ['Nearby Landmark', 'nearbyLandmark', Compass]] },
-      { title: 'Why It Matters', fields: [['Significance', 'significance', Landmark], ['UPSC Fact', 'upscFact', Lightbulb]] },
-    ],
+    sections: [],
+    hideIntroSection: true,
+    hideRevisionFrame: true,
+    compactLayout: true,
   },
   'constitution-articles': {
     tone: 'constitution',
     eyebrow: 'Constitution Article',
     visualLabel: 'Article Reference',
-    introTitle: 'Constitutional Provision',
     factTitle: 'Polity Quick Fact',
     primaryFields: [
       ['Article', 'articleNumber', ScrollText],
@@ -183,17 +187,19 @@ const categoryProfiles = {
       ['Provision', 'provision', Gavel],
       ['Related Articles', 'relatedArticles', Network],
     ],
+    heroListKey: 'importantPoints',
+    heroListTitle: 'Important Points',
     sections: [
-      { title: 'Provision and Meaning', fields: [['Article Number', 'articleNumber', ScrollText], ['Provision', 'provision', Gavel], ['Explanation', 'explanation', BookOpen]] },
-      { title: 'Important Points', listKey: 'importantPoints', icon: ShieldCheck },
-      { title: 'Related Articles', listKey: 'relatedArticles', icon: Network },
+      { title: 'Explanation', fields: [['Explanation', 'explanation', BookOpen]] },
     ],
+    hideIntroSection: true,
+    hideRevisionFrame: true,
+    compactLayout: true,
   },
   'important-acts': {
     tone: 'acts',
     eyebrow: 'Important Act',
     visualLabel: 'Act Brief',
-    introTitle: 'Legislation Profile',
     factTitle: 'Act Quick Fact',
     primaryFields: [
       ['Year', 'year', Landmark],
@@ -201,17 +207,19 @@ const categoryProfiles = {
       ['Ministry', 'ministry', Building2],
       ['Amendments', 'amendments', FileText],
     ],
+    heroListKey: 'keyProvisions',
+    heroListTitle: 'Key Provisions',
     sections: [
-      { title: 'Objective and Scope', fields: [['Year', 'year', Landmark], ['Objective', 'objective', Gavel], ['Ministry', 'ministry', Building2]] },
-      { title: 'Key Provisions', listKey: 'keyProvisions', icon: ScrollText },
-      { title: 'Significance and Amendments', fields: [['Significance', 'significance', Lightbulb], ['Amendments', 'amendments', FileText]] },
+      { title: 'Significance', fields: [['Significance', 'significance', Lightbulb]] },
     ],
+    hideIntroSection: true,
+    hideRevisionFrame: true,
+    compactLayout: true,
   },
   committees: {
     tone: 'committee',
     eyebrow: 'Committee',
     visualLabel: 'Committee Brief',
-    introTitle: 'Committee Profile',
     factTitle: 'Committee Quick Fact',
     primaryFields: [
       ['Chairperson', 'chairperson', Users],
@@ -219,17 +227,19 @@ const categoryProfiles = {
       ['Mandate', 'mandate', FileText],
       ['Report', 'report', ScrollText],
     ],
+    heroListKey: 'recommendations',
+    heroListTitle: 'Recommendations',
     sections: [
-      { title: 'Mandate and Composition', fields: [['Chairperson', 'chairperson', Users], ['Year', 'year', Landmark], ['Mandate', 'mandate', FileText]] },
-      { title: 'Recommendations', listKey: 'recommendations', icon: Lightbulb },
-      { title: 'Report Notes', fields: [['Report', 'report', ScrollText], ['Significance', 'significance', ShieldCheck]] },
+      { title: 'Significance', fields: [['Significance', 'significance', ShieldCheck]] },
     ],
+    hideIntroSection: true,
+    hideRevisionFrame: true,
+    compactLayout: true,
   },
   ministries: {
     tone: 'ministry',
     eyebrow: 'Ministry',
     visualLabel: 'Ministry Profile',
-    introTitle: 'Institution Profile',
     factTitle: 'Governance Quick Fact',
     primaryFields: [
       ['Minister', 'minister', Users],
@@ -238,9 +248,99 @@ const categoryProfiles = {
       ['Schemes', 'schemes', Layers],
     ],
     sections: [
-      { title: 'Structure and Role', fields: [['Minister', 'minister', Users], ['Department', 'department', Building2], ['Mandate', 'mandate', FileText]] },
-      { title: 'Schemes and Functions', fields: [['Schemes', 'schemes', Layers], ['Functions', 'functions', Gavel]] },
+      { title: 'Functions', fields: [['Functions', 'functions', Gavel]] },
     ],
+    hideIntroSection: true,
+    hideRevisionFrame: true,
+    compactLayout: true,
+  },
+  schemes: {
+    tone: 'government',
+    eyebrow: 'Government Scheme',
+    visualLabel: 'Scheme Brief',
+    factTitle: 'Scheme Quick Fact',
+    primaryFields: [
+      ['Ministry', 'ministry', Building2],
+      ['Launch Year', 'launchYear', Landmark],
+      ['Region', 'region', Compass],
+    ],
+    sections: [
+      { title: 'Objective', fields: [['Objective', 'objective', Gavel]] },
+      { title: 'Benefits', fields: [['Benefits', 'benefits', ShieldCheck]] },
+    ],
+    hideIntroSection: true,
+    hideRevisionFrame: true,
+    compactLayout: true,
+  },
+  'reports-and-indices': {
+    tone: 'government',
+    eyebrow: 'Report / Index',
+    visualLabel: 'Report Brief',
+    factTitle: 'Report Quick Fact',
+    primaryFields: [
+      ['Publisher', 'publisher', Building2],
+      ['Release Year', 'releaseYear', Landmark],
+      ['Region', 'region', Compass],
+    ],
+    sections: [
+      { title: 'Scope', fields: [['Scope', 'scope', BookOpen]] },
+      { title: 'Highlights', fields: [['Highlights', 'highlights', Lightbulb]] },
+    ],
+    hideIntroSection: true,
+    hideRevisionFrame: true,
+    compactLayout: true,
+  },
+  'constitutional-bodies': {
+    tone: 'government',
+    eyebrow: 'Constitutional Body',
+    visualLabel: 'Institution Brief',
+    factTitle: 'Polity Quick Fact',
+    primaryFields: [
+      ['Established', 'establishedYear', Landmark],
+      ['Mandate', 'mandate', FileText],
+      ['Articles', 'articles', ScrollText],
+    ],
+    sections: [
+      { title: 'Composition', fields: [['Composition', 'composition', Users]] },
+    ],
+    hideIntroSection: true,
+    hideRevisionFrame: true,
+    compactLayout: true,
+  },
+  policies: {
+    tone: 'government',
+    eyebrow: 'Policy',
+    visualLabel: 'Policy Brief',
+    factTitle: 'Policy Quick Fact',
+    primaryFields: [
+      ['Ministry', 'ministry', Building2],
+      ['Year', 'year', Landmark],
+      ['Region', 'region', Compass],
+    ],
+    sections: [
+      { title: 'Objective', fields: [['Objective', 'objective', Gavel]] },
+      { title: 'Key Features', fields: [['Key Features', 'keyFeatures', Layers]] },
+    ],
+    hideIntroSection: true,
+    hideRevisionFrame: true,
+    compactLayout: true,
+  },
+  'international-organizations': {
+    tone: 'government',
+    eyebrow: 'International Organization',
+    visualLabel: 'Organization Brief',
+    factTitle: 'IR Quick Fact',
+    primaryFields: [
+      ['Headquarters', 'headquarters', MapPin],
+      ['Founded', 'foundedYear', Landmark],
+      ['Members', 'members', Users],
+    ],
+    sections: [
+      { title: 'Mandate', fields: [['Mandate', 'mandate', FileText]] },
+    ],
+    hideIntroSection: true,
+    hideRevisionFrame: true,
+    compactLayout: true,
   },
 };
 
@@ -269,6 +369,12 @@ function getRelatedSubtitle(relatedItem, category) {
   if (category === 'river-systems') {
     const lengthLabel = formatLengthKm(relatedItem.lengthKm);
     if (lengthLabel) return lengthLabel;
+  }
+
+  if (category === 'mountain-ranges') {
+    const lengthLabel = formatLengthKm(relatedItem.mountainLengthKm);
+    if (lengthLabel) return lengthLabel;
+    if (relatedItem.highestPeak) return relatedItem.highestPeak;
   }
 
   return relatedItem.region || relatedItem.summary || '';

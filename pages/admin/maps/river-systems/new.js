@@ -1,6 +1,8 @@
 import AdminLayout from "@/layouts/AdminLayout";
-import RiverSystemForm from "@/components/admin/RiverSystemForm";
+import CategoryMapForm from "@/components/admin/CategoryMapForm";
 import useAdminGate from "@/hooks/admin/useAdminGate";
+
+const CATEGORY = "river-systems";
 
 export default function NewRiver() {
   const { user, loading, isAdmin } = useAdminGate();
@@ -10,7 +12,7 @@ export default function NewRiver() {
 
   return (
     <AdminLayout title="Add River System" subtitle="Create river system map" backHref="/admin/maps/river-systems">
-      <RiverSystemForm user={user} />
+      <CategoryMapForm category={CATEGORY} user={user} />
     </AdminLayout>
   );
 }

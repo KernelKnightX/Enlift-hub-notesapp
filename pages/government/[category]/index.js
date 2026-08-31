@@ -225,7 +225,7 @@ export default function GovernmentCategoryPage() {
                       </h2>
 
                       <div className="maps-upsc__card-action">
-                        <span>Open map</span>
+                        <span>Open detail</span>
 
                         <ArrowRight size={14} />
                       </div>

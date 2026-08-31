@@ -1,21 +1,34 @@
 import AdminLayout from "@/layouts/AdminLayout";
-import MapForm from "@/components/admin/MapForm";
+import CategoryMapForm from "@/components/admin/CategoryMapForm";
 import useAdminGate from "@/hooks/admin/useAdminGate";
+import { getMapCategoryAdmin, getMapCategoryListPath } from "@/lib/mapCategoryFields";
 import { useRouter } from "next/router";
 
 export default function NewCategoryMapPage() {
   const { user, loading, isAdmin } = useAdminGate();
   const router = useRouter();
-  const routeCategory = router.query.category || "india-states";
+  const category = router.query.category || "india-states";
+  const config = getMapCategoryAdmin(category);
+  const listPath = getMapCategoryListPath(category);
 
   if (loading) return null;
   if (!isAdmin) return null;
 
-  const initialMap = { category: routeCategory, status: 'draft' };
+  if (router.isReady && !config) {
+    return (
+      <AdminLayout title="Maps" subtitle="Unknown category">
+        <div className="card p-12 text-center">Unknown map category</div>
+      </AdminLayout>
+    );
+  }
 
   return (
-    <AdminLayout title={`Add ${routeCategory} map`} subtitle="Create a new map entry" backHref={`/admin/maps/${routeCategory}`}>
-      <MapForm initialMap={initialMap} user={user} />
+    <AdminLayout
+      title={`Add ${config?.label || "Map"}`}
+      subtitle="Create a new map entry"
+      backHref={listPath}
+    >
+      <CategoryMapForm category={category} user={user} />
     </AdminLayout>
   );
 }

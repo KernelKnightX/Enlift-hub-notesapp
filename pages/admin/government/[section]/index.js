@@ -81,6 +81,9 @@ export default function AdminGovernmentSectionPage() {
           <Link href="/admin/government" className="btn btn-ghost">
             <ArrowLeft size={16} /> Back
           </Link>
+          <Link href={`/admin/government/import?section=${section}`} className="btn">
+            Import CSV
+          </Link>
           <Link href={`/admin/government/${section}/new`} className="btn btn-primary">
             <Plus size={16} /> Add Item
           </Link>

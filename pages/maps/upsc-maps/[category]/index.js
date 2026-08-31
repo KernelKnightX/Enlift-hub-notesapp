@@ -3,7 +3,8 @@ import Link from "next/link";
 import { ArrowRight, Map } from "lucide-react";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "@/firebase/config";
-import { MAP_CATEGORIES, formatLengthKm, normalizeLengthKm } from "@/lib/firestore/maps";
+import { MAP_CATEGORIES, normalizeLengthKm } from "@/lib/firestore/maps";
+import { getMapCardSubtitle } from "@/lib/mapCategoryFields";
 import ResourceHero from "@/components/public/ResourceHero";
 
 const CATEGORY_LABELS = {
@@ -98,25 +99,10 @@ function serializeMap(item) {
   return Object.fromEntries(
     Object.entries(item).map(([key, value]) => {
       if (value?.toDate) return [key, value.toDate().toISOString()];
-      if (key === "lengthKm") return [key, normalizeLengthKm(value)];
+      if (key === "lengthKm" || key === "mountainLengthKm") return [key, normalizeLengthKm(value)];
       return [key, value];
     }).filter(([, value]) => value !== undefined)
   );
-}
-
-function getCardSubtitle(item, category) {
-  if (category === "river-systems") {
-    const parts = [];
-    const lengthLabel = formatLengthKm(item.lengthKm);
-    if (lengthLabel) parts.push(lengthLabel);
-    if (item.origin) parts.push(item.origin);
-    return parts.join(" · ");
-  }
-
-  if (item.region) return item.region;
-  if (item.statesCovered) return item.statesCovered;
-  if (item.parkState) return item.parkState;
-  return "";
 }
 
 export default function UpscMapsCategoryPage({ maps = [], category }) {
@@ -160,7 +146,7 @@ export default function UpscMapsCategoryPage({ maps = [], category }) {
             ) : (
               <div className="maps-upsc__grid">
                 {maps.map((item) => {
-                  const subtitle = getCardSubtitle(item, category);
+                  const subtitle = getMapCardSubtitle(item, category);
 
                   return (
                   <Link

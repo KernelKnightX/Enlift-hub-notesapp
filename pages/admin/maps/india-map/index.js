@@ -103,7 +103,7 @@ export default function IndiaMapAdmin() {
                 </div>
                 <div className="flex gap-2">
                   <Link
-                    href={`/admin/maps/map/${item.id}/edit`}
+                    href={`/admin/maps/${item.category}/${item.id}/edit`}
                     className="btn btn-ghost !px-3 !py-2 text-[13px]"
                   >
                     <Edit3 size={14} /> Edit

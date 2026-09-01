@@ -4,7 +4,7 @@ import { ArrowRight, Map } from "lucide-react";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "@/firebase/config";
 import { MAP_CATEGORIES, normalizeLengthKm } from "@/lib/firestore/maps";
-import { getMapCardSubtitle } from "@/lib/mapCategoryFields";
+import { getMapCardSubtitle, getMapCardUi } from "@/lib/mapCategoryFields";
 import ResourceHero from "@/components/public/ResourceHero";
 
 const CATEGORY_LABELS = {
@@ -107,6 +107,7 @@ function serializeMap(item) {
 
 export default function UpscMapsCategoryPage({ maps = [], category }) {
   const config = getCategoryConfig(category);
+  const cardUi = getMapCardUi(category);
 
   return (
     <>
@@ -155,7 +156,9 @@ export default function UpscMapsCategoryPage({ maps = [], category }) {
                     className="maps-upsc__card"
                   >
                     <div className="maps-upsc__card-image">
-                      <span className="maps-upsc__card-badge">Atlas map</span>
+                      {cardUi.badge ? (
+                        <span className="maps-upsc__card-badge">{cardUi.badge}</span>
+                      ) : null}
                       {item.thumbnailUrl || item.imageUrl ? (
                         <img src={item.thumbnailUrl || item.imageUrl} alt={item.title} />
                       ) : (
@@ -173,7 +176,7 @@ export default function UpscMapsCategoryPage({ maps = [], category }) {
                         ) : null}
                       </div>
                       <div className="maps-upsc__card-action">
-                        <span>Open map</span>
+                        <span>{cardUi.action}</span>
                         <ArrowRight size={14} />
                       </div>
                     </div>

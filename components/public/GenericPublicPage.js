@@ -59,7 +59,7 @@ const contentBySlug = {
     highlights: [{ title: 'Map-friendly', body: 'River systems are highly relevant for visual learning and geography retention.' }, { title: 'Exam-focused', body: 'Helpful for both prelims and mains preparation when connected to physical geography themes.' }],
     cards: [{ kicker: 'Drainage', title: 'River Networks', body: 'Understand the structure and significance of major river systems in a simple way.' }, { kicker: 'India', title: 'Indian Rivers', body: 'Study key rivers and their relevance in Indian geography and map-based prep.' }, { kicker: 'Revision', title: 'Quick Notes', body: 'Use summary points and links to related geography resources for faster revision.' }],
     checklist: ['A structured geography page for river systems', 'Support for visual learning and revision', 'Connected to the broader public maps experience'],
-    related: [{ label: 'UPSC maps', href: '/maps/upsc-maps' }, { label: 'Mountain ranges', href: '/maps/mountain-ranges' }, { label: 'National Parks', href: '/maps/national-parks' }],
+    related: [{ label: 'UPSC maps', href: '/maps/upsc-maps' }, { label: 'Mountain ranges', href: '/maps/upsc-maps/mountain-ranges' }, { label: 'National Parks', href: '/maps/upsc-maps/national-parks' }],
     faqs: [{ q: 'Why are river systems important?', a: 'They are crucial for physical geography, map-based understanding, and general awareness in UPSC preparation.' }, { q: 'How should I study them?', a: 'Use a combination of map visuals, short notes, and regular revision to build a lasting memory.' }],
   },
   'mountain-ranges': {
@@ -74,7 +74,7 @@ const contentBySlug = {
     highlights: [{ title: 'Map-based learning', body: 'Mountain ranges fit naturally into geography revision and location-based memory.' }, { title: 'Useful for prelims', body: 'These topics are often tested indirectly through geography and environment content.' }],
     cards: [{ kicker: 'Geography', title: 'Key Ranges', body: 'Understand important ranges and their geographical significance in a simple structure.' }, { kicker: 'India', title: 'Indian Mountains', body: 'Use this page for better context around the major ranges within India.' }, { kicker: 'Review', title: 'Revision Notes', body: 'Good for quick recap and consolidation.' }],
     checklist: ['A focused mountain ranges page for UPSC preparation', 'Helpful memory support with maps and structured content', 'Connected to the broader public geography experience'],
-    related: [{ label: 'UPSC maps', href: '/maps/upsc-maps' }, { label: 'River systems', href: '/maps/river-systems' }, { label: 'National Parks', href: '/maps/national-parks' }],
+    related: [{ label: 'UPSC maps', href: '/maps/upsc-maps' }, { label: 'River systems', href: '/maps/upsc-maps/river-systems' }, { label: 'National Parks', href: '/maps/upsc-maps/national-parks' }],
     faqs: [{ q: 'Do I need to memorise all ranges?', a: 'No. Focus on the major ranges and their significance rather than trying to memorise every minor feature.' }, { q: 'How should I study them?', a: 'Pair the content with map visualisation and short revision notes for better retention.' }],
   },
   'national-parks': {
@@ -89,7 +89,7 @@ const contentBySlug = {
     highlights: [{ title: 'Environment relevance', body: 'Useful for both environment and geography-related sections of preparation.' }, { title: 'Memory-friendly', body: 'Location-based topics become easier to remember when they are organised clearly.' }],
     cards: [{ kicker: 'Environment', title: 'Key Parks', body: 'Learn the most important national parks and their relevance to UPSC prep.' }, { kicker: 'Geography', title: 'Location Focus', body: 'Use location and state association to strengthen recall and map familiarity.' }, { kicker: 'Revision', title: 'Practice Notes', body: 'Keep the content simple for repeated review over time.' }],
     checklist: ['A focused national parks resource for UPSC prep', 'Useful for environment and geography learners', 'Linked to related map topics and public content'],
-    related: [{ label: 'UPSC maps', href: '/maps/upsc-maps' }, { label: 'Biosphere Reserves', href: '/maps/biosphere-reserves' }, { label: 'Ramsar Sites', href: '/maps/ramsar-sites' }],
+    related: [{ label: 'UPSC maps', href: '/maps/upsc-maps' }, { label: 'Biosphere Reserves', href: '/maps/upsc-maps/biosphere-reserves' }, { label: 'Ramsar Sites', href: '/maps/ramsar-sites' }],
     faqs: [{ q: 'Do I need to memorise all parks?', a: 'No. Focus on the most important ones and understand the broader pattern rather than memorising everything.' }, { q: 'How should I revise this topic?', a: 'Short notes, location-based memory, and regular review are usually enough to retain the essentials.' }],
   },
   'biosphere-reserves': {
@@ -104,7 +104,7 @@ const contentBySlug = {
     highlights: [{ title: 'Useful for environment', body: 'Great for understanding conservation, ecosystems, and protected areas.' }, { title: 'Revision support', body: 'Good as an easy-to-review topic when paired with maps and notes.' }],
     cards: [{ kicker: 'Conservation', title: 'Protected Areas', body: 'Learn the concept and significance of biosphere reserves in a simple way.' }, { kicker: 'Geography', title: 'Map Relevance', body: 'Connect these locations with broader geography knowledge and regional understanding.' }, { kicker: 'Revision', title: 'Quick Summary', body: 'Suitable for short review notes and repeated recall.' }],
     checklist: ['A clear public page for biosphere reserves', 'Useful for environment and geography revision', 'Connected to the wider maps and public content experience'],
-    related: [{ label: 'National Parks', href: '/maps/national-parks' }, { label: 'Ramsar Sites', href: '/maps/ramsar-sites' }, { label: 'UNESCO Sites', href: '/maps/unesco-sites' }],
+    related: [{ label: 'National Parks', href: '/maps/upsc-maps/national-parks' }, { label: 'Ramsar Sites', href: '/maps/ramsar-sites' }, { label: 'UNESCO Sites', href: '/maps/unesco-sites' }],
     faqs: [{ q: 'Why do these topics matter?', a: 'They help build a stronger understanding of environment and geography topics that often appear across exams.' }, { q: 'How should I approach them?', a: 'Learn the basic significance first, then connect them with location-based memory and revision.' }],
   },
   'ramsar-sites': {
@@ -119,7 +119,7 @@ const contentBySlug = {
     highlights: [{ title: 'Environment awareness', body: 'Helpful for students studying biodiversity, wetlands, and conservation.' }, { title: 'Revision-friendly', body: 'Short, focused content is easier to remember and review.' }],
     cards: [{ kicker: 'Wetlands', title: 'Conservation Focus', body: 'Understand why wetlands matter and how Ramsar Sites are classified.' }, { kicker: 'India', title: 'Indian Examples', body: 'Use this page to connect India-based examples with broader preparation.' }, { kicker: 'Review', title: 'Study Summary', body: 'A simple way to revise a topic that can otherwise feel abstract.' }],
     checklist: ['A public-facing page for Ramsar Sites', 'Useful for environment preparation and revision', 'Connected to broader maps and geography content'],
-    related: [{ label: 'Biosphere Reserves', href: '/maps/biosphere-reserves' }, { label: 'National Parks', href: '/maps/national-parks' }, { label: 'UNESCO Sites', href: '/maps/unesco-sites' }],
+    related: [{ label: 'Biosphere Reserves', href: '/maps/upsc-maps/biosphere-reserves' }, { label: 'National Parks', href: '/maps/upsc-maps/national-parks' }, { label: 'UNESCO Sites', href: '/maps/unesco-sites' }],
     faqs: [{ q: 'Why are wetlands important?', a: 'They are crucial for biodiversity, ecosystem services, and environmental conservation, which are all useful topics for UPSC.' }, { q: 'How should I study them?', a: 'Learn the concept, remember a few major examples, and connect them to current environment discussions.' }],
   },
   'unesco-sites': {
@@ -134,7 +134,7 @@ const contentBySlug = {
     highlights: [{ title: 'Cross-topic usefulness', body: 'Useful for geography, culture, and general awareness preparation.' }, { title: 'Memory-friendly', body: 'The topic becomes easier to review when structured clearly.' }],
     cards: [{ kicker: 'Heritage', title: 'Cultural Significance', body: 'Understand the importance of UNESCO Sites from a cultural and historical perspective.' }, { kicker: 'Geography', title: 'World Context', body: 'See how these sites connect to broader world geography and heritage topics.' }, { kicker: 'Revision', title: 'Short Summary', body: 'Great for swift review and concept reinforcement.' }],
     checklist: ['A public page for UNESCO Sites', 'Useful for culture, geography, and general awareness prep', 'Connected to the wider public maps experience'],
-    related: [{ label: 'Ramsar Sites', href: '/maps/ramsar-sites' }, { label: 'Biosphere Reserves', href: '/maps/biosphere-reserves' }, { label: 'National Parks', href: '/maps/national-parks' }],
+    related: [{ label: 'Ramsar Sites', href: '/maps/ramsar-sites' }, { label: 'Biosphere Reserves', href: '/maps/upsc-maps/biosphere-reserves' }, { label: 'National Parks', href: '/maps/upsc-maps/national-parks' }],
     faqs: [{ q: 'Do I need to know every UNESCO Site?', a: 'No. Focus on the important examples and understand the general significance of the category.' }, { q: 'How should I revise this topic?', a: 'A short summary and location-based memory are usually enough to retain the essentials.' }],
   },
   'major-ports': {
@@ -149,7 +149,7 @@ const contentBySlug = {
     highlights: [{ title: 'Useful for economy', body: 'Ports sit at the intersection of geography, trade, and infrastructure.' }, { title: 'Approachable', body: 'Good for revision and short-topic learning without overcomplication.' }],
     cards: [{ kicker: 'Economy', title: 'Trade Significance', body: 'Understand why ports matter in the broader economic context.' }, { kicker: 'Geography', title: 'Coastal Context', body: 'Use port locations to reinforce coastal geography and map familiarity.' }, { kicker: 'Revision', title: 'Quick Notes', body: 'Helpful for short revision cycles and memory reinforcement.' }],
     checklist: ['A public page for major ports', 'Useful for geography and economy preparation', 'Connected to the maps and public website structure'],
-    related: [{ label: 'India Map', href: '/maps/upsc-maps' }, { label: 'World Map', href: '/maps/upsc-maps' }, { label: 'Important Locations', href: '/maps/important-locations' }],
+    related: [{ label: 'India Map', href: '/maps/upsc-maps' }, { label: 'World Map', href: '/maps/upsc-maps' }, { label: 'Important Locations', href: '/maps/upsc-maps/important-locations' }],
     faqs: [{ q: 'Why are ports important for UPSC?', a: 'They connect geography, trade, infrastructure, and regional development topics in a very practical way.' }, { q: 'How should I study them?', a: 'A short notes-based review linked to a map is usually enough for the essentials.' }],
   },
   'important-locations': {
@@ -164,7 +164,7 @@ const contentBySlug = {
     highlights: [{ title: 'Broad usefulness', body: 'Important locations support familiarity with states, regions, and geographic patterns used in exam prep.' }, { title: 'Memory-friendly', body: 'A simple structure helps you retain these places more effectively.' }],
     cards: [{ kicker: 'Geography', title: 'Location-Based Study', body: 'Use this page to reinforce the places that appear again and again in UPSC prep.' }, { kicker: 'Maps', title: 'Visual Memory', body: 'Pair location learning with map-based revision for stronger recall.' }, { kicker: 'Review', title: 'Short Notes', body: 'Great for quick re-engagement and focused revision.' }],
     checklist: ['A public page for important geography locations', 'Useful for map-based learning and revision', 'Connected to the broader public geography experience'],
-    related: [{ label: 'India Map', href: '/maps/upsc-maps' }, { label: 'Major Ports', href: '/maps/major-ports' }, { label: 'River Systems', href: '/maps/river-systems' }],
+    related: [{ label: 'India Map', href: '/maps/upsc-maps' }, { label: 'Major Ports', href: '/maps/major-ports' }, { label: 'River Systems', href: '/maps/upsc-maps/river-systems' }],
     faqs: [{ q: 'Do I need to memorise all locations?', a: 'No. Focus on the most recurring and high-value locations first, then expand gradually.' }, { q: 'How should I revise them?', a: 'A mix of map visuals, short notes, and repetition is usually the most effective approach.' }],
   },
   'constitution-articles': {

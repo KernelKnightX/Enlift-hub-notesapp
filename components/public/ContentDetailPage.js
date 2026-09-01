@@ -574,7 +574,7 @@ export default function ContentDetailPage({
                       </p>
                     )}
                     {!profile.compactLayout && (
-                      <span className="map-related-card__link">Open detail</span>
+                      <span className="map-related-card__link">View details</span>
                     )}
                   </div>
                 </Link>

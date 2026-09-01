@@ -1,5 +1,5 @@
-import GenericPublicPage from '@/components/public/GenericPublicPage';
+import StudyTimetablePageView from "@/components/public/StudyTimetablePageView";
 
 export default function StudyTimetablePage() {
-  return <GenericPublicPage slug="study-timetable" />;
+  return <StudyTimetablePageView />;
 }

@@ -1,5 +1,5 @@
-import GenericPublicPage from '@/components/public/GenericPublicPage';
+import StudyPlannerPageView from "@/components/public/StudyPlannerPageView";
 
 export default function StudyPlannerPage() {
-  return <GenericPublicPage slug="study-planner" />;
+  return <StudyPlannerPageView />;
 }

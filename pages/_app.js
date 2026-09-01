@@ -14,6 +14,9 @@ import "../styles/admin-ncert.css";
 import "../styles/maps/map-detail.css";
 import "../styles/maps/maps-upsc.css";
 import "../styles/resource-hero.css";
+import "../styles/planning-tools/upsc-calendar.css";
+import "../styles/planning-tools/planning-interactive.css";
+import "../styles/monthly-magazines.css";
 import "../styles/notes-editor.css";
 function App({ Component, pageProps }) {
   const router = useRouter();

@@ -1,5 +1,5 @@
-import GenericPublicPage from '@/components/public/GenericPublicPage';
+import RevisionPlannerPageView from "@/components/public/RevisionPlannerPageView";
 
 export default function RevisionPlannerPage() {
-  return <GenericPublicPage slug="revision-planner" />;
+  return <RevisionPlannerPageView />;
 }

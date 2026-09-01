@@ -43,8 +43,6 @@ export const publicNavigation = [
       { label: 'Study Planner', href: '/planning-tools/study-planner' },
       { label: 'Pomodoro Timer', href: '/planning-tools/pomodoro-timer' },
       { label: 'Revision Planner', href: '/planning-tools/revision-planner' },
-      { label: 'Study Timetable', href: '/planning-tools/study-timetable' },
-      { label: 'Goal Tracker', href: '/planning-tools/goal-tracker' },
     ],
   },
   { label: 'About', href: '/about' },

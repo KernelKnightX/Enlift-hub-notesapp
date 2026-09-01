@@ -1,11 +1,4 @@
-'use client';
-
 import { SchemePageLayout } from './SchemePageLayout';
-
-// A thin reusable wrapper that maps a generic government page configuration
-// into the existing SchemePageLayout implementation. This allows all
-// government dropdown pages to share the same visual architecture and
-// responsive behaviors while keeping the configuration/data separate.
 
 export default function GovernmentContentPage({
   config = {},
@@ -14,6 +7,7 @@ export default function GovernmentContentPage({
   onSearch,
   searchQuery = '',
   breadcrumbs = null,
+  sectionSlug = 'schemes',
 }) {
   const {
     title = 'Government Content',
@@ -21,6 +15,10 @@ export default function GovernmentContentPage({
     heroImage,
     categories = [],
     statistics = [],
+    gridTitle,
+    itemLabel = 'items',
+    searchPlaceholder,
+    showFilterBar = false,
   } = config;
 
   return (
@@ -35,6 +33,11 @@ export default function GovernmentContentPage({
       searchQuery={searchQuery}
       statistics={statistics}
       breadcrumbs={breadcrumbs}
+      sectionSlug={sectionSlug}
+      gridTitle={gridTitle || title}
+      itemLabel={itemLabel}
+      searchPlaceholder={searchPlaceholder}
+      showFilterBar={showFilterBar}
     />
   );
 }

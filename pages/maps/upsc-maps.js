@@ -68,7 +68,7 @@ function MapCard({ item, index, isFallback }) {
           <p className="maps-upsc__card-meta">{item.region || "India map"}</p>
         </div>
         <span className="maps-upsc__card-action">
-          Open map <ArrowRight size={14} strokeWidth={1.8} />
+          View details <ArrowRight size={14} strokeWidth={1.8} />
         </span>
       </div>
     </Link>

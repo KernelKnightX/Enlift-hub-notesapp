@@ -8,6 +8,7 @@ import {
   ClipboardCheck,
   Bell,
   Users,
+  CalendarDays,
 } from 'lucide-react';
 
 /** Admin office — grouped the way a CEO would walk the building. */
@@ -46,6 +47,12 @@ export const adminNavigationGroups = [
     items: [
       { label: 'Mock Tests', icon: ClipboardCheck, href: '/admin/mock-tests' },
       { label: 'PYQ Papers', icon: FileText, href: '/admin/pyq' },
+    ],
+  },
+  {
+    heading: 'Planning',
+    items: [
+      { label: 'UPSC Calendar', icon: CalendarDays, href: '/admin/planning-tools/upsc-calendar' },
     ],
   },
   {

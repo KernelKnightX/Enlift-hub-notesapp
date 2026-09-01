@@ -121,7 +121,11 @@ function StatStrip({ statistics = [] }) {
    FEATURED SCHEME
 ========================================================= */
 
-function FeaturedSchemeCard({ scheme }) {
+function schemeDetailHref(sectionSlug, scheme) {
+  return `/government/${sectionSlug}/${scheme?.slug || scheme?.id}`;
+}
+
+function FeaturedSchemeCard({ scheme, sectionSlug = 'schemes' }) {
   if (!scheme) return null;
 
   const hasHighlights = Array.isArray(scheme.highlights) && scheme.highlights.length > 0;
@@ -178,7 +182,7 @@ function FeaturedSchemeCard({ scheme }) {
             )}
           </div>
 
-          <Link href={`/government/schemes/${scheme.slug || scheme.id}`} className="btn btn-primary mt-6 w-fit">
+          <Link href={schemeDetailHref(sectionSlug, scheme)} className="btn btn-primary mt-6 w-fit">
             View Scheme Details
             <ArrowRight size={15} strokeWidth={2} />
           </Link>
@@ -238,7 +242,7 @@ function FeaturedSchemeCard({ scheme }) {
    SCHEME CARD
 ========================================================= */
 
-export function SchemeCard({ scheme, onSave }) {
+export function SchemeCard({ scheme, onSave, sectionSlug = 'schemes' }) {
   const [isSaved, setIsSaved] = useState(false);
 
   const handleSave = (event) => {
@@ -296,7 +300,7 @@ export function SchemeCard({ scheme, onSave }) {
 
         <div className="mt-auto flex items-center justify-between pt-4">
           <Link
-            href={`/government/schemes/${scheme?.slug || scheme?.id}`}
+            href={schemeDetailHref(sectionSlug, scheme)}
             className="inline-flex items-center gap-1.5 text-[13px] font-semibold"
             style={{ color: 'var(--color-primary)' }}
           >
@@ -362,7 +366,7 @@ function FilterItem({ label, value, last }) {
    the schemes page specifically.
 ========================================================== */
 
-function SchemesHero({ title, description, breadcrumbs = [], heroImage, searchQuery, onSearch }) {
+function SchemesHero({ title, description, breadcrumbs = [], heroImage, searchQuery, onSearch, searchPlaceholder }) {
   return (
     <section className="relative overflow-hidden border-b" style={{ borderColor: 'var(--color-border)' }}>
       {heroImage && (
@@ -411,7 +415,7 @@ function SchemesHero({ title, description, breadcrumbs = [], heroImage, searchQu
               type="text"
               value={searchQuery}
               onChange={(event) => onSearch?.(event.target.value)}
-              placeholder="Search schemes by name, ministry, keyword..."
+              placeholder={searchPlaceholder || 'Search schemes by name, ministry, keyword...'}
               className="h-[48px] w-full rounded-full border pl-11 pr-5 text-[13.5px] outline-none transition-shadow focus:ring-2"
               style={{ borderColor: 'var(--color-border)', background: 'var(--color-surface)' }}
             />
@@ -437,6 +441,11 @@ export function SchemePageLayout({
   onSearch,
   searchQuery = '',
   statistics = [],
+  sectionSlug = 'schemes',
+  gridTitle = 'Explore Government Schemes',
+  itemLabel = 'schemes',
+  searchPlaceholder = 'Search schemes by name, ministry, keyword...',
+  showFilterBar = true,
 }) {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [itemsToShow, setItemsToShow] = useState(8);
@@ -475,9 +484,11 @@ export function SchemePageLayout({
         heroImage={heroImage}
         searchQuery={searchQuery}
         onSearch={onSearch}
+        searchPlaceholder={searchPlaceholder}
       />
 
       {/* CATEGORY PILLS */}
+      {normalizedCategories.length > 0 ? (
       <section className="max-w-[1240px] mx-auto px-6 md:px-10 pt-6 pb-6">
         <div className="flex items-center gap-2 overflow-x-auto pb-1">
           <CategoryButton label="All Schemes" isActive={selectedCategory === 'All'} onClick={() => setSelectedCategory('All')} />
@@ -492,11 +503,12 @@ export function SchemePageLayout({
           ))}
         </div>
       </section>
+      ) : null}
 
       {/* FEATURED */}
       {!loading && featured && (
         <section className="max-w-[1240px] mx-auto px-6 md:px-10 pb-6">
-          <FeaturedSchemeCard scheme={featured} />
+          <FeaturedSchemeCard scheme={featured} sectionSlug={sectionSlug} />
         </section>
       )}
 
@@ -508,17 +520,19 @@ export function SchemePageLayout({
       )}
 
       {/* FILTER BAR */}
+      {showFilterBar ? (
       <section className="max-w-[1240px] mx-auto px-6 md:px-10 pb-8">
         <FilterBar />
       </section>
+      ) : null}
 
       {/* GRID */}
       <section className="max-w-[1240px] mx-auto px-6 md:px-10 pb-16">
         <div className="flex items-end justify-between mb-5">
           <div>
-            <h2 className="font-serif text-[22px]">Explore Government Schemes</h2>
+            <h2 className="font-serif text-[22px]">{gridTitle}</h2>
             <p className="mt-1 text-[12.5px]" style={{ color: 'var(--color-ink-muted)' }}>
-              {filtered.length} schemes available
+              {filtered.length} {itemLabel} available
             </p>
           </div>
         </div>
@@ -526,14 +540,14 @@ export function SchemePageLayout({
         {loading && (
           <div className="py-20 text-center">
             <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2" style={{ borderColor: 'var(--color-border)', borderTopColor: 'var(--color-primary)' }} />
-            <p className="mt-3 text-[13px]" style={{ color: 'var(--color-ink-muted)' }}>Loading schemes...</p>
+            <p className="mt-3 text-[13px]" style={{ color: 'var(--color-ink-muted)' }}>Loading {itemLabel}...</p>
           </div>
         )}
 
         {!loading && displayedSchemes.length > 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {displayedSchemes.map((scheme) => (
-              <SchemeCard key={scheme.id} scheme={scheme} />
+              <SchemeCard key={scheme.id} scheme={scheme} sectionSlug={sectionSlug} />
             ))}
           </div>
         )}
@@ -541,9 +555,11 @@ export function SchemePageLayout({
         {!loading && filtered.length === 0 && (
           <div className="py-20 text-center">
             <Search size={36} strokeWidth={1.4} className="mx-auto" style={{ color: 'var(--color-ink-muted)' }} />
-            <h3 className="mt-4 font-serif text-[19px]">No schemes found</h3>
+            <h3 className="mt-4 font-serif text-[19px]">No {itemLabel} found</h3>
             <p className="mt-2 text-[13px]" style={{ color: 'var(--color-ink-muted)' }}>
-              Try adjusting your search or filters.
+              {searchQuery
+                ? 'Try adjusting your search or filters.'
+                : `Published ${itemLabel} will appear here once they are added from admin.`}
             </p>
           </div>
         )}
@@ -551,7 +567,7 @@ export function SchemePageLayout({
         {!loading && hasMore && (
           <div className="flex justify-center pt-8">
             <button type="button" onClick={() => setItemsToShow((previous) => previous + 8)} className="btn btn-ghost">
-              Load More Schemes
+              Load More
               <ChevronDown size={14} strokeWidth={1.8} />
             </button>
           </div>

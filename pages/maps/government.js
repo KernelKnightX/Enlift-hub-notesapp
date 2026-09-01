@@ -60,7 +60,7 @@ function MapCard({ item, index, isFallback }) {
         <h2 className="maps-upsc__card-title">{item.title}</h2>
         <p className="maps-upsc__card-region">{item.region || "Government map"}</p>
         <span className="maps-upsc__card-action">
-          Open map <ArrowRight size={14} strokeWidth={1.8} />
+          View details <ArrowRight size={14} strokeWidth={1.8} />
         </span>
       </div>
     </Link>

@@ -361,5 +361,13 @@ service cloud.firestore {
 
       allow create, update, delete: if isAdmin();
     }
+
+    match /publicPages/{pageId} {
+      allow read:
+        if resource.data.status == 'published'
+        || isAdmin();
+
+      allow create, update, delete: if isAdmin();
+    }
   }
 }

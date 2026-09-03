@@ -24,6 +24,8 @@ import {
 import useFirestoreCollection from "@/hooks/shared/useFirestoreCollection";
 import useUserMetrics from "@/hooks/student/useUserMetrics";
 import { usePlannerTasks } from "@/hooks/student/usePlannerTasks";
+import useStudyPlan from "@/hooks/student/useStudyPlan";
+import { getDefaultExamCountdowns } from "@/lib/planning/examCountdowns";
 import { useAuth } from "@/contexts/AuthContext";
 import PeerPerformanceCard from "@/components/student/PeerPerformanceCard";
 import TopperTipCard from "@/components/student/TopperTipCard";
@@ -34,40 +36,13 @@ import useTopicStats from "@/hooks/student/useTopicStats";
 const daysUntil = (d) =>
   Math.max(0, Math.ceil((new Date(d) - new Date()) / (1000 * 60 * 60 * 24)));
 
-const COUNTDOWNS = [
-  { name: "UPSC CSE Prelims", date: "2027-06-06", tone: "primary" },
-  { name: "UPSC CSE Mains", date: "2027-09-17", tone: "accent" },
-];
-
-// Fallback tasks shown only if today has nothing in the Planner yet.
-const TODO_FALLBACK = [
-  {
-    id: "fb-1",
-    text: "Attempt: GS-I Prelims mock #12",
-    done: false,
-    time: "60m",
-  },
-  {
-    id: "fb-2",
-    text: "Write: Answer for Q3 (GS-II 2024)",
-    done: false,
-    time: "25m",
-  },
-  {
-    id: "fb-3",
-    text: "Newspaper: The Hindu editorial",
-    done: false,
-    time: "20m",
-  },
-];
+const COUNTDOWNS = getDefaultExamCountdowns();
 
 const s = (v, fallback = "") => {
   if (v == null) return fallback;
   if (typeof v === "string" || typeof v === "number") return v;
   return fallback;
 };
-
-const todayKey = () => new Date().toISOString().slice(0, 10);
 
 /* Pomodoro durations, in seconds */
 const DURATIONS = { focus: 25 * 60, break: 5 * 60, rest: 15 * 60 };
@@ -100,57 +75,70 @@ export default function Dashboard() {
     transform: (docs) => docs,
   });
 
-  // Use existing usePlannerTasks hook for user-scoped tasks
-  const { tasksMap } = usePlannerTasks();
+  // Planner: manual tasks + AI study plan for today
+  const { tasksMap, saveTask } = usePlannerTasks();
+  const { todayKey, todayTasks, toggleTask: togglePlanTask } = useStudyPlan();
 
-  // Get today's tasks
-  const todayStr = todayKey();
-  const plannerTasksLive = (tasksMap[todayStr] || []).map((task) => ({
+  const manualTasks = (tasksMap[todayKey] || []).map((task) => ({
     id: task.id,
+    source: "manual",
     text: s(task.title, s(task.text, "Task")),
     done: !!task.done,
     time: s(task.duration, s(task.time, "")),
+    raw: task,
   }));
-  const plannerIsMock = Object.keys(tasksMap).length === 0;
 
-  // Tasks added from this card before they've round-tripped through Firestore.
-  // TODO: replace with the real write used by the Planner (e.g. addPlannerTask /
-  // updatePlannerTask) so this becomes unnecessary and everything is Firestore-driven.
-  const [localTasks, setLocalTasks] = useState([]);
-  const [localDone, setLocalDone] = useState({});
-  const tasks = [
-    ...plannerTasksLive.map((t) => ({ ...t, done: localDone[t.id] ?? t.done })),
-    ...localTasks,
-  ];
+  const planTasks = (todayTasks || []).map((task, index) => ({
+    id: `plan-${index}`,
+    source: "plan",
+    planIndex: index,
+    text: task.topic
+      ? `${task.subject}: ${task.topic}`
+      : s(task.subject, "AI study block"),
+    done: !!task.done,
+    time: task.estMinutes ? `${task.estMinutes}m` : "",
+  }));
+
+  const tasks = [...manualTasks, ...planTasks];
+  const hasPlannerData = manualTasks.length > 0 || planTasks.length > 0;
 
   const [showAddInput, setShowAddInput] = useState(false);
   const [newTaskText, setNewTaskText] = useState("");
+  const [taskSaving, setTaskSaving] = useState(false);
 
-  const handleAddTask = () => {
+  const handleAddTask = async () => {
     const text = newTaskText.trim();
-    if (!text) return;
-    // TODO: call the shared planner write here, e.g.
-    // addPlannerTask({ text, date: todayKey() }) — until then this task only
-    // reflects locally, not in the Planner.
-    setLocalTasks((prev) => [
-      ...prev,
-      { id: `local-${Date.now()}`, text, done: false, time: "" },
-    ]);
-    setNewTaskText("");
-    setShowAddInput(false);
+    if (!text || taskSaving) return;
+    setTaskSaving(true);
+    try {
+      await saveTask(todayKey, { title: text, done: false, time: "" });
+      setNewTaskText("");
+      setShowAddInput(false);
+    } catch (error) {
+      console.error("[dashboard] Failed to add task:", error);
+    } finally {
+      setTaskSaving(false);
+    }
   };
 
-  const handleToggleTask = (task) => {
-    if (task.id?.toString().startsWith("local-")) {
-      setLocalTasks((prev) =>
-        prev.map((t) => (t.id === task.id ? { ...t, done: !t.done } : t)),
-      );
-    } else {
-      setLocalDone((prev) => ({
-        ...prev,
-        [task.id]: !(prev[task.id] ?? task.done),
-      }));
-      // TODO: also persist via updatePlannerTask(task.id, { done: !task.done })
+  const handleToggleTask = async (task) => {
+    if (taskSaving) return;
+    setTaskSaving(true);
+    try {
+      if (task.source === "plan") {
+        await togglePlanTask(todayKey, task.planIndex, !task.done);
+      } else {
+        await saveTask(todayKey, {
+          ...task.raw,
+          id: task.id,
+          title: task.text,
+          done: !task.done,
+        });
+      }
+    } catch (error) {
+      console.error("[dashboard] Failed to toggle task:", error);
+    } finally {
+      setTaskSaving(false);
     }
   };
 
@@ -265,11 +253,11 @@ export default function Dashboard() {
               Keep pace. Consistency &gt; intensity.
             </div>
             <Link
-              href="/student-desk/planner"
+              href="/planning-tools/upsc-calendar"
               className="text-[12.5px] font-medium flex items-center gap-1"
               style={{ color: "var(--color-bg)" }}
             >
-              Open planner <ArrowUpRight size={13} />
+              Exam calendar <ArrowUpRight size={13} />
             </Link>
           </div>
         </motion.div>
@@ -627,8 +615,9 @@ export default function Dashboard() {
                 onClick={handleAddTask}
                 className="chip chip-primary"
                 style={{ padding: "8px 14px" }}
+                disabled={taskSaving}
               >
-                Add
+                {taskSaving ? "Saving…" : "Add"}
               </button>
             </div>
           )}
@@ -686,10 +675,15 @@ export default function Dashboard() {
                 </button>
                 {t.time && (
                   <span
-                    className="text-[11.5px] font-mono"
+                    className="text-[11.5px] font-mono shrink-0"
                     style={{ color: "var(--color-ink-muted)" }}
                   >
                     {t.time}
+                  </span>
+                )}
+                {t.source === "plan" && (
+                  <span className="chip" style={{ fontSize: 10, padding: "2px 6px" }}>
+                    AI
                   </span>
                 )}
               </li>
@@ -701,9 +695,9 @@ export default function Dashboard() {
               className="text-[12px]"
               style={{ color: "var(--color-ink-faint)" }}
             >
-              {plannerIsMock
-                ? "Synced with Planner once tasks are added there."
-                : "Synced with your Planner."}
+              {hasPlannerData
+                ? "Synced with Planner and today's AI study plan."
+                : "Add tasks here or generate a plan in Planner."}
             </div>
             <Link
               href="/student-desk/planner"

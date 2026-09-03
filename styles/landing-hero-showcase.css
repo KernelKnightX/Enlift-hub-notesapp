@@ -1,0 +1,424 @@
+.hero-showcase-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.25rem;
+}
+
+@media (min-width: 1024px) {
+  .hero-showcase-grid {
+    grid-template-columns: 1.12fr 0.88fr;
+    gap: 1.5rem;
+    align-items: stretch;
+  }
+}
+
+.hero-roadmap-panel {
+  background: linear-gradient(165deg, #12141c 0%, #0a0b10 55%, #12141c 100%);
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: 0 24px 60px rgba(15, 15, 20, 0.22);
+  padding: 1.35rem 1.35rem 0;
+  min-height: 380px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.hero-roadmap-panel__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.hero-roadmap-panel__title {
+  color: #fff;
+  font-family: var(--font-serif);
+  font-size: 1.15rem;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+}
+
+.hero-roadmap-panel__sub {
+  margin-top: 0.35rem;
+  font-size: 0.8rem;
+  color: #8a8b9e;
+  line-height: 1.45;
+}
+
+.hero-roadmap-preview {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  color: #c8cad8;
+  font-size: 0.72rem;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.hero-roadmap-preview:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+
+.hero-roadmap-visual {
+  position: relative;
+  flex: 1;
+  min-height: 200px;
+  padding: 0.5rem 0 1.5rem;
+}
+
+.hero-roadmap-path {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.hero-roadmap-path line,
+.hero-roadmap-path path {
+  stroke: url(#heroRoadmapGradient);
+  stroke-width: 3;
+  fill: none;
+  filter: drop-shadow(0 0 8px rgba(124, 92, 252, 0.55));
+}
+
+.hero-roadmap-nodes {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2.5rem 1rem;
+  padding-top: 0.5rem;
+}
+
+@media (max-width: 640px) {
+  .hero-roadmap-nodes {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2rem 0.75rem;
+  }
+}
+
+.hero-roadmap-node {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.hero-roadmap-node:nth-child(even) {
+  transform: translateY(12px);
+}
+
+.hero-roadmap-node__circle {
+  width: 52px;
+  height: 52px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: radial-gradient(circle at 30% 25%, #2a2540, #14121f);
+  border: 2px solid rgba(124, 92, 252, 0.45);
+  box-shadow: 0 0 0 4px rgba(124, 92, 252, 0.08), 0 0 24px rgba(124, 92, 252, 0.25);
+  color: #c4b5fd;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.hero-roadmap-node__icon {
+  margin-top: 0.65rem;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  background: rgba(124, 92, 252, 0.12);
+  color: #a78bfa;
+}
+
+.hero-roadmap-node__label {
+  margin-top: 0.5rem;
+  color: #fff;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.hero-roadmap-node__sub {
+  margin-top: 0.2rem;
+  color: #7c7d92;
+  font-size: 0.7rem;
+  line-height: 1.35;
+  max-width: 110px;
+}
+
+.hero-roadmap-stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0;
+  margin-top: auto;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(0, 0, 0, 0.22);
+}
+
+@media (min-width: 640px) {
+  .hero-roadmap-stats {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.hero-roadmap-stat {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.85rem 1rem;
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.hero-roadmap-stat:last-child {
+  border-right: none;
+}
+
+.hero-roadmap-stat__icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  background: rgba(124, 92, 252, 0.14);
+  color: #a78bfa;
+  flex-shrink: 0;
+}
+
+.hero-roadmap-stat__value {
+  color: #fff;
+  font-size: 0.78rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.hero-roadmap-stat__label {
+  color: #7c7d92;
+  font-size: 0.65rem;
+  line-height: 1.25;
+}
+
+.hero-first-step {
+  background: #fff;
+  border-radius: 20px;
+  border: 1px solid var(--color-border);
+  box-shadow: 0 16px 48px rgba(15, 15, 20, 0.06);
+  padding: 1.75rem 1.75rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 380px;
+}
+
+.hero-first-step--compact {
+  min-height: 340px;
+  height: 100%;
+  padding: 1.35rem 1.35rem 1.2rem;
+}
+
+.hero-first-step--compact .hero-first-step__title {
+  font-size: clamp(1.2rem, 2vw, 1.45rem);
+}
+
+.hero-first-step--compact .hero-first-step__actions {
+  margin-top: 1.15rem;
+}
+
+.hero-first-step--compact .hero-first-step__social {
+  margin-top: 1.15rem;
+  padding-top: 1rem;
+}
+
+.hero-first-step__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.hero-first-step__badge-num {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  background: var(--color-primary-tint);
+  color: var(--color-primary);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.hero-first-step__badge-text {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--color-ink-faint);
+}
+
+.hero-first-step__title {
+  font-family: var(--font-serif);
+  font-size: clamp(1.35rem, 2.2vw, 1.65rem);
+  line-height: 1.28;
+  letter-spacing: -0.02em;
+  color: var(--color-ink);
+}
+
+.hero-first-step__sub {
+  margin-top: 0.65rem;
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: var(--color-ink-muted);
+}
+
+.hero-first-step__actions {
+  margin-top: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.hero-first-step__social {
+  margin-top: 1.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.hero-first-step__avatars {
+  display: flex;
+}
+
+.hero-first-step__avatars span {
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  border: 2px solid #fff;
+  margin-left: -8px;
+  background: linear-gradient(135deg, #c4b5fd, #818cf8);
+}
+
+.hero-first-step__avatars span:first-child {
+  margin-left: 0;
+  background: linear-gradient(135deg, #fda4af, #fb7185);
+}
+
+.hero-first-step__avatars span:nth-child(2) {
+  background: linear-gradient(135deg, #93c5fd, #60a5fa);
+}
+
+.hero-first-step__avatars span:nth-child(3) {
+  background: linear-gradient(135deg, #86efac, #4ade80);
+}
+
+.hero-first-step__social-text {
+  font-size: 0.8rem;
+  color: var(--color-ink-muted);
+  line-height: 1.35;
+}
+
+.hero-glow-row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0;
+  background: #fff;
+  border-radius: 16px;
+  border: 1px solid var(--color-border);
+  box-shadow: 0 8px 32px rgba(15, 15, 20, 0.04);
+  overflow: hidden;
+}
+
+@media (min-width: 768px) {
+  .hero-glow-row {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.hero-glow-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 1.1rem;
+  border-right: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
+  transition: background 0.15s ease;
+}
+
+.hero-glow-item:hover {
+  background: var(--color-surface-alt);
+}
+
+@media (min-width: 768px) {
+  .hero-glow-item {
+    border-bottom: none;
+  }
+
+  .hero-glow-item:last-child {
+    border-right: none;
+  }
+}
+
+@media (max-width: 767px) {
+  .hero-glow-item:nth-child(2n) {
+    border-right: none;
+  }
+
+  .hero-glow-item:nth-last-child(-n + 2) {
+    border-bottom: none;
+  }
+}
+
+.hero-glow-item__icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+.hero-glow-item__icon--blue {
+  background: #e9f0ff;
+  color: #2563eb;
+}
+
+.hero-glow-item__icon--green {
+  background: #e4fbf1;
+  color: #059669;
+}
+
+.hero-glow-item__icon--orange {
+  background: #ffede9;
+  color: #f97066;
+}
+
+.hero-glow-item__icon--pink {
+  background: #fce7f3;
+  color: #ec4899;
+}
+
+.hero-glow-item__title {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--color-ink);
+  line-height: 1.25;
+}
+
+.hero-glow-item__sub {
+  margin-top: 0.15rem;
+  font-size: 0.72rem;
+  color: var(--color-ink-muted);
+}

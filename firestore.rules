@@ -235,8 +235,24 @@ service cloud.firestore {
       allow create, update, delete: if isAdmin();
     }
 
-    match /adminNotifications/{notificationId} {
+    match /trendingHashtags/{hashtagId} {
       allow read: if isAuthenticated();
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /adminNotifications/{notificationId} {
+      allow read:
+        if isAuthenticated()
+        || (
+          resource.data.isActive == true
+          && resource.data.href is string
+          && resource.data.href.size() > 0
+          && (
+            !('target' in resource.data)
+            || resource.data.target == 'home'
+            || resource.data.target == 'both'
+          )
+        );
       allow create, update, delete: if isAdmin();
     }
 

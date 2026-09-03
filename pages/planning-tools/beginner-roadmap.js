@@ -1,5 +1,20 @@
-import GenericPublicPage from '@/components/public/GenericPublicPage';
+import GenericPublicPage, { contentBySlug } from '@/components/public/GenericPublicPage';
+import { getMergedPublicPageContent } from '@/lib/firestore/publicPages';
 
-export default function BeginnerRoadmapPage() {
-  return <GenericPublicPage slug="beginner-roadmap" />;
+const PAGE_ID = 'planning-beginner-roadmap';
+const SLUG = 'beginner-roadmap';
+const defaults = { slug: SLUG, status: 'published', ...contentBySlug[SLUG] };
+
+export default function BeginnerRoadmapPage({ pageData }) {
+  return <GenericPublicPage slug={SLUG} pageData={pageData} />;
+}
+
+export async function getStaticProps() {
+  try {
+    const pageData = await getMergedPublicPageContent(PAGE_ID, defaults);
+    return { props: { pageData }, revalidate: 60 };
+  } catch (error) {
+    console.error('Failed to load beginner roadmap page:', error);
+    return { props: { pageData: defaults }, revalidate: 60 };
+  }
 }

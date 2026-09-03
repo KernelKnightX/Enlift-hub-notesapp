@@ -1,15 +1,18 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ArrowUpRight, ArrowRight, BookOpen, Newspaper, ClipboardCheck, FileText,
-  Calendar, GraduationCap, Sparkles, Play, ChevronRight, ChevronDown, Star,
-  CheckCircle2, TrendingUp, Users, Clock, Menu, X, Coffee, Compass,
+  Calendar, GraduationCap, Sparkles, ChevronDown, Star,
+  CheckCircle2, TrendingUp, Users, Menu, X, Coffee, Compass,
   MapPin, Flag, PenLine, Target, Award
 } from 'lucide-react';
-import LandingFooter from '@/components/landing/LandingFooter';
 import SplashLoader from '@/components/landing/SplashLoader';
+import {
+  HeroFirstStepCard,
+  HeroGlowFeatureRow,
+} from '@/components/landing/HeroRoadmapShowcase';
 
 /* ─────────────────────────────────────────────
    MOCK DATA — TODO(firestore): each block below marks
@@ -17,27 +20,6 @@ import SplashLoader from '@/components/landing/SplashLoader';
    static array. Shape is kept 1:1 so swapping is a
    drop-in once collections/fields are finalised.
 ───────────────────────────────────────────── */
-
-// TODO(firestore): collection('currentAffairs').orderBy('date','desc').limit(4)
-const CURRENT_AFFAIRS = [
-  { id: 1, date: '28 JAN', category: 'Polity', title: 'The Election Commission tables new voter roll transparency framework', mins: 4, tag: 'Prelims + Mains' },
-  { id: 2, date: '28 JAN', category: 'Economy', title: 'RBI signals policy pivot: what the December MPC minutes reveal', mins: 5, tag: 'Mains GS-III' },
-  { id: 3, date: '27 JAN', category: 'Environment', title: 'IPCC AR6 synthesis and India\'s revised NDC targets: a reader', mins: 6, tag: 'Prelims + Mains' },
-  { id: 4, date: '27 JAN', category: 'International', title: 'Quad ministerial 2026 — reading between the joint statements', mins: 5, tag: 'GS-II' },
-];
-
-// TODO(firestore): collection('notes').where('featured','==',true).limit(3)
-const FREE_NOTES = [
-  { subject: 'Modern History', title: 'Revolt of 1857 — causes, spread & aftermath', pages: 12, updated: 'Jan 24' },
-  { subject: 'Polity', title: 'Fundamental Rights vs Directive Principles', pages: 9, updated: 'Jan 22' },
-  { subject: 'Geography', title: 'Indian monsoon systems — a visual primer', pages: 14, updated: 'Jan 20' },
-];
-
-// TODO(firestore): collection('videos').where('free','==',true)
-const FREE_VIDEOS = [
-  { title: 'UPSC prep from absolute zero: the first 30 days', tutor: 'Aditi Rao', duration: '18:24', tag: 'Getting Started' },
-  { title: 'How to answer UPSC Mains GS-II questions', tutor: 'Rohan Menon', duration: '24:10', tag: 'Answer Writing' },
-];
 
 // The core differentiator for a zero-to-hero positioning: an explicit,
 // ordered path. Order carries real information here, so numbering it is
@@ -136,22 +118,12 @@ const FEATURES = [
 export default function Home() {
   const router = useRouter();
   const [ready, setReady] = useState(false);
-  const [caIndex, setCaIndex] = useState(0);
   const [openFaq, setOpenFaq] = useState(0);
 
   useEffect(() => {
     const t = setTimeout(() => setReady(true), 1400);
     return () => clearTimeout(t);
   }, []);
-
-  useEffect(() => {
-    const i = setInterval(() => setCaIndex(x => (x + 1) % CURRENT_AFFAIRS.length), 4200);
-    return () => clearInterval(i);
-  }, []);
-
-  const today = useMemo(() => new Date().toLocaleDateString('en-IN', {
-    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
-  }), []);
 
   return (
     <>
@@ -161,8 +133,8 @@ export default function Home() {
 
         {/* ─────────── HERO ─────────── */}
         <section className="relative overflow-hidden" data-testid="landing-hero">
-          <div className="max-w-[1240px] mx-auto px-6 md:px-10 pt-16 md:pt-20 pb-16 md:pb-24">
-            <div className="grid grid-cols-12 gap-6 md:gap-10 items-start">
+          <div className="max-w-[1240px] mx-auto px-6 md:px-10 pt-12 md:pt-16 pb-12 md:pb-16">
+            <div className="grid grid-cols-12 gap-5 md:gap-8 items-start">
               {/* Full-width headline block */}
               <div className="col-span-12">
  
@@ -184,19 +156,19 @@ export default function Home() {
                 <motion.p
                   initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: .6, delay: .25 }}
-                  className="mt-7 max-w-[1400px] text-[17px] leading-[1.65]"
+                  className="mt-5 max-w-[1400px] text-[17px] leading-[1.65]"
                   style={{ color: 'var(--color-ink-muted)' }}
                 >
                   Notes Cafe is a preparation platform built for the moment before you've started — a clear, ordered roadmap from "I don't know where to begin" to your first Mains answer, backed by daily current affairs, ten years of PYQs, and honest mock tests.
                 </motion.p>
               </div>
 
-              {/* Hero video box */}
-              <div className="col-span-12 lg:col-span-7 mt-10">
+              {/* Video (original position + size) + first-step box */}
+              <div className="col-span-12 lg:col-span-7 mt-5">
                 <motion.div
                   initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: .8, delay: .3 }}
-                  className="card overflow-hidden relative"
+                  className="card overflow-hidden relative h-full"
                   style={{ background: 'var(--color-ink)', minHeight: 340 }}
                   data-testid="hero-illustration"
                 >
@@ -212,47 +184,24 @@ export default function Home() {
                 </motion.div>
               </div>
 
-              {/* CTA column, beside the illustration */}
-              <div className="col-span-12 lg:col-span-5 mt-10 flex flex-col justify-center h-full">
+              <div className="col-span-12 lg:col-span-5 mt-5 flex flex-col">
                 <motion.div
                   initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: .5, delay: .4 }}
-                  className="card p-7 md:p-8 h-full flex flex-col justify-center"
+                  transition={{ duration: .5, delay: .35 }}
+                  className="h-full"
                 >
-                  <div className="eyebrow mb-3">Your very first step</div>
-                  <div className="font-serif text-[22px] leading-[1.3] mb-6" style={{ letterSpacing: '-0.01em' }}>
-                    Six stages, zero to Mains — see exactly where to begin.
-                  </div>
-                  <div className="flex flex-col gap-3">
-                    <Link href="#roadmap" className="btn btn-primary justify-center" data-testid="hero-cta-roadmap">
-                      See the zero-to-hero roadmap <ArrowRight size={16} strokeWidth={2} />
-                    </Link>
-                    <Link href="/register" className="btn btn-ghost justify-center" data-testid="hero-cta-signup">
-                      Get started, it&apos;s free <ArrowUpRight size={15} strokeWidth={1.75} />
-                    </Link>
-                  </div>
-
+                  <HeroFirstStepCard compact />
                 </motion.div>
               </div>
-            </div>
 
-            {/* Hairline stats */}
-            <div className="mt-16 md:mt-20 hairline-t hairline-b">
-              <div className="grid grid-cols-2 md:grid-cols-4">
-                {[
-                  { n: '6',     l: 'Stages, zero to Mains' },
-                  { n: '10',    l: 'Years of PYQs archived' },
-                  { n: '500+',  l: 'Mock tests, calibrated' },
-                  { n: 'Daily', l: 'Editorial brief · 7:15 IST' },
-                ].map((s, i) => (
-                  <div key={i} className={`py-8 md:py-10 px-4 md:px-6 ${i < 3 ? 'md:hairline-r' : ''} ${i < 2 ? 'hairline-b md:hairline-b-0' : ''}`}
-                       style={{ borderRight: i < 3 ? '1px solid var(--color-border)' : 'none' }}>
-                    <div className="display-num text-[42px] md:text-[56px] flex items-center gap-2" style={{ color: 'var(--color-primary)' }}>
-                      {s.n}
-                    </div>
-                    <div className="mt-2 text-[13px]" style={{ color: 'var(--color-ink-muted)' }}>{s.l}</div>
-                  </div>
-                ))}
+              <div className="col-span-12 mt-4">
+                <motion.div
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.4 }}
+                >
+                  <HeroGlowFeatureRow />
+                </motion.div>
               </div>
             </div>
           </div>
@@ -307,131 +256,6 @@ export default function Home() {
               <Link href="/register" className="btn btn-primary" data-testid="roadmap-cta">
                 Start at stage 00, free <ArrowRight size={15} strokeWidth={2} />
               </Link>
-            </div>
-          </div>
-        </section>
-
-        {/* ─────────── TODAY'S FREE CONTENT ─────────── */}
-        <section id="today" className="max-w-[1240px] mx-auto px-6 md:px-10 py-24 md:py-32" data-testid="today-section">
-          <div className="grid grid-cols-12 gap-6 md:gap-10 items-end mb-14">
-            <div className="col-span-12 md:col-span-8">
-              <div className="eyebrow mb-4">Your first week · No login required</div>
-              <h2 className="font-serif" style={{ fontSize: 'clamp(32px, 4.2vw, 56px)', lineHeight: 1.08, letterSpacing: '-0.02em', fontWeight: 460 }}>
-                A real look at what<br />the habit <em style={{ fontStyle: 'italic', color: 'var(--color-accent)' }}>actually feels like</em>.
-              </h2>
-            </div>
-            <div className="col-span-12 md:col-span-4 md:text-right">
-              <p className="text-[15px]" style={{ color: 'var(--color-ink-muted)' }}>
-                Current affairs, notes, and lectures — try the exact daily rhythm before you commit to anything.
-              </p>
-            </div>
-          </div>
-
-          {/* Bento */}
-          <div className="grid grid-cols-12 gap-4 md:gap-6">
-            {/* Big: Current Affairs feed */}
-            <motion.div
-              initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
-              transition={{ duration: .5 }}
-              className="col-span-12 lg:col-span-7 card overflow-hidden"
-              data-testid="free-current-affairs"
-            >
-              <div className="p-6 md:p-8 hairline-b flex items-center justify-between">
-                <div>
-                  <div className="eyebrow mb-1.5">Daily Current Affairs</div>
-                  <div className="font-serif text-[24px]" style={{ letterSpacing: '-0.01em' }}>The Morning Brief</div>
-                </div>
-                <Link href="/current-affairs" className="btn btn-ghost" style={{ padding: '0.5rem 1rem', fontSize: 12 }}>
-                  Open reader <ArrowUpRight size={14} strokeWidth={1.75} />
-                </Link>
-              </div>
-              <div>
-                {CURRENT_AFFAIRS.map((it) => (
-                  <div key={it.id} className="hairline-b last:border-b-0 p-5 md:p-6 flex gap-5 items-start group cursor-pointer"
-                       style={{ transition: 'background .15s ease' }}
-                       onMouseEnter={e => e.currentTarget.style.background = 'var(--color-surface-alt)'}
-                       onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
-                    <div className="text-center min-w-[54px]">
-                      <div className="font-mono text-[11px]" style={{ color: 'var(--color-ink-faint)' }}>{it.date}</div>
-                      <div className="font-serif text-[15px] mt-0.5 italic" style={{ color: 'var(--color-accent)' }}>{it.category}</div>
-                    </div>
-                    <div className="flex-1">
-                      <div className="font-serif text-[18px] leading-[1.35]" style={{ letterSpacing: '-0.005em' }}>{it.title}</div>
-                      <div className="mt-2 flex items-center gap-3 text-[12px]" style={{ color: 'var(--color-ink-muted)' }}>
-                        <span className="flex items-center gap-1"><Clock size={11} strokeWidth={1.5} /> {it.mins} min</span>
-                        <span>·</span>
-                        <span>{it.tag}</span>
-                      </div>
-                    </div>
-                    <ChevronRight size={18} strokeWidth={1.5} style={{ color: 'var(--color-border-strong)' }} />
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-
-            {/* Right column: Free notes + free videos stacked */}
-            <div className="col-span-12 lg:col-span-5 flex flex-col gap-4 md:gap-6">
-              <motion.div
-                initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
-                transition={{ duration: .5, delay: .1 }}
-                className="card p-6 md:p-7"
-                data-testid="free-notes-card"
-              >
-                <div className="flex items-center justify-between mb-4">
-                  <div>
-                    <div className="eyebrow mb-1.5">Notes Library</div>
-                    <div className="font-serif text-[20px]">Handpicked, on the house.</div>
-                  </div>
-                  <Link href="/notes" className="chip chip-primary" style={{ background: 'transparent' }}>Browse all</Link>
-                </div>
-                <div className="flex flex-col gap-3">
-                  {FREE_NOTES.map((n, i) => (
-                    <div key={i} className="flex items-start gap-4 py-2.5 hairline-b last:border-b-0 pb-3">
-                      <div className="min-w-[36px] h-[46px] rounded-md flex items-center justify-center font-serif italic"
-                           style={{ background: 'var(--color-primary-tint)', color: 'var(--color-primary)', fontSize: 15, letterSpacing: '-0.01em' }}>
-                        {n.subject.split(' ').map(w => w[0]).join('').slice(0,2)}
-                      </div>
-                      <div className="flex-1">
-                        <div className="text-[11px] font-mono" style={{ color: 'var(--color-ink-faint)' }}>{n.subject.toUpperCase()}</div>
-                        <div className="font-serif text-[15.5px] leading-[1.35] mt-0.5">{n.title}</div>
-                        <div className="text-[11.5px] mt-1.5" style={{ color: 'var(--color-ink-muted)' }}>{n.pages} pages · Updated {n.updated}</div>
-                      </div>
-                      <button className="opacity-0 group-hover:opacity-100" style={{ color: 'var(--color-ink-muted)' }}>
-                        <ArrowUpRight size={16} strokeWidth={1.5} />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </motion.div>
-
-              <motion.div
-                initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
-                transition={{ duration: .5, delay: .2 }}
-                className="card p-6 md:p-7"
-                data-testid="free-videos-card"
-              >
-                <div className="flex items-center justify-between mb-4">
-                  <div>
-                    <div className="eyebrow mb-1.5">Video Lectures</div>
-                    <div className="font-serif text-[20px]">Watch. Take notes. Repeat.</div>
-                  </div>
-                </div>
-                <div className="grid grid-cols-1 gap-3">
-                  {FREE_VIDEOS.map((v, i) => (
-                    <div key={i} className="flex items-center gap-4">
-                      <div className="w-[64px] h-[46px] rounded-lg relative overflow-hidden flex items-center justify-center"
-                           style={{ background: 'var(--color-ink)', color: 'var(--color-bg)' }}>
-                        <Play size={16} fill="currentColor" />
-                      </div>
-                      <div className="flex-1">
-                        <div className="text-[11px] font-mono" style={{ color: 'var(--color-ink-faint)' }}>{v.tag.toUpperCase()}</div>
-                        <div className="font-serif text-[15px] leading-[1.35]">{v.title}</div>
-                        <div className="text-[11.5px] mt-1" style={{ color: 'var(--color-ink-muted)' }}>{v.tutor} · {v.duration}</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </motion.div>
             </div>
           </div>
         </section>
@@ -629,8 +453,6 @@ export default function Home() {
             </div>
           </div>
         </section>
-
-        <LandingFooter />
       </div>
     </>
   );

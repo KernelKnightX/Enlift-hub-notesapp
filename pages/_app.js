@@ -18,6 +18,7 @@ import "../styles/planning-tools/upsc-calendar.css";
 import "../styles/planning-tools/planning-interactive.css";
 import "../styles/monthly-magazines.css";
 import "../styles/notes-editor.css";
+import "../styles/landing-hero-showcase.css";
 function App({ Component, pageProps }) {
   const router = useRouter();
   const isStudentRoute = router.pathname.startsWith('/student-desk');
@@ -28,7 +29,7 @@ function App({ Component, pageProps }) {
     <>
       <Head>
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
-        <meta name="theme-color" content="#FDFCF7" />
+        <meta name="theme-color" content="#0F0F14" />
       </Head>
       <DefaultSeo />
       <GoogleAnalytics GA_MEASUREMENT_ID={process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID} />
@@ -36,7 +37,7 @@ function App({ Component, pageProps }) {
         <AuthProvider>
           {/* Show PublicNavbar + moving notifications on all routes except student-desk pages */}
           {showPublicChrome && (
-            <div className="sticky top-0 z-50" style={{ background: 'var(--color-bg)', borderBottom: '1px solid var(--color-border)' }}>
+            <div className="sticky top-0 z-50" style={{ background: 'var(--color-ink)' }}>
               <PublicNavbar showOnLanding />
               <NoticeTicker />
             </div>

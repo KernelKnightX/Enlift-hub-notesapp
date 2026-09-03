@@ -98,6 +98,19 @@ textarea {
   justify-content: center;
 }
 
+.site-navbar--dark .site-navbar__link:hover,
+.site-navbar--dark .site-navbar__dropdown-btn:hover {
+  color: #ffffff !important;
+}
+
+.site-navbar--dark .site-navbar__dropdown-link:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.site-navbar--dark .site-navbar__drawer-link:hover {
+  color: #ffffff !important;
+}
+
 @media (max-width: 420px) {
   .site-navbar > div:first-child {
     padding-left: 12px;

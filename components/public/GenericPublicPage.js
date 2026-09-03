@@ -409,6 +409,8 @@ const contentBySlug = {
   },
 };
 
+export { contentBySlug };
+
 export default function GenericPublicPage({ slug, pageData }) {
   const page = pageData || contentBySlug[slug] || contentBySlug['study-planner'];
   const path = `/planning-tools/${slug}`;

@@ -6,6 +6,15 @@ import { publicNavigation } from "@/config/publicNavigation";
 
 const NAV_ITEMS = publicNavigation;
 
+const NAV_COLORS = {
+  bg: "var(--color-ink)",
+  border: "#2A3631",
+  text: "#B7BFB8",
+  textActive: "#FFFFFF",
+  textBrand: "#FFFFFF",
+  dropdownBg: "#151A18",
+};
+
 // Previously some routes were hidden by default. Keep this empty so navbar shows on all pages
 // except where the top-level app explicitly skips it (e.g., /student-desk).
 const HIDDEN_PREFIXES = [];
@@ -69,21 +78,14 @@ export default function NavBar({ showOnLanding = false }) {
     <>
       <nav
         ref={navRef}
-        className="site-navbar"
+        className="site-navbar site-navbar--dark"
         style={{
-          position: "fixed",
-          top: 0,
-          left: 0,
-          right: 0,
+          position: "relative",
           zIndex: 60,
-          background: scrolled ? "rgba(253,252,247,0.92)" : "transparent",
-          backdropFilter: scrolled ? "saturate(140%) blur(10px)" : "none",
-          WebkitBackdropFilter: scrolled ? "saturate(140%) blur(10px)" : "none",
-          borderBottom: scrolled
-            ? "1px solid var(--color-border)"
-            : "1px solid transparent",
-          transition:
-            "background .2s ease, border-color .2s ease, backdrop-filter .2s ease",
+          background: NAV_COLORS.bg,
+          borderBottom: `1px solid ${NAV_COLORS.border}`,
+          boxShadow: scrolled ? "0 8px 24px rgba(0,0,0,0.18)" : "none",
+          transition: "box-shadow .2s ease",
         }}
       >
         <div className="max-w-[1240px] mx-auto px-6 md:px-10 h-[64px] flex items-center justify-between">
@@ -93,17 +95,21 @@ export default function NavBar({ showOnLanding = false }) {
                 width: 34,
                 height: 34,
                 borderRadius: 8,
-                background: "var(--color-primary)",
+                background: "var(--color-accent)",
                 color: "var(--color-bg)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
+                fontWeight: 700,
+                fontSize: 14,
               }}
             >
-              P
+              N
             </div>
             <div className="hidden sm:flex flex-col leading-none">
-              <span className="font-serif text-[16px]">Notes Cafe</span>
+              <span className="font-serif text-[16px]" style={{ color: NAV_COLORS.textBrand }}>
+                Notes Cafe
+              </span>
             </div>
           </Link>
 
@@ -119,11 +125,9 @@ export default function NavBar({ showOnLanding = false }) {
                   <Link
                     key={item.href}
                     href={item.href}
-                    className="text-[14px] font-medium"
+                    className="site-navbar__link text-[14px] font-medium transition-colors"
                     style={{
-                      color: isActive
-                        ? "var(--color-primary)"
-                        : "var(--color-ink-muted)",
+                      color: isActive ? NAV_COLORS.textActive : NAV_COLORS.text,
                     }}
                   >
                     {item.label}
@@ -139,12 +143,12 @@ export default function NavBar({ showOnLanding = false }) {
                     onClick={() =>
                       setActiveDropdown(isOpen ? null : item.label)
                     }
-                    className="text-[14px] font-medium flex items-center gap-1"
+                    className="site-navbar__dropdown-btn text-[14px] font-medium flex items-center gap-1 transition-colors"
                     style={{
                       color:
                         isActive || isOpen
-                          ? "var(--color-primary)"
-                          : "var(--color-ink-muted)",
+                          ? NAV_COLORS.textActive
+                          : NAV_COLORS.text,
                       background: "transparent",
                       border: "none",
                       cursor: "pointer",
@@ -166,7 +170,6 @@ export default function NavBar({ showOnLanding = false }) {
 
                   {isOpen && (
                     <div
-                      className="card"
                       style={{
                         position: "absolute",
                         top: "calc(100% + 10px)",
@@ -175,10 +178,10 @@ export default function NavBar({ showOnLanding = false }) {
                         padding: "8px",
                         display: "flex",
                         flexDirection: "column",
-                        background: "var(--color-bg)",
-                        border: "1px solid var(--color-border)",
+                        background: NAV_COLORS.dropdownBg,
+                        border: `1px solid ${NAV_COLORS.border}`,
                         borderRadius: 10,
-                        boxShadow: "0 12px 30px rgba(0,0,0,0.08)",
+                        boxShadow: "0 16px 40px rgba(0,0,0,0.35)",
                         zIndex: 70,
                       }}
                     >
@@ -187,11 +190,11 @@ export default function NavBar({ showOnLanding = false }) {
                           key={child.href}
                           href={child.href}
                           onClick={() => setActiveDropdown(null)}
-                          className="text-[14px]"
+                          className="site-navbar__dropdown-link text-[14px] transition-colors"
                           style={{
                             padding: "8px 10px",
                             borderRadius: 6,
-                            color: "var(--color-ink)",
+                            color: NAV_COLORS.text,
                           }}
                         >
                           {child.label}
@@ -207,8 +210,8 @@ export default function NavBar({ showOnLanding = false }) {
           <div className="hidden md:flex items-center gap-3">
             <Link
               href="/login"
-              className="text-[14px] font-medium"
-              style={{ color: "var(--color-ink)" }}
+              className="site-navbar__link text-[14px] font-medium transition-colors"
+              style={{ color: NAV_COLORS.text }}
             >
               Login
             </Link>
@@ -228,7 +231,7 @@ export default function NavBar({ showOnLanding = false }) {
             style={{
               background: "transparent",
               border: "none",
-              color: "var(--color-ink)",
+              color: NAV_COLORS.textActive,
             }}
           >
             {open ? (
@@ -242,9 +245,10 @@ export default function NavBar({ showOnLanding = false }) {
         {/* Mobile drawer */}
         {open && (
           <div
-            className="lg:hidden hairline-b"
+            className="lg:hidden"
             style={{
-              background: "var(--color-bg)",
+              background: NAV_COLORS.bg,
+              borderTop: `1px solid ${NAV_COLORS.border}`,
               maxHeight: "calc(100vh - 64px)",
               overflowY: "auto",
             }}
@@ -262,7 +266,7 @@ export default function NavBar({ showOnLanding = false }) {
                         }
                         className="py-2 text-[15px] flex items-center justify-between w-full text-left"
                         style={{
-                          color: "var(--color-ink)",
+                          color: NAV_COLORS.textActive,
                           background: "transparent",
                           border: "none",
                         }}
@@ -281,8 +285,8 @@ export default function NavBar({ showOnLanding = false }) {
                       <Link
                         href={item.href}
                         onClick={() => setOpen(false)}
-                        className="py-2 text-[15px]"
-                        style={{ color: "var(--color-ink)" }}
+                        className="site-navbar__drawer-link py-2 text-[15px] transition-colors"
+                        style={{ color: NAV_COLORS.textActive }}
                       >
                         {item.label}
                       </Link>
@@ -295,8 +299,8 @@ export default function NavBar({ showOnLanding = false }) {
                             key={child.href}
                             href={child.href}
                             onClick={() => setOpen(false)}
-                            className="py-1.5 text-sm"
-                            style={{ color: "var(--color-ink-muted)" }}
+                            className="site-navbar__drawer-link py-1.5 text-sm transition-colors"
+                            style={{ color: NAV_COLORS.text }}
                           >
                             {child.label}
                           </Link>
@@ -307,11 +311,12 @@ export default function NavBar({ showOnLanding = false }) {
                 );
               })}
 
-              <div className="hairline-t my-2" />
+              <div className="my-2" style={{ borderTop: `1px solid ${NAV_COLORS.border}` }} />
               <Link
                 href="/login"
                 onClick={() => setOpen(false)}
                 className="btn btn-ghost justify-center"
+                style={{ color: NAV_COLORS.textActive, borderColor: NAV_COLORS.border }}
               >
                 Login
               </Link>
@@ -326,7 +331,6 @@ export default function NavBar({ showOnLanding = false }) {
           </div>
         )}
       </nav>
-      <div style={{ height: 64 }} />
     </>
   );
 }

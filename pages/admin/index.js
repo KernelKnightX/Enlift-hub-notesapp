@@ -7,7 +7,7 @@ import { db } from "@/firebase/config";
 import { collection, query, where, onSnapshot, doc, getDoc } from "firebase/firestore";
 import {
   Users, FileText, Newspaper, Bell, ClipboardCheck, BookOpen, ArrowUpRight,
-  Landmark, Map, Loader2, TrendingUp,
+  Landmark, Map, Loader2, TrendingUp, CalendarDays, Lightbulb, Hash, GraduationCap,
 } from "lucide-react";
 import AdminLayout from "@/layouts/AdminLayout";
 import OfficeInsights from "@/components/admin/OfficeInsights";
@@ -16,13 +16,17 @@ const ACTIONS = [
   { href:"/admin/notes",           icon:BookOpen,       label:"Notes & PDFs",    desc:"Manage study notes subjects and PDFs",    tone:"violet" },
   { href:"/admin/books/ncert-books", icon:BookOpen,     label:"NCERT Books",     desc:"Class-wise NCERT library on the public site", tone:"blue" },
   { href:"/admin/books",           icon:BookOpen,       label:"Books Library",   desc:"Manage public UPSC book listings",       tone:"blue" },
+  { href:"/admin/study-material/upsc-syllabus", icon:GraduationCap, label:"UPSC Syllabus", desc:"Edit preliminary and main exam papers", tone:"violet" },
   { href:"/admin/monthly-magazines", icon:Newspaper,    label:"Monthly Magazines", desc:"Publish monthly current affairs PDFs", tone:"green" },
   { href:"/admin/current-affairs", icon:Newspaper,      label:"Current Affairs", desc:"Publish and manage news articles",         tone:"green" },
+  { href:"/admin/trending-hashtags", icon:Hash,         label:"Trending hashtags", desc:"Tags shown on student Current Affairs", tone:"green" },
   { href:"/admin/maps",            icon:Map,            label:"Maps & Atlas",    desc:"Upload and publish UPSC map resources",    tone:"cyan" },
   { href:"/admin/government",      icon:Landmark,       label:"Government",      desc:"Schemes, acts, articles, ministries",     tone:"lime" },
   { href:"/admin/notifications",   icon:Bell,           label:"Homepage notices", desc:"Notices shown on the public homepage",   tone:"blue" },
+  { href:"/admin/planning-tools",   icon:CalendarDays,   label:"Planning tools",  desc:"Calendar, study guides, and strategy pages", tone:"pink" },
   { href:"/admin/mock-tests",      icon:ClipboardCheck, label:"Mock Tests",      desc:"Create and manage practice tests",         tone:"pink" },
   { href:"/admin/pyq",             icon:FileText,       label:"PYQ Papers",      desc:"Upload previous year questions",           tone:"amber" },
+  { href:"/admin/topper-tips",     icon:Lightbulb,      label:"Topper tips",     desc:"Dashboard quotes for student motivation",  tone:"amber" },
   { href:"/admin/users",           icon:Users,          label:"Students",        desc:"All registered student accounts from Firebase", tone:"cyan" },
 ];
 

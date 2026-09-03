@@ -21,7 +21,7 @@ export default function TopperTipCard() {
     limit: 100,
     fallback: [],
     transform: (docs) =>
-      docs.filter((tip) => typeof tip.quote === "string" && tip.quote.trim()),
+      docs.filter((tip) => tip.isActive !== false && typeof tip.quote === "string" && tip.quote.trim()),
   });
   const tip = tips.length ? tips[isoWeek() % tips.length] : null;
 

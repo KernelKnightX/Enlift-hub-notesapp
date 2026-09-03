@@ -80,7 +80,7 @@ export default function CurrentAffairsPage() {
     name: 'trendingHashtags',
     orderBy: ['engagement', 'desc'],
     fallback: [],
-    transform: (docs) => docs.map(toHashtag),
+    transform: (docs) => docs.filter((item) => item.isActive !== false).map(toHashtag),
   });
 
   // Subjects are derived from whatever categories the admin has actually

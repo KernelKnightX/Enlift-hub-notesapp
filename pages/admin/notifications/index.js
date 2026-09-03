@@ -20,7 +20,7 @@ const TYPES = [
 
 const ICONS = ["🔔", "📢", "📌", "🚨", "✅", "📰", "🎯", "🏆", "💡", "⚠️", "🆕", "🎉"];
 
-const EMPTY_FORM = { title: "", message: "", type: "info", icon: "🔔", isActive: true, href: "", target: "dashboard" };
+const EMPTY_FORM = { title: "", message: "", type: "info", icon: "🔔", isActive: true, href: "", target: "home" };
 
 const inputCls =
   "w-full rounded-[12px] border border-[var(--color-border)] bg-[var(--color-surface)] px-3.5 py-2.5 text-sm text-[var(--color-ink)] placeholder:text-[var(--color-ink-faint)] outline-none transition-colors focus:border-[var(--color-primary)]";
@@ -88,15 +88,24 @@ export default function AdminNotifications() {
       icon: n.icon || "🔔",
       isActive: n.isActive !== false,
       href: n.href || "",
-      target: n.target || "dashboard",
+      target: n.target === "both" ? "both" : "home",
     });
     setEditingId(n.id);
     setShowForm(true);
   };
 
+  const validateHref = (value) => {
+    const href = value.trim();
+    if (!href) return "Link URL is required for the homepage ticker.";
+    if (/^https?:\/\//i.test(href) || href.startsWith("/")) return "";
+    return "Use a full URL (https://…) or an internal path (/page).";
+  };
+
   const handleSave = async (e) => {
     e.preventDefault();
     if (!form.title.trim() || !form.message.trim()) { toast.error("Title and message required."); return; }
+    const hrefError = validateHref(form.href);
+    if (hrefError) { toast.error(hrefError); return; }
     setSaving(true);
     try {
       const payload = {
@@ -106,7 +115,7 @@ export default function AdminNotifications() {
         icon: form.icon,
         isActive: form.isActive,
         href: form.href.trim(),
-        target: form.target || "dashboard",
+        target: form.target === "both" ? "both" : "home",
         updatedAt: serverTimestamp(),
         updatedBy: user.uid,
       };
@@ -156,7 +165,7 @@ export default function AdminNotifications() {
   return (
     <AdminLayout
       title="Homepage notices"
-      subtitle={`${notifications.length} total · ${activeCount} active. These can appear on the public homepage and student desk.`}
+      subtitle={`${notifications.length} total · ${activeCount} active. Active notices with a link appear in the scrolling banner below the navbar.`}
     >
         {/* Stats */}
         <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-6">
@@ -223,51 +232,55 @@ export default function AdminNotifications() {
               </div>
 
               <div className="mb-4">
-                <label className={labelCls}>Message *</label>
+                <label className={labelCls}>Ticker message *</label>
                 <textarea
                   name="message" value={form.message} onChange={handleField}
-                  className={inputCls} rows={3} placeholder="Notification body shown to students…" required
+                  className={inputCls} rows={3} placeholder="Text that scrolls in the homepage banner…" required
                 />
               </div>
 
               <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-12">
-                <div className="sm:col-span-4">
-                  <label className={labelCls}>Redirect link</label>
+                <div className="sm:col-span-8">
+                  <label className={labelCls}>Link URL *</label>
                   <input
                     name="href"
                     value={form.href}
                     onChange={handleField}
                     className={inputCls}
-                    placeholder="https://example.com or /updates/example"
+                    placeholder="https://upsc.gov.in/... or /planning-tools/upsc-calendar"
+                    required
                   />
+                  <p className="mt-1.5 text-xs text-[var(--color-ink-muted)]">
+                    Visitors click this in the scrolling banner. External sites open in a new tab.
+                  </p>
                 </div>
                 <div className="sm:col-span-4">
-                  <label className={labelCls}>Target</label>
+                  <label className={labelCls}>Show on</label>
                   <select
                     name="target"
                     value={form.target}
                     onChange={handleField}
                     className={inputCls}
                   >
-                    <option value="dashboard">Dashboard only</option>
-                    <option value="home">Homepage only</option>
-                    <option value="both">Both</option>
+                    <option value="home">Homepage ticker</option>
+                    <option value="both">Homepage + Student desk</option>
                   </select>
                 </div>
-                <div className="sm:col-span-4 flex items-end">
-                  <div className="flex items-center gap-3 rounded-[12px] border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3 w-full">
-                    <input
-                      id="isActive"
-                      type="checkbox"
-                      name="isActive"
-                      checked={form.isActive}
-                      onChange={handleField}
-                      className="h-4 w-4 rounded border-[var(--color-border)] text-[var(--color-primary)] focus:ring-[var(--color-primary)]"
-                    />
-                    <label htmlFor="isActive" className="text-[13px] text-[var(--color-ink)]">
-                      Active now
-                    </label>
-                  </div>
+              </div>
+
+              <div className="mb-4">
+                <div className="flex items-center gap-3 rounded-[12px] border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3 w-full sm:w-auto">
+                  <input
+                    id="isActive"
+                    type="checkbox"
+                    name="isActive"
+                    checked={form.isActive}
+                    onChange={handleField}
+                    className="h-4 w-4 rounded border-[var(--color-border)] text-[var(--color-primary)] focus:ring-[var(--color-primary)]"
+                  />
+                  <label htmlFor="isActive" className="text-[13px] text-[var(--color-ink)]">
+                    Active now — show in ticker
+                  </label>
                 </div>
               </div>
 
@@ -359,12 +372,20 @@ export default function AdminNotifications() {
                         </div>
                         <div className="text-[14px] font-semibold text-[var(--color-ink)]">{n.title}</div>
                         <div className="text-[13px] text-[var(--color-ink-muted)]">{n.message}</div>
-                        <div className="mt-2 flex flex-wrap gap-2 text-[12px] text-[var(--color-ink-faint)]">
-                          <span className="chip chip-ink">{n.target || 'dashboard'}</span>
-                          {n.href && (
-                            <span className="truncate" style={{ maxWidth: '220px' }}>
-                              Link: {n.href}
-                            </span>
+                        <div className="mt-2 flex flex-wrap items-center gap-2 text-[12px] text-[var(--color-ink-faint)]">
+                          <span className="chip chip-ink">{n.target === 'both' ? 'Homepage + desk' : 'Homepage ticker'}</span>
+                          {n.href ? (
+                            <a
+                              href={n.href}
+                              target={/^https?:\/\//i.test(n.href) ? '_blank' : '_self'}
+                              rel={/^https?:\/\//i.test(n.href) ? 'noreferrer noopener' : undefined}
+                              className="truncate text-[var(--color-primary)] hover:underline"
+                              style={{ maxWidth: '280px' }}
+                            >
+                              {n.href}
+                            </a>
+                          ) : (
+                            <span className="text-[var(--color-accent)]">Missing link — won&apos;t show in ticker</span>
                           )}
                         </div>
                       </div>

@@ -9,6 +9,9 @@ import {
   Bell,
   Users,
   CalendarDays,
+  Lightbulb,
+  Hash,
+  GraduationCap,
 } from 'lucide-react';
 
 /** Admin office — grouped the way a CEO would walk the building. */
@@ -25,6 +28,7 @@ export const adminNavigationGroups = [
       { label: 'NCERT Books', icon: BookOpen, href: '/admin/books/ncert-books' },
       { label: 'Books Library', icon: BookOpen, href: '/admin/books' },
       { label: 'Notes & PDFs', icon: FileText, href: '/admin/notes' },
+      { label: 'UPSC Syllabus', icon: GraduationCap, href: '/admin/study-material/upsc-syllabus' },
     ],
   },
   {
@@ -32,6 +36,7 @@ export const adminNavigationGroups = [
     items: [
       { label: 'Monthly Magazines', icon: Newspaper, href: '/admin/monthly-magazines' },
       { label: 'Current Affairs', icon: Newspaper, href: '/admin/current-affairs' },
+      { label: 'Trending hashtags', icon: Hash, href: '/admin/trending-hashtags' },
       { label: 'Homepage notices', icon: Bell, href: '/admin/notifications' },
     ],
   },
@@ -52,13 +57,14 @@ export const adminNavigationGroups = [
   {
     heading: 'Planning',
     items: [
-      { label: 'UPSC Calendar', icon: CalendarDays, href: '/admin/planning-tools/upsc-calendar' },
+      { label: 'Planning tools', icon: CalendarDays, href: '/admin/planning-tools' },
     ],
   },
   {
     heading: 'People',
     items: [
       { label: 'Students', icon: Users, href: '/admin/users' },
+      { label: 'Topper tips', icon: Lightbulb, href: '/admin/topper-tips' },
     ],
   },
 ];

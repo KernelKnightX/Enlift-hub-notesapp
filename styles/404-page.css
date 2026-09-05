@@ -1,0 +1,46 @@
+.not-found-page {
+  min-height: 60vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1.5rem 5rem;
+  background: var(--color-bg);
+}
+
+.not-found-page__inner {
+  max-width: 520px;
+  width: 100%;
+  text-align: center;
+}
+
+.not-found-page__code {
+  font-family: var(--font-serif);
+  font-size: clamp(4rem, 12vw, 6rem);
+  line-height: 1;
+  letter-spacing: -0.04em;
+  color: var(--color-ink-faint);
+  margin: 0;
+}
+
+.not-found-page__title {
+  margin: 1rem 0 0;
+  font-family: var(--font-serif);
+  font-size: clamp(1.75rem, 4vw, 2.25rem);
+  letter-spacing: -0.03em;
+  color: var(--color-ink);
+}
+
+.not-found-page__text {
+  margin: 0.75rem 0 0;
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--color-ink-muted);
+}
+
+.not-found-page__actions {
+  margin-top: 2rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: center;
+}

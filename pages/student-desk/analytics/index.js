@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/router';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ChevronDown,
@@ -7,9 +8,13 @@ import {
   Target,
   Plus,
   BookOpen,
+  RotateCcw,
+  ArrowRight,
 } from 'lucide-react';
 import StudentLayout from '@/layouts/StudentLayout';
+import MistakeNotebookPanel from '@/components/student/MistakeNotebookPanel';
 import useTopicStats from '@/hooks/student/useTopicStats';
+import useMistakes from '@/hooks/student/useMistakes';
 import { useAuth } from '@/contexts/AuthContext';
 import { addTopicToPlanQueue, buildTopicId } from '@/lib/weaknessMastery';
 
@@ -41,7 +46,7 @@ function AccuracyBar({ pct }) {
   );
 }
 
-function TopicRow({ topic, userId, filterTopic }) {
+function TopicRow({ topic, userId }) {
   const [adding, setAdding] = useState(false);
   const topicId = topic.topicId || topic.id || buildTopicId(topic.subject, topic.topic);
 
@@ -73,7 +78,7 @@ function TopicRow({ topic, userId, filterTopic }) {
       <AccuracyBar pct={topic.accuracyPct} />
       <div className="flex gap-2 shrink-0">
         <Link
-          href={`/student-desk/mistake-notebook?subject=${encodeURIComponent(topic.subject)}&topic=${encodeURIComponent(topic.topic)}`}
+          href={`/student-desk/analytics?tab=mistakes&subject=${encodeURIComponent(topic.subject)}&topic=${encodeURIComponent(topic.topic)}`}
           className="text-[12px] font-medium px-3 py-2 rounded-lg"
           style={{ color: 'var(--color-primary)', border: '1px solid var(--color-border)' }}
         >
@@ -145,14 +150,12 @@ function SubjectBlock({ subject, topics, userId, defaultOpen }) {
   );
 }
 
-export default function AnalyticsPage() {
-  const { user } = useAuth();
+function WeakTopicsPanel({ userId }) {
   const { bySubject, weakCount, loading, topics } = useTopicStats();
-
   const subjects = Object.keys(bySubject).sort();
 
   return (
-    <StudentLayout title="Weakness Analyzer">
+    <>
       <div className="grid grid-cols-12 gap-4 md:gap-6 mb-6">
         <motion.div
           initial={{ opacity: 0, y: 8 }}
@@ -204,11 +207,82 @@ export default function AnalyticsPage() {
               key={subject}
               subject={subject}
               topics={bySubject[subject]}
-              userId={user?.uid}
+              userId={userId}
               defaultOpen={i === 0}
             />
           ))}
         </div>
+      )}
+    </>
+  );
+}
+
+const TABS = [
+  { key: 'weak', label: 'Weak topics' },
+  { key: 'mistakes', label: 'Mistake notebook' },
+];
+
+export default function AnalyticsPage() {
+  const router = useRouter();
+  const { user } = useAuth();
+  const { dueCount } = useMistakes();
+  const [activeTab, setActiveTab] = useState('weak');
+
+  useEffect(() => {
+    if (!router.isReady) return;
+    const tab = router.query.tab;
+    if (tab === 'mistakes') setActiveTab('mistakes');
+    else if (tab === 'weak') setActiveTab('weak');
+  }, [router.isReady, router.query.tab]);
+
+  const switchTab = (key) => {
+    setActiveTab(key);
+    const query = key === 'weak' ? {} : { tab: key };
+    router.replace({ pathname: '/student-desk/analytics', query }, undefined, { shallow: true });
+  };
+
+  return (
+    <StudentLayout title="Performance">
+      <div className="flex flex-wrap items-center gap-3 mb-6">
+        <div className="flex gap-2">
+          {TABS.map(({ key, label }) => (
+            <button
+              key={key}
+              type="button"
+              onClick={() => switchTab(key)}
+              className="chip"
+              style={{
+                background: activeTab === key ? 'var(--color-primary-tint)' : 'var(--color-surface-alt)',
+                color: activeTab === key ? 'var(--color-primary)' : 'var(--color-ink-muted)',
+                border: activeTab === key ? '1px solid rgba(77,56,245,0.3)' : '1px solid var(--color-border)',
+              }}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+
+        {dueCount > 0 && (
+          <Link
+            href="/student-desk/analytics/review"
+            className="ml-auto text-[13px] font-medium flex items-center gap-1.5 px-3 py-2 rounded-lg"
+            style={{
+              color: 'var(--color-accent)',
+              border: '1px solid var(--color-border)',
+              background: 'var(--color-surface)',
+            }}
+          >
+            <RotateCcw size={14} />
+            {dueCount} due for review
+            <ArrowRight size={14} />
+          </Link>
+        )}
+      </div>
+
+      {activeTab === 'mistakes' ? (
+        <MistakeNotebookPanel />
+      ) : (
+        <WeakTopicsPanel userId={user?.uid} />
       )}
     </StudentLayout>
   );

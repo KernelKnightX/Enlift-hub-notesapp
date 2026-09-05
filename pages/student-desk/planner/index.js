@@ -1,22 +1,18 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import StudentLayout from '@/layouts/StudentLayout';
-import { motion } from 'framer-motion';
 import { useAuth } from '@/contexts/AuthContext';
 import useFirestoreCollection from '@/hooks/shared/useFirestoreCollection';
 import { usePlannerTasks } from '@/hooks/student/usePlannerTasks';
 import useStudyPlan from '@/hooks/student/useStudyPlan';
 import TaskModal from '@/components/planner/TaskModal';
 import {
-  Plus, ChevronLeft, ChevronRight, Clock, CheckCircle2, Circle, RotateCcw, Sparkles,
+  Plus, ChevronLeft, ChevronRight, Clock, CheckCircle2, Circle,
+  RotateCcw, Sparkles, CalendarDays, Target,
 } from 'lucide-react';
 
-const DAYS = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
-const priorityColor = { high: 'var(--color-accent)', med: 'var(--color-gold)', low: 'var(--color-primary)' };
-const planTypeColor = {
-  'mistake-review': 'var(--color-accent)',
-  revision: 'var(--color-gold)',
-  new: 'var(--color-primary)',
-};
+const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+const DAYS_SHORT = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+const priorityClass = { high: 'high', med: 'med', medium: 'medium', low: 'low' };
 
 const getMonday = (date) => {
   const copy = new Date(date);
@@ -38,12 +34,42 @@ const getWeekDates = (weekOffset) => {
 
 const formatDateKey = (date) => date.toISOString().slice(0, 10);
 
+const formatDayLabel = (date) =>
+  date.toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long' });
+
+function ProgressRing({ pct, size = 100, track = 'rgba(255,255,255,0.12)', stroke = '#fff' }) {
+  const r = size * 0.38;
+  const c = 2 * Math.PI * r;
+  const center = size / 2;
+  const dash = c * (Math.max(0, Math.min(100, pct)) / 100);
+
+  return (
+    <svg width={size} height={size}>
+      <circle cx={center} cy={center} r={r} fill="none" strokeWidth="7" stroke={track} />
+      <circle
+        cx={center}
+        cy={center}
+        r={r}
+        fill="none"
+        strokeWidth="7"
+        stroke={stroke}
+        strokeLinecap="round"
+        transform={`rotate(-90 ${center} ${center})`}
+        strokeDasharray={`${dash} ${c}`}
+      />
+    </svg>
+  );
+}
+
 export default function PlannerPage() {
   const { user } = useAuth();
+  const todayKey = formatDateKey(new Date());
+
   const [weekOffset, setWeekOffset] = useState(0);
+  const [selectedDayKey, setSelectedDayKey] = useState(todayKey);
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
-  const [selectedDateKey, setSelectedDateKey] = useState(formatDateKey(new Date()));
+  const [selectedDateKey, setSelectedDateKey] = useState(todayKey);
 
   const noteWhere = user?.uid ? [['userId', '==', user.uid]] : [];
   const { data: userNotes } = useFirestoreCollection({ name: 'userNotes', where: noteWhere, fallback: [] });
@@ -51,7 +77,6 @@ export default function PlannerPage() {
   const { tasksMap, saveTask, deleteTask } = usePlannerTasks();
   const {
     plansMap,
-    todayKey,
     todayTasks,
     settings,
     loading: planLoading,
@@ -63,21 +88,40 @@ export default function PlannerPage() {
 
   const weekDates = useMemo(() => getWeekDates(weekOffset), [weekOffset]);
   const weekKeys = useMemo(() => weekDates.map((d) => formatDateKey(d)), [weekDates]);
-  const weekTasks = useMemo(() => weekKeys.map((key) => tasksMap[key] || []), [tasksMap, weekKeys]);
-  const allManualTasks = useMemo(() => weekTasks.flat(), [weekTasks]);
+
+  useEffect(() => {
+    if (!weekKeys.includes(selectedDayKey)) {
+      setSelectedDayKey(weekKeys.includes(todayKey) ? todayKey : weekKeys[0]);
+    }
+  }, [weekKeys, selectedDayKey, todayKey]);
+
+  const allManualTasks = useMemo(
+    () => weekKeys.flatMap((key) => tasksMap[key] || []),
+    [tasksMap, weekKeys],
+  );
 
   const planTasksWeek = useMemo(
     () => weekKeys.flatMap((key) => (plansMap[key]?.tasks || []).map((t, i) => ({ ...t, dateKey: key, taskIndex: i }))),
-    [weekKeys, plansMap]
+    [weekKeys, plansMap],
   );
 
   const allTasksCount = allManualTasks.length + planTasksWeek.length;
   const doneCount =
     allManualTasks.filter((t) => t.done).length +
     planTasksWeek.filter((t) => t.done).length;
-  const total = Math.max(allTasksCount, 1);
+  const progressPct = Math.round((doneCount / Math.max(allTasksCount, 1)) * 100);
 
   const todayPlanDone = todayTasks.filter((t) => t.done).length;
+  const selectedDate = weekDates[weekKeys.indexOf(selectedDayKey)] || weekDates[0];
+  const selectedManual = tasksMap[selectedDayKey] || [];
+  const selectedPlan = plansMap[selectedDayKey]?.tasks || [];
+  const selectedTotal = selectedManual.length + selectedPlan.length;
+  const selectedDone =
+    selectedManual.filter((t) => t.done).length +
+    selectedPlan.filter((t) => t.done).length;
+
+  const weekLabel = `${weekDates[0].toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })} – ${weekDates[6].toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}`;
+  const weekBadge = weekOffset === 0 ? 'This week' : weekOffset > 0 ? `+${weekOffset} week` : `${weekOffset} week`;
 
   const openModal = (dateKey, task = null) => {
     setSelectedDateKey(dateKey);
@@ -101,12 +145,17 @@ export default function PlannerPage() {
   };
 
   const handleHoursChange = async (e) => {
-    const hours = Number(e.target.value);
-    await updateSettings({ dailyStudyHours: hours });
+    await updateSettings({ dailyStudyHours: Number(e.target.value) });
+  };
+
+  const getDayCount = (dateKey) => {
+    const manual = (tasksMap[dateKey] || []).length;
+    const plan = (plansMap[dateKey]?.tasks || []).length;
+    return manual + plan;
   };
 
   return (
-    <StudentLayout title="Study Planner">
+    <StudentLayout title="Study Planner" plainHeader>
       <TaskModal
         open={modalOpen}
         onClose={closeModal}
@@ -119,280 +168,363 @@ export default function PlannerPage() {
         userPyqs={userPyqs}
       />
 
-      {/* Today's generated plan */}
-      <motion.div
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="card p-6 md:p-8 mb-6"
-        data-testid="today-study-plan"
-      >
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2">
-              <Sparkles size={15} style={{ color: 'var(--color-primary)' }} />
-              <span className="eyebrow">Today&apos;s generated plan</span>
-            </div>
-            <h2 className="mt-2 font-serif text-[22px]" style={{ letterSpacing: '-0.02em' }}>
-              {todayPlanDone}/{todayTasks.length || 0} tasks done
-            </h2>
-            <p className="mt-1 text-[13px]" style={{ color: 'var(--color-ink-muted)' }}>
-              Weak topics weighted 1.5× · mistake reviews scheduled first
-            </p>
-          </div>
-          <div className="flex flex-wrap items-center gap-3">
-            <label className="text-[12px] flex items-center gap-2" style={{ color: 'var(--color-ink-muted)' }}>
-              Daily hours
-              <input
-                type="number"
-                min={1}
-                max={12}
-                step={0.5}
-                value={settings?.dailyStudyHours ?? 4}
-                onChange={handleHoursChange}
-                className="w-16 px-2 py-1 rounded-lg text-center"
-                style={{ border: '1px solid var(--color-border)' }}
-              />
-            </label>
-            <button
-              type="button"
-              className="btn btn-primary"
-              disabled={generating}
-              onClick={() => replan(todayKey)}
-              style={{ fontSize: 12.5, padding: '0.55rem 1rem' }}
-            >
-              <RotateCcw size={14} /> {generating ? 'Replanning…' : 'Replan today'}
-            </button>
-          </div>
-        </div>
-
-        {planLoading ? (
-          <p className="mt-6 text-[14px]" style={{ color: 'var(--color-ink-muted)' }}>Loading plan…</p>
-        ) : todayTasks.length === 0 ? (
-          <p className="mt-6 text-[14px]" style={{ color: 'var(--color-ink-muted)' }}>
-            No plan yet — hit Replan to generate from your weaknesses and syllabus progress.
-          </p>
-        ) : (
-          <div className="mt-6 flex flex-col gap-2">
-            {todayTasks.map((task, i) => (
-              <button
-                key={`${task.subject}-${task.topic}-${i}`}
-                type="button"
-                onClick={() => toggleTask(todayKey, i, !task.done)}
-                className="flex items-center gap-3 p-3 rounded-xl text-left w-full"
-                style={{
-                  background: 'var(--color-bg)',
-                  border: '1px solid var(--color-border)',
-                }}
-              >
-                {task.done ? (
-                  <CheckCircle2 size={16} style={{ color: 'var(--color-primary)' }} />
-                ) : (
-                  <Circle size={16} style={{ color: 'var(--color-border-strong)' }} />
-                )}
-                <div className="flex-1 min-w-0">
-                  <div className="text-[13px] font-medium" style={{
-                    textDecoration: task.done ? 'line-through' : 'none',
-                    color: task.done ? 'var(--color-ink-faint)' : 'var(--color-ink)',
-                  }}>
-                    {task.subject}: {task.topic}
-                  </div>
-                  <div className="text-[11px] mt-0.5" style={{ color: 'var(--color-ink-muted)' }}>
-                    {task.estMinutes}m · {task.type}
-                  </div>
-                </div>
-                <span className="chip" style={{ fontSize: 9, padding: '2px 6px' }}>{task.type}</span>
-              </button>
-            ))}
-          </div>
-        )}
-      </motion.div>
-
-      <div className="grid grid-cols-12 gap-4 md:gap-6">
-        <div className="col-span-12 lg:col-span-8 card p-6 md:p-8">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <div className="eyebrow mb-1">Week of {weekDates[0].toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}</div>
-              <div className="font-serif text-[22px]" style={{ letterSpacing: '-0.01em' }}>
-                Manual + generated — {doneCount}/{allTasksCount} tasks done.
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <button
-                className="p-2 rounded-xl"
-                style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}
-                onClick={() => setWeekOffset((w) => w - 1)}
-                data-testid="week-prev"
-              >
-                <ChevronLeft size={16} strokeWidth={1.5} />
-              </button>
-              <span className="text-[12px] font-mono px-2" style={{ color: 'var(--color-ink-muted)' }}>
-                {weekOffset === 0 ? 'This week' : weekOffset > 0 ? `+${weekOffset} wk` : `${weekOffset} wk`}
-              </span>
-              <button
-                className="p-2 rounded-xl"
-                style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}
-                onClick={() => setWeekOffset((w) => w + 1)}
-                data-testid="week-next"
-              >
-                <ChevronRight size={16} strokeWidth={1.5} />
-              </button>
-              <button
-                className="btn btn-primary"
-                onClick={() => openModal(selectedDateKey)}
-                style={{ padding: '0.55rem 1rem', fontSize: 12.5 }}
-                data-testid="add-task"
-              >
-                <Plus size={14} /> New task
-              </button>
-            </div>
-          </div>
-          <div className="mt-2 w-full h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--color-border)' }}>
-            <div style={{ width: `${(doneCount / total) * 100}%`, height: '100%', background: 'var(--color-primary)' }} />
-          </div>
-        </div>
-
-        <div className="col-span-12 lg:col-span-4 card p-6" data-testid="planner-side">
-          <div className="eyebrow mb-2">Plan settings</div>
-          <div className="text-[13px] space-y-2" style={{ color: 'var(--color-ink-muted)' }}>
-            <p>Exam date: <strong style={{ color: 'var(--color-ink)' }}>{settings?.examDate || '2027-06-06'}</strong></p>
-            <p>Daily budget: <strong style={{ color: 'var(--color-ink)' }}>{settings?.dailyStudyHours || 4}h</strong></p>
-            <p className="text-[12px] leading-relaxed">
-              Missed generated tasks roll forward on replan. Completed tasks are not repeated.
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-7 gap-3" data-testid="planner-week">
-        {weekDates.map((date, i) => {
-          const dateKey = formatDateKey(date);
-          const dayTasks = tasksMap[dateKey] || [];
-          const dayPlan = plansMap[dateKey]?.tasks || [];
-          const isToday = dateKey === formatDateKey(new Date());
-
-          return (
-            <div
-              key={dateKey}
-              className="rounded-2xl p-3"
-              style={{
-                background: isToday ? 'var(--color-primary-tint)' : 'var(--color-surface)',
-                border: `1px solid ${isToday ? 'var(--color-primary)' : 'var(--color-border)'}`,
-                minHeight: 280,
-              }}
-            >
-              <div className="flex items-center justify-between mb-3">
-                <div>
-                  <div className="text-[10.5px] font-mono" style={{ color: 'var(--color-ink-muted)', letterSpacing: '0.14em' }}>{DAYS[i]}</div>
-                  <div className="font-serif text-[16px] mt-0.5" style={{ letterSpacing: '-0.01em' }}>{date.getDate()}</div>
-                </div>
-                {isToday && <span className="chip chip-accent" style={{ padding: '2px 8px', fontSize: 9 }}>Today</span>}
-              </div>
-              <div className="flex flex-col gap-2">
-                {dayPlan.map((t, planIdx) => (
-                  <motion.button
-                    key={`plan-${dateKey}-${planIdx}`}
-                    type="button"
-                    layout
-                    onClick={() => toggleTask(dateKey, planIdx, !t.done)}
-                    className="text-left p-2.5 rounded-xl"
-                    style={{
-                      background: 'var(--color-primary-tint)',
-                      border: '1px solid rgba(77,56,245,0.2)',
-                    }}
-                  >
-                    <div className="flex items-start gap-2">
-                      <div
-                        style={{
-                          width: 4,
-                          height: 28,
-                          borderRadius: 999,
-                          background: planTypeColor[t.type] || 'var(--color-primary)',
-                          flexShrink: 0,
-                        }}
-                      />
-                      <div className="flex-1 min-w-0">
-                        <div className="text-[11px] font-mono" style={{ color: 'var(--color-ink-muted)' }}>
-                          {t.estMinutes}m · {t.type}
-                        </div>
-                        <div
-                          className="mt-0.5 text-[11.5px] font-medium leading-tight"
-                          style={{
-                            color: t.done ? 'var(--color-ink-faint)' : 'var(--color-ink)',
-                            textDecoration: t.done ? 'line-through' : 'none',
-                          }}
-                        >
-                          {t.subject}: {t.topic}
-                        </div>
-                      </div>
-                      {t.done ? (
-                        <CheckCircle2 size={12} style={{ color: 'var(--color-primary)' }} />
-                      ) : (
-                        <Circle size={12} style={{ color: 'var(--color-border-strong)' }} />
-                      )}
-                    </div>
-                  </motion.button>
-                ))}
-
-                {dayTasks.map((t) => (
-                  <motion.button
-                    key={t.id}
-                    onClick={() => openModal(dateKey, t)}
-                    layout
-                    className="text-left p-3 rounded-xl group"
-                    data-testid={`task-${t.id}`}
-                    style={{
-                      background: 'var(--color-bg)',
-                      border: '1px solid var(--color-border)',
-                    }}
-                  >
-                    <div className="flex items-start gap-2">
-                      <div
-                        style={{
-                          width: 4,
-                          height: 32,
-                          borderRadius: 999,
-                          background: priorityColor[t.priority] || 'var(--color-primary)',
-                          flexShrink: 0,
-                          marginTop: 2,
-                        }}
-                      />
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-1.5 text-[10.5px] font-mono" style={{ color: 'var(--color-ink-muted)' }}>
-                          <Clock size={10} strokeWidth={1.5} /> {t.time || '—'}
-                        </div>
-                        <div
-                          className="mt-1 text-[12.5px] font-medium leading-tight"
-                          style={{
-                            color: t.done ? 'var(--color-ink-faint)' : 'var(--color-ink)',
-                            textDecoration: t.done ? 'line-through' : 'none',
-                          }}
-                        >
-                          {t.title || 'Untitled task'}
-                        </div>
-                        <div className="mt-1.5 flex items-center gap-1">
-                          <span className="chip" style={{ padding: '1px 6px', fontSize: 9 }}>{t.chip || t.taskType || 'Task'}</span>
-                          {t.done ? (
-                            <CheckCircle2 size={13} strokeWidth={1.6} style={{ color: 'var(--color-primary)', marginLeft: 'auto' }} />
-                          ) : (
-                            <Circle size={13} strokeWidth={1.5} style={{ color: 'var(--color-border-strong)', marginLeft: 'auto' }} />
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </motion.button>
-                ))}
+      <div className="planner-desk">
+        {/* Hero */}
+        <section className="planner-hero">
+          <div className="planner-hero__mesh" aria-hidden />
+          <div className="planner-hero__inner">
+            <div className="planner-hero__left">
+              <div className="planner-hero__eyebrow">Study planner</div>
+              <h1 className="planner-hero__title">{weekLabel}</h1>
+              <p className="planner-hero__sub">
+                {doneCount} of {allTasksCount} tasks completed · {weekBadge}
+              </p>
+              <div className="planner-hero__nav">
                 <button
-                  className="p-2 rounded-xl text-[11.5px] flex items-center justify-center gap-1"
-                  style={{ background: 'transparent', border: '1px dashed var(--color-border-strong)', color: 'var(--color-ink-muted)' }}
-                  onClick={() => openModal(dateKey)}
-                  data-testid={`add-task-${dateKey}`}
+                  type="button"
+                  className="planner-hero__nav-btn"
+                  onClick={() => setWeekOffset((w) => w - 1)}
+                  aria-label="Previous week"
+                  data-testid="week-prev"
                 >
-                  <Plus size={13} strokeWidth={1.5} /> Add manual
+                  <ChevronLeft size={16} />
+                </button>
+                <span className="planner-hero__week-tag">{weekBadge}</span>
+                <button
+                  type="button"
+                  className="planner-hero__nav-btn"
+                  onClick={() => setWeekOffset((w) => w + 1)}
+                  aria-label="Next week"
+                  data-testid="week-next"
+                >
+                  <ChevronRight size={16} />
                 </button>
               </div>
             </div>
-          );
-        })}
+
+            <div className="planner-hero__ring">
+              <div className="relative">
+                <ProgressRing pct={progressPct} size={96} />
+                <div
+                  className="absolute inset-0 flex flex-col items-center justify-center"
+                  data-testid="progress-ring"
+                >
+                  <span className="planner-hero__ring-pct">{progressPct}%</span>
+                </div>
+              </div>
+              <span className="planner-hero__ring-label">Week complete</span>
+            </div>
+
+            <div className="planner-hero__actions">
+              <button
+                type="button"
+                className="planner-hero__btn planner-hero__btn--solid"
+                onClick={() => openModal(selectedDayKey)}
+                data-testid="add-task"
+              >
+                <Plus size={15} strokeWidth={2} /> New task
+              </button>
+              <button
+                type="button"
+                className="planner-hero__btn planner-hero__btn--ghost"
+                disabled={generating}
+                onClick={() => replan(todayKey)}
+              >
+                <RotateCcw size={14} /> {generating ? 'Working…' : 'Replan today'}
+              </button>
+            </div>
+          </div>
+        </section>
+
+        {/* Day picker */}
+        <div className="planner-days" role="tablist" aria-label="Select day">
+          {weekDates.map((date, i) => {
+            const dateKey = formatDateKey(date);
+            const isToday = dateKey === todayKey;
+            const isSelected = dateKey === selectedDayKey;
+            const count = getDayCount(dateKey);
+
+            return (
+              <button
+                key={dateKey}
+                type="button"
+                role="tab"
+                aria-selected={isSelected}
+                className={[
+                  'planner-day-pill',
+                  isSelected && 'is-selected',
+                  isToday && 'is-today',
+                  i >= 5 && 'is-weekend',
+                ].filter(Boolean).join(' ')}
+                onClick={() => setSelectedDayKey(dateKey)}
+              >
+                <div className="planner-day-pill__dow">{DAYS[i]}</div>
+                <div className="planner-day-pill__num">{date.getDate()}</div>
+                {count > 0 && <span className="planner-day-pill__count">{count}</span>}
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="planner-body">
+          {/* Day focus */}
+          <div>
+            <div className="planner-focus" data-testid="planner-week">
+              <div className="planner-focus__head">
+                <div>
+                  <h2 className="planner-focus__date">{formatDayLabel(selectedDate)}</h2>
+                  <p className="planner-focus__meta">
+                    {selectedDone}/{selectedTotal} tasks done
+                    {selectedDayKey === todayKey && ' · Today'}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  className="planner-focus__add"
+                  onClick={() => openModal(selectedDayKey)}
+                  data-testid={`add-task-${selectedDayKey}`}
+                >
+                  <Plus size={14} /> Add task
+                </button>
+              </div>
+
+              <div className="planner-focus__content">
+                {selectedTotal === 0 ? (
+                  <div className="planner-empty-state">
+                    <div className="planner-empty-state__icon">
+                      <CalendarDays size={22} strokeWidth={1.6} />
+                    </div>
+                    <h3 className="planner-empty-state__title">Nothing scheduled</h3>
+                    <p className="planner-empty-state__text">
+                      Add a manual task or generate today&apos;s AI plan from the sidebar.
+                    </p>
+                    <button
+                      type="button"
+                      className="planner-empty-state__btn"
+                      onClick={() => openModal(selectedDayKey)}
+                    >
+                      <Plus size={14} /> Add your first task
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    {selectedPlan.length > 0 && (
+                      <div className="planner-section">
+                        <div className="planner-section__label planner-section__label--ai">
+                          AI generated
+                        </div>
+                        <div className="planner-timeline">
+                          {selectedPlan.map((t, planIdx) => (
+                            <button
+                              key={`plan-${selectedDayKey}-${planIdx}`}
+                              type="button"
+                              className="planner-block planner-block--ai"
+                              onClick={() => toggleTask(selectedDayKey, planIdx, !t.done)}
+                            >
+                              <div className="planner-block__dot">
+                                {t.done ? (
+                                  <CheckCircle2 size={14} style={{ color: '#5b21b6' }} />
+                                ) : (
+                                  <Circle size={14} style={{ color: '#a78bfa' }} />
+                                )}
+                              </div>
+                              <div className="planner-block__card">
+                                <div className="planner-block__top">
+                                  <span className="planner-block__badge planner-block__badge--ai">AI</span>
+                                  <span className="planner-block__time">{t.estMinutes}m · {t.type}</span>
+                                </div>
+                                <div className={`planner-block__title${t.done ? ' is-done' : ''}`}>
+                                  {t.subject}: {t.topic}
+                                </div>
+                              </div>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {selectedManual.length > 0 && (
+                      <div className="planner-section">
+                        <div className="planner-section__label">Your tasks</div>
+                        <div className="planner-timeline">
+                          {selectedManual.map((t) => (
+                            <button
+                              key={t.id}
+                              type="button"
+                              className={`planner-block planner-block--${priorityClass[t.priority] || 'low'}`}
+                              onClick={() => openModal(selectedDayKey, t)}
+                              data-testid={`task-${t.id}`}
+                            >
+                              <div className="planner-block__dot">
+                                {t.done ? (
+                                  <CheckCircle2 size={14} style={{ color: 'var(--color-primary)' }} />
+                                ) : (
+                                  <Circle size={14} style={{ color: 'var(--color-border-strong)' }} />
+                                )}
+                              </div>
+                              <div className="planner-block__card">
+                                <div className="planner-block__top">
+                                  <span className="planner-block__badge planner-block__badge--manual">
+                                    {t.chip || t.taskType || 'Task'}
+                                  </span>
+                                  <span className="planner-block__time">
+                                    <Clock size={10} /> {t.time || '—'}
+                                  </span>
+                                </div>
+                                <div className={`planner-block__title${t.done ? ' is-done' : ''}`}>
+                                  {t.title || 'Untitled task'}
+                                </div>
+                                {t.duration && (
+                                  <div className="planner-block__sub">{t.duration} min</div>
+                                )}
+                              </div>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            </div>
+
+            {/* Week overview dots */}
+            <div className="planner-overview">
+              <div className="planner-overview__title">Week at a glance</div>
+              <div className="planner-overview__grid">
+                {weekDates.map((date, i) => {
+                  const dateKey = formatDateKey(date);
+                  const manual = tasksMap[dateKey] || [];
+                  const plan = plansMap[dateKey]?.tasks || [];
+                  const all = [...manual, ...plan];
+                  const isSelected = dateKey === selectedDayKey;
+                  const isToday = dateKey === todayKey;
+
+                  return (
+                    <button
+                      key={dateKey}
+                      type="button"
+                      className={[
+                        'planner-overview__cell',
+                        isSelected && 'is-selected',
+                        isToday && 'is-today',
+                      ].filter(Boolean).join(' ')}
+                      onClick={() => setSelectedDayKey(dateKey)}
+                      title={DAYS[i]}
+                    >
+                      <span className="planner-overview__dow">{DAYS_SHORT[i]}</span>
+                      <span className="planner-overview__num">{date.getDate()}</span>
+                      {all.length > 0 && (
+                        <span className="planner-overview__dots">
+                          {all.slice(0, 3).map((t, j) => (
+                            <span
+                              key={j}
+                              className={`planner-overview__dot${t.done ? ' is-done' : ''}`}
+                            />
+                          ))}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          {/* Sidebar */}
+          <aside className="planner-side">
+            <div className="planner-side-card planner-side-card--ai" data-testid="today-study-plan">
+              <div className="planner-side-card__head">
+                <div className="planner-side-card__eyebrow">
+                  <Sparkles size={12} /> Today&apos;s AI plan
+                </div>
+                <h2 className="planner-side-card__title">
+                  {todayPlanDone}/{todayTasks.length || 0} completed
+                </h2>
+              </div>
+              <div className="planner-side-card__body">
+                <div className="planner-side-actions">
+                  <label className="planner-side-hours">
+                    Hours
+                    <input
+                      type="number"
+                      min={1}
+                      max={12}
+                      step={0.5}
+                      value={settings?.dailyStudyHours ?? 4}
+                      onChange={handleHoursChange}
+                    />
+                  </label>
+                  <button
+                    type="button"
+                    className="planner-side-replan"
+                    disabled={generating}
+                    onClick={() => replan(todayKey)}
+                  >
+                    <RotateCcw size={13} /> Replan
+                  </button>
+                </div>
+
+                {planLoading ? (
+                  <p className="planner-side-empty">Loading plan…</p>
+                ) : todayTasks.length === 0 ? (
+                  <p className="planner-side-empty">
+                    No AI plan yet. Set your hours and hit Replan.
+                  </p>
+                ) : (
+                  todayTasks.map((task, i) => (
+                    <button
+                      key={`${task.subject}-${task.topic}-${i}`}
+                      type="button"
+                      className="planner-side-task"
+                      onClick={() => toggleTask(todayKey, i, !task.done)}
+                    >
+                      {task.done ? (
+                        <CheckCircle2 size={15} style={{ flexShrink: 0, marginTop: 2 }} />
+                      ) : (
+                        <Circle size={15} style={{ flexShrink: 0, marginTop: 2, opacity: 0.5 }} />
+                      )}
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div className={`planner-side-task__title${task.done ? ' is-done' : ''}`}>
+                          {task.subject}: {task.topic}
+                        </div>
+                        <div className="planner-side-task__meta">
+                          {task.estMinutes}m · {task.type}
+                        </div>
+                      </div>
+                    </button>
+                  ))
+                )}
+              </div>
+            </div>
+
+            <div className="planner-side-card" data-testid="planner-side">
+              <div className="planner-side-card__head">
+                <div className="planner-side-card__eyebrow">
+                  <Target size={12} /> Schedule
+                </div>
+                <h2 className="planner-side-card__title">Your targets</h2>
+              </div>
+              <div className="planner-stats">
+                <div className="planner-stat">
+                  <span>Exam date</span>
+                  <strong>{settings?.examDate || '2027-06-06'}</strong>
+                </div>
+                <div className="planner-stat">
+                  <span>Daily study</span>
+                  <strong>{settings?.dailyStudyHours || 4}h</strong>
+                </div>
+                <div className="planner-stat">
+                  <span>Week progress</span>
+                  <strong data-testid="mocks-attempted">{progressPct}%</strong>
+                </div>
+                <div className="planner-stat__bar">
+                  <div className="planner-stat__fill" style={{ width: `${progressPct}%` }} />
+                </div>
+              </div>
+            </div>
+          </aside>
+        </div>
       </div>
     </StudentLayout>
   );

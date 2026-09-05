@@ -1,12 +1,12 @@
 export const publicRoutes = {
   home: '/',
-  courses: '/courses',
   studyMaterial: '/study-material',
+  syllabus: '/study-material/upsc-syllabus',
   maps: '/maps',
   government: '/government',
   planningTools: '/planning-tools',
   about: '/about',
-  contact: '/contact',
+  contact: '/about',
   login: '/login',
   register: '/register',
 };
@@ -17,9 +17,9 @@ export const studentRoutes = {
   notes: '/student-desk/notes',
   pyq: '/student-desk/pyq',
   mockTests: '/student-desk/mock-tests',
+  performance: '/student-desk/analytics',
   planner: '/student-desk/planner',
   profile: '/student-desk/profile',
-  notifications: '/student-desk/notifications',
 };
 
 export const adminRoutes = {
@@ -29,5 +29,4 @@ export const adminRoutes = {
   users: '/admin/users',
   mockTests: '/admin/mock-tests',
   notifications: '/admin/notifications',
-  analytics: '/admin/analytics',
 };

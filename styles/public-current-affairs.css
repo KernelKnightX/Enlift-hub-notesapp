@@ -1,0 +1,113 @@
+.public-ca {
+  background: var(--color-bg);
+  color: var(--color-ink);
+}
+
+.public-ca__section {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem 4rem;
+}
+
+@media (min-width: 768px) {
+  .public-ca__section {
+    padding: 2rem 2.5rem 4rem;
+  }
+}
+
+.public-ca__filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.public-ca__pill {
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-ink-muted);
+  border-radius: 999px;
+  padding: 0.4rem 0.85rem;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.public-ca__pill.is-active {
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+  color: #fff;
+}
+
+.public-ca__empty {
+  border: 1px dashed var(--color-border);
+  border-radius: 16px;
+  padding: 4rem 1.5rem;
+  text-align: center;
+  font-size: 14px;
+  color: var(--color-ink-muted);
+}
+
+.public-ca__grid {
+  display: grid;
+  gap: 1rem;
+}
+
+@media (min-width: 768px) {
+  .public-ca__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.public-ca__card {
+  overflow: hidden;
+  border-radius: 16px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+}
+
+.public-ca__card-img {
+  width: 100%;
+  height: 11rem;
+  object-fit: cover;
+}
+
+.public-ca__card-body {
+  padding: 1.25rem;
+}
+
+.public-ca__kicker {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-ink-faint);
+}
+
+.public-ca__title {
+  margin: 0.5rem 0 0;
+  font-family: var(--font-serif);
+  font-size: 1.15rem;
+  line-height: 1.35;
+  letter-spacing: -0.02em;
+}
+
+.public-ca__summary {
+  margin: 0.5rem 0 0;
+  font-size: 14px;
+  line-height: 1.65;
+  color: var(--color-ink-muted);
+}
+
+.public-ca__footnote {
+  margin-top: 2.5rem;
+  text-align: center;
+  font-size: 13px;
+  color: var(--color-ink-muted);
+}
+
+.public-ca__footnote a {
+  color: var(--color-primary);
+  font-weight: 600;
+}

@@ -1,5 +1,7 @@
+import Link from 'next/link';
 import { Bell } from 'lucide-react';
 import useFirestoreCollection from '@/hooks/shared/useFirestoreCollection';
+import { isExternalHref, sanitizeHref } from '@/lib/safeUrl';
 
 const NOTICE_CHIP = {
   result: 'chip-primary',
@@ -25,7 +27,7 @@ function isHomepageNotice(doc) {
 }
 
 function toTickerNotice(doc) {
-  const href = typeof doc.href === 'string' ? doc.href.trim() : '';
+  const href = sanitizeHref(doc.href);
   if (!href) return null;
 
   const text = doc.message?.trim() || doc.title?.trim() || '';
@@ -37,7 +39,7 @@ function toTickerNotice(doc) {
     label: doc.title?.trim() || TYPE_LABELS[doc.type] || 'Update',
     text,
     href,
-    isExternal: /^https?:\/\//i.test(href),
+    isExternal: isExternalHref(href),
   };
 }
 
@@ -46,7 +48,6 @@ export default function NoticeTicker() {
     name: 'adminNotifications',
     orderBy: ['createdAt', 'desc'],
     limit: 30,
-    fallback: [],
     transform: (docs) =>
       docs
         .filter((doc) => doc.isActive !== false && isHomepageNotice(doc))
@@ -70,20 +71,35 @@ export default function NoticeTicker() {
         <div className="notice-ticker-track">
           {[...liveNotices, ...liveNotices].map((notice, index) => {
             const chipClass = NOTICE_CHIP[notice.kind] || 'chip-primary';
-            return (
-              <a
-                key={`notice-${notice.id}-${index}`}
-                href={notice.href}
-                className="notice-item"
-                target={notice.isExternal ? '_blank' : '_self'}
-                rel={notice.isExternal ? 'noreferrer noopener' : undefined}
-                tabIndex={index >= liveNotices.length ? -1 : 0}
-              >
+            const content = (
+              <>
                 <span className={`chip ${chipClass}`} style={{ padding: '2px 8px', fontSize: 10 }}>
                   {notice.label}
                 </span>
                 <span className="notice-text">{notice.text}</span>
+              </>
+            );
+
+            return notice.isExternal ? (
+              <a
+                key={`notice-${notice.id}-${index}`}
+                href={notice.href}
+                className="notice-item"
+                target="_blank"
+                rel="noreferrer noopener"
+                tabIndex={index >= liveNotices.length ? -1 : 0}
+              >
+                {content}
               </a>
+            ) : (
+              <Link
+                key={`notice-${notice.id}-${index}`}
+                href={notice.href}
+                className="notice-item"
+                tabIndex={index >= liveNotices.length ? -1 : 0}
+              >
+                {content}
+              </Link>
             );
           })}
         </div>

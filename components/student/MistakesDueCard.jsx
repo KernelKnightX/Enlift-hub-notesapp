@@ -60,14 +60,14 @@ export default function MistakesDueCard() {
 
       <div className="hairline-t mt-6 pt-4 flex flex-wrap gap-4">
         <Link
-          href="/student-desk/mistake-notebook/review"
+          href="/student-desk/analytics/review"
           className="text-[13px] font-medium flex items-center gap-1"
           style={{ color: 'var(--color-primary)' }}
         >
           Quick review <ArrowRight size={14} />
         </Link>
         <Link
-          href="/student-desk/mistake-notebook"
+          href="/student-desk/analytics?tab=mistakes"
           className="text-[13px] font-medium flex items-center gap-1"
           style={{ color: 'var(--color-ink-muted)' }}
         >

@@ -21,8 +21,14 @@ import "../styles/notes-editor.css";
 import "../styles/current-affairs.css";
 import "../styles/pyq-desk.css";
 import "../styles/profile-desk.css";
+import "../styles/dashboard-desk.css";
+import "../styles/planner-desk.css";
 import "../styles/student-topbar.css";
 import "../styles/landing-hero-showcase.css";
+import "../styles/landing-below-hero.css";
+import "../styles/about-page.css";
+import "../styles/404-page.css";
+import "../styles/public-current-affairs.css";
 function App({ Component, pageProps }) {
   const router = useRouter();
   const isStudentRoute = router.pathname.startsWith('/student-desk');

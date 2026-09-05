@@ -147,7 +147,7 @@ export default function OfficeInsights() {
         />
         <InsightCard
           title="Most opened notes / PDFs"
-          href="/admin/notes"
+          href="/admin/notes-2"
           empty="No PDF opens yet. Counts start when a student opens or downloads a note from the desk."
           rows={insights.topPdfs.filter((item) => item.count > 0 || item.opens > 0).map((item) => ({
             kicker: `${item.count} downloads · ${item.opens} opens`,

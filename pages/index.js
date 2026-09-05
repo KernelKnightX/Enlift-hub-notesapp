@@ -3,10 +3,8 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  ArrowUpRight, ArrowRight, BookOpen, Newspaper, ClipboardCheck, FileText,
-  Calendar, GraduationCap, Sparkles, ChevronDown, Star,
-  CheckCircle2, TrendingUp, Users, Menu, X, Coffee, Compass,
-  MapPin, Flag, PenLine, Target, Award
+  ArrowRight, BookOpen, Newspaper, ChevronDown, Compass,
+  PenLine, Target, Award,
 } from 'lucide-react';
 import SplashLoader from '@/components/landing/SplashLoader';
 import {
@@ -105,15 +103,6 @@ const EXAMS = [
   { name: 'Engineering Services',   code: 'ESE',       mode: 'Prelims + Mains + PT', color: 'gold' },
 ];
 
-const FEATURES = [
-  { n: '01', icon: Compass,        title: 'A roadmap, not a syllabus dump', body: "Told what to do this week, not handed the entire UPSC syllabus on day one and left to figure out sequencing yourself." },
-  { n: '02', icon: Newspaper,      title: 'Editorial Current Affairs', body: 'Introduced at the right stage of your prep, mapped to Prelims + Mains + PYQ relevance — not a firehose from day one.' },
-  { n: '03', icon: BookOpen,       title: 'Notes that feel like paper', body: 'Distraction-free editor, autosave, print-ready PDF export, and cross-device sync.' },
-  { n: '04', icon: ClipboardCheck, title: 'Mocks calibrated to reality', body: 'Prelims / Mains / CAPF / CDS — with subject cutoffs and honest analytics, not vanity scores.' },
-  { n: '05', icon: FileText,       title: 'Ten years of PYQs',          body: 'Every question, every year — filterable by subject, topic and year of appearance.' },
-  { n: '06', icon: TrendingUp,     title: 'Progress you can trust',      body: 'Study time, mock trends, weak-topic radar. Analytics designed for insight, not addiction.' },
-];
-
 /* ─────────────────────────────────────────── */
 export default function Home() {
   const router = useRouter();
@@ -207,252 +196,147 @@ export default function Home() {
           </div>
         </section>
 
-        {/* ─────────── ZERO TO HERO ROADMAP ─────────── */}
-        <section id="roadmap" className="hairline-t hairline-b" style={{ background: 'var(--color-surface-alt)' }} data-testid="roadmap-section">
-          <div className="max-w-[1240px] mx-auto px-6 md:px-10 py-24 md:py-32">
-            <div className="grid grid-cols-12 gap-6 md:gap-10 items-end mb-14">
-              <div className="col-span-12 md:col-span-8">
-                <div className="eyebrow mb-4">The Zero-to-Hero Roadmap</div>
-                <h2 className="font-serif" style={{ fontSize: 'clamp(32px, 4.2vw, 56px)', lineHeight: 1.08, letterSpacing: '-0.02em', fontWeight: 460 }}>
-                  You don&apos;t need a plan.<br />
-                  <em style={{ fontStyle: 'italic', color: 'var(--color-accent)' }}>You need this one.</em>
+        <div className="landing-below">
+          {/* ─────────── ROADMAP ─────────── */}
+          <section id="roadmap" className="landing-roadmap" data-testid="roadmap-section">
+            <div className="landing-roadmap__inner">
+              <header className="landing-roadmap__head">
+                <div className="landing-roadmap__eyebrow">The zero-to-hero roadmap</div>
+                <h2 className="landing-roadmap__title">
+                  Six stages, in the order they <em>actually matter</em>.
                 </h2>
-              </div>
-              <div className="col-span-12 md:col-span-4 md:text-right">
-                <p className="text-[15px]" style={{ color: 'var(--color-ink-muted)' }}>
-                  Six stages, in the order they actually matter — built for the version of you that hasn&apos;t opened a single book yet.
+                <p className="landing-roadmap__sub">
+                  From understanding the exam to your first Mains answer — one clear sequence, no syllabus dump on day one.
                 </p>
-              </div>
-            </div>
+              </header>
 
-            <div className="flex flex-col">
-              {ROADMAP.map((stg, i) => (
-                <motion.div
-                  key={stg.stage}
-                  initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: '-60px' }}
-                  transition={{ duration: .45, delay: i * 0.04 }}
-                  className="grid grid-cols-12 gap-4 md:gap-8 py-7 hairline-b last:border-b-0"
-                  data-testid={`roadmap-stage-${stg.stage}`}
-                >
-                  <div className="col-span-3 md:col-span-2 flex items-start gap-3">
-                    <span className="font-serif italic text-[20px]" style={{ color: 'var(--color-accent)' }}>{stg.stage}</span>
-                    <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
-                         style={{ background: 'var(--color-primary-tint)', color: 'var(--color-primary)' }}>
-                      <stg.icon size={18} strokeWidth={1.5} />
-                    </div>
-                  </div>
-                  <div className="col-span-9 md:col-span-2">
-                    <div className="text-[11px] font-mono mt-2" style={{ color: 'var(--color-ink-faint)' }}>{stg.phase.toUpperCase()}</div>
-                  </div>
-                  <div className="col-span-12 md:col-span-8">
-                    <div className="font-serif text-[21px] leading-[1.25]" style={{ letterSpacing: '-0.01em' }}>{stg.title}</div>
-                    <p className="mt-2 text-[14.5px] leading-[1.65] max-w-[640px]" style={{ color: 'var(--color-ink-muted)' }}>{stg.body}</p>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-
-            <div className="mt-12 flex justify-center">
-              <Link href="/register" className="btn btn-primary" data-testid="roadmap-cta">
-                Start at stage 00, free <ArrowRight size={15} strokeWidth={2} />
-              </Link>
-            </div>
-          </div>
-        </section>
-
-        {/* ─────────── FEATURES BENTO ─────────── */}
-        <section id="features" className="hairline-t hairline-b" style={{ background: 'var(--color-surface-alt)' }} data-testid="features-section">
-          <div className="max-w-[1240px] mx-auto px-6 md:px-10 py-24 md:py-32">
-            <div className="grid grid-cols-12 gap-6 md:gap-10 items-end mb-14">
-              <div className="col-span-12 md:col-span-7">
-                <div className="eyebrow mb-4">The platform · At a glance</div>
-                <h2 className="font-serif" style={{ fontSize: 'clamp(32px, 4.2vw, 56px)', lineHeight: 1.08, letterSpacing: '-0.02em', fontWeight: 460 }}>
-                  Six tools, deeply considered.<br />
-                  <em style={{ fontStyle: 'italic', color: 'var(--color-accent)' }}>Not sixty features you never open.</em>
-                </h2>
-              </div>
-              <div className="col-span-12 md:col-span-5 md:text-right">
-                <p className="text-[15px]" style={{ color: 'var(--color-ink-muted)' }}>
-                  We chose depth over breadth. Every module solves one specific problem in the journey from zero to the interview — and nothing else.
-                </p>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-12 gap-4 md:gap-6">
-              {FEATURES.map((f, i) => (
-                <motion.div
-                  key={f.n}
-                  initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: '-40px' }}
-                  transition={{ duration: .45, delay: i * 0.04 }}
-                  className={`col-span-12 md:col-span-6 lg:col-span-4 card card-hover p-7 md:p-8`}
-                  data-testid={`feature-card-${f.n}`}
-                >
-                  <div className="flex items-start justify-between mb-8">
-                    <span className="font-serif italic text-[15px]" style={{ color: 'var(--color-accent)' }}>{f.n}</span>
-                    <f.icon size={22} strokeWidth={1.5} style={{ color: 'var(--color-primary)' }} />
-                  </div>
-                  <h3 className="font-serif text-[22px] leading-[1.2]" style={{ letterSpacing: '-0.01em' }}>{f.title}</h3>
-                  <p className="mt-3 text-[14.5px] leading-[1.65]" style={{ color: 'var(--color-ink-muted)' }}>{f.body}</p>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ─────────── EXAM ECOSYSTEM ─────────── */}
-        <section id="exams" className="max-w-[1240px] mx-auto px-6 md:px-10 py-24 md:py-32" data-testid="exams-section">
-          <div className="grid grid-cols-12 gap-6 md:gap-10 items-end mb-14">
-            <div className="col-span-12 md:col-span-8">
-              <div className="eyebrow mb-4">Once you've found your footing</div>
-              <h2 className="font-serif" style={{ fontSize: 'clamp(32px, 4.2vw, 56px)', lineHeight: 1.08, letterSpacing: '-0.02em', fontWeight: 460 }}>
-                Built for the entire<br />UPSC universe — not just CSE.
-              </h2>
-            </div>
-            <div className="col-span-12 md:col-span-4 md:text-right">
-              <p className="text-[15px]" style={{ color: 'var(--color-ink-muted)' }}>
-                Whichever service you eventually target, the roadmap and tools speak the same rigorous language.
-              </p>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-12 gap-4">
-            {EXAMS.map((e, i) => (
-              <motion.div
-                key={e.code}
-                initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: '-40px' }}
-                transition={{ duration: .4, delay: i * 0.05 }}
-                className="col-span-12 sm:col-span-6 lg:col-span-4 card card-hover p-6 md:p-7"
-                data-testid={`exam-${e.code.replace(/\W/g,'')}`}
-              >
-                <div className={`chip chip-${e.color}`}>{e.code}</div>
-                <div className="mt-5 font-serif text-[22px]" style={{ letterSpacing: '-0.01em' }}>{e.name}</div>
-                <div className="mt-2 text-[13px]" style={{ color: 'var(--color-ink-muted)' }}>{e.mode}</div>
-                <div className="mt-6 hairline-t pt-4 flex items-center justify-between text-[12.5px]" style={{ color: 'var(--color-ink-muted)' }}>
-                  <span>PYQs · Mocks · Notes</span>
-                  <ArrowUpRight size={15} strokeWidth={1.5} />
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </section>
-
-        {/* ─────────── DARK EDITORIAL: METHOD ─────────── */}
-        <section className="relative overflow-hidden" style={{ background: 'var(--color-ink)', color: 'var(--color-bg)' }} data-testid="method-section">
-          <div className="max-w-[1240px] mx-auto px-6 md:px-10 py-24 md:py-32">
-            <div className="grid grid-cols-12 gap-6 md:gap-10 items-start">
-              <div className="col-span-12 lg:col-span-5">
-                <div className="eyebrow" style={{ color: '#8A9993' }}>The Notes Cafe method</div>
-                <h2 className="font-serif mt-4" style={{ fontSize: 'clamp(32px, 4.2vw, 56px)', lineHeight: 1.05, letterSpacing: '-0.02em', fontWeight: 440 }}>
-                  Built for the version<br />of you that <em style={{ fontStyle: 'italic', color: 'var(--color-accent)' }}>hasn&apos;t started</em>.
-                </h2>
-                <p className="mt-6 text-[15.5px] leading-[1.7]" style={{ color: '#B7BFB8' }}>
-                  Most platforms are built for aspirants already three months in. We start one step earlier — at "I don't know where to begin" — with the calm interface, editorial voice, and sequencing that a total beginner actually needs.
-                </p>
-                <div className="mt-10 flex flex-wrap gap-2">
-                  {['No streak guilt', 'No push-notification spam', 'No paywalled fundamentals', 'No syllabus dumped on day one'].map((k, i) => (
-                    <span key={i} className="chip" style={{ background: 'transparent', color: '#B7BFB8', borderColor: '#2A3631' }}>{k}</span>
-                  ))}
-                </div>
-              </div>
-
-              <div className="col-span-12 lg:col-span-7">
-                <div className="grid grid-cols-2 gap-4 md:gap-6">
-                  {[
-                    { n: '01', t: 'Orient', b: 'Understand the exam before opening a book.' },
-                    { n: '02', t: 'Read', b: 'A daily editorial brief. No 40-page PDFs.' },
-                    { n: '03', t: 'Test',  b: 'Weekly mocks calibrated to the real exam.' },
-                    { n: '04', t: 'Review',b: 'Weak-topic radar, then repeat with intent.' },
-                  ].map((s, i) => (
-                    <motion.div
-                      key={s.n}
-                      initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
-                      transition={{ duration: .5, delay: i * .08 }}
-                      className="p-6 md:p-8 rounded-2xl"
-                      style={{ background: '#141A17', border: '1px solid #2A3631' }}
-                    >
-                      <div className="font-serif italic text-[15px]" style={{ color: 'var(--color-accent)' }}>{s.n}</div>
-                      <div className="font-serif text-[28px] mt-4" style={{ letterSpacing: '-0.01em' }}>{s.t}</div>
-                      <div className="mt-3 text-[13.5px]" style={{ color: '#8A9993' }}>{s.b}</div>
-                    </motion.div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* ─────────── FAQ FOR BEGINNERS ─────────── */}
-        <section id="faq" className="max-w-[1240px] mx-auto px-6 md:px-10 py-24 md:py-32" data-testid="faq-section">
-          <div className="grid grid-cols-12 gap-6 md:gap-10 mb-14">
-            <div className="col-span-12 md:col-span-6">
-              <div className="eyebrow mb-4">Questions every beginner asks</div>
-              <h2 className="font-serif" style={{ fontSize: 'clamp(32px, 4.2vw, 56px)', lineHeight: 1.08, letterSpacing: '-0.02em', fontWeight: 460 }}>
-                Before you start,<br />
-                <em style={{ fontStyle: 'italic', color: 'var(--color-accent)' }}>the honest answers</em>.
-              </h2>
-            </div>
-          </div>
-
-          <div className="max-w-[820px]">
-            {FAQS.map((f, i) => {
-              const open = openFaq === i;
-              return (
-                <div key={i} className="hairline-b last:border-b-0" data-testid={`faq-item-${i}`}>
-                  <button
-                    onClick={() => setOpenFaq(open ? -1 : i)}
-                    className="w-full flex items-center justify-between gap-6 py-6 text-left"
-                    style={{ background: 'transparent', border: 'none', cursor: 'pointer' }}
-                    aria-expanded={open}
+              <div className="landing-roadmap__grid">
+                {ROADMAP.map((stg, i) => (
+                  <motion.article
+                    key={stg.stage}
+                    initial={{ opacity: 0, y: 14 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, margin: '-40px' }}
+                    transition={{ duration: 0.4, delay: i * 0.04 }}
+                    className="landing-roadmap__card"
+                    data-testid={`roadmap-stage-${stg.stage}`}
                   >
-                    <span className="font-serif text-[18px] md:text-[20px]" style={{ letterSpacing: '-0.005em' }}>{f.q}</span>
-                    <ChevronDown
-                      size={18} strokeWidth={1.5}
-                      style={{
-                        color: 'var(--color-ink-muted)', flexShrink: 0,
-                        transform: open ? 'rotate(180deg)' : 'rotate(0deg)',
-                        transition: 'transform .25s ease',
-                      }}
-                    />
-                  </button>
-                  <AnimatePresence initial={false}>
-                    {open && (
-                      <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: 'auto', opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: .25, ease: [.2,.7,.2,1] }}
-                        style={{ overflow: 'hidden' }}
-                      >
-                        <p className="pb-6 text-[15px] leading-[1.7] max-w-[680px]" style={{ color: 'var(--color-ink-muted)' }}>
-                          {f.a}
-                        </p>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-              );
-            })}
-          </div>
-        </section>
+                    <div className="landing-roadmap__card-top">
+                      <span className="landing-roadmap__stage">{stg.stage}</span>
+                      <span className="landing-roadmap__phase">{stg.phase}</span>
+                    </div>
+                    <div className="landing-roadmap__icon">
+                      <stg.icon size={18} strokeWidth={1.6} />
+                    </div>
+                    <h3 className="landing-roadmap__card-title">{stg.title}</h3>
+                    <p className="landing-roadmap__card-body">{stg.body}</p>
+                  </motion.article>
+                ))}
+              </div>
 
-        {/* ─────────── FINAL CTA ─────────── */}
-        <section className="hairline-t" style={{ background: 'var(--color-surface-alt)' }}>
-          <div className="max-w-[1240px] mx-auto px-6 md:px-10 py-20 md:py-28 text-center">
-            <div className="eyebrow mb-4">A last word</div>
-            <h2 className="font-serif max-w-[820px] mx-auto" style={{ fontSize: 'clamp(28px, 3.6vw, 46px)', lineHeight: 1.15, letterSpacing: '-0.02em', fontWeight: 460 }}>
-              You don&apos;t need to know everything to begin.
-              <em style={{ fontStyle: 'italic', color: 'var(--color-accent)' }}> You just need stage 00.</em>
-            </h2>
-            <div className="mt-10 flex flex-wrap justify-center gap-3">
-              <Link href="/register" className="btn btn-primary" data-testid="footer-cta-register">
-                Get started, it&apos;s free <ArrowRight size={15} />
-              </Link>
-              <Link href="/login" className="btn btn-ghost" data-testid="footer-cta-login">
-                I already have an account
-              </Link>
+              <div className="landing-roadmap__cta">
+                <Link href="/register" className="btn btn-primary" data-testid="roadmap-cta">
+                  Start at stage 00, free <ArrowRight size={15} strokeWidth={2} />
+                </Link>
+              </div>
             </div>
-          </div>
-        </section>
+          </section>
+
+          {/* ─────────── EXAMS (compact) ─────────── */}
+          <section id="exams" className="landing-exams" data-testid="exams-section">
+            <div className="landing-exams__inner">
+              <div className="landing-exams__label">Exams we cover</div>
+              <div className="landing-exams__grid">
+                {EXAMS.map((e) => (
+                  <div
+                    key={e.code}
+                    className="landing-exams__pill"
+                    data-testid={`exam-${e.code.replace(/\W/g, '')}`}
+                  >
+                    <span className="landing-exams__code">{e.code}</span>
+                    <span className="landing-exams__name">{e.name}</span>
+                    <span className="landing-exams__mode">{e.mode}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          {/* ─────────── FAQ ─────────── */}
+          <section id="faq" className="landing-faq" data-testid="faq-section">
+            <div className="landing-faq__inner">
+              <div className="landing-faq__intro">
+                <div className="landing-faq__eyebrow">Beginner questions</div>
+                <h2 className="landing-faq__title">
+                  Honest answers <em>before you start</em>.
+                </h2>
+                <p className="landing-faq__sub">
+                  The questions every new aspirant asks — answered without coaching jargon.
+                </p>
+              </div>
+
+              <div className="landing-faq__list">
+                {FAQS.map((f, i) => {
+                  const open = openFaq === i;
+                  return (
+                    <div
+                      key={i}
+                      className={`landing-faq__item${open ? ' is-open' : ''}`}
+                      data-testid={`faq-item-${i}`}
+                    >
+                      <button
+                        type="button"
+                        onClick={() => setOpenFaq(open ? -1 : i)}
+                        className="landing-faq__trigger"
+                        aria-expanded={open}
+                      >
+                        <span className="landing-faq__question">{f.q}</span>
+                        <ChevronDown size={18} strokeWidth={1.5} className="landing-faq__chevron" />
+                      </button>
+                      <AnimatePresence initial={false}>
+                        {open && (
+                          <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: 'auto', opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            transition={{ duration: 0.25, ease: [0.2, 0.7, 0.2, 1] }}
+                            style={{ overflow: 'hidden' }}
+                          >
+                            <p className="landing-faq__answer">{f.a}</p>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </section>
+
+          {/* ─────────── FINAL CTA ─────────── */}
+          <section className="landing-cta">
+            <div className="landing-cta__mesh" aria-hidden />
+            <div className="landing-cta__inner">
+              <div className="landing-cta__eyebrow">Ready when you are</div>
+              <h2 className="landing-cta__title">
+                You don&apos;t need to know everything.
+                <br />
+                <em>You just need stage 00.</em>
+              </h2>
+              <p className="landing-cta__sub">
+                Create a free account and start with the first step — no credit card, no syllabus overwhelm.
+              </p>
+              <div className="landing-cta__actions">
+                <Link href="/register" className="landing-cta__btn-primary" data-testid="footer-cta-register">
+                  Get started, it&apos;s free <ArrowRight size={15} />
+                </Link>
+                <Link href="/login" className="landing-cta__btn-ghost" data-testid="footer-cta-login">
+                  I already have an account
+                </Link>
+              </div>
+            </div>
+          </section>
+        </div>
       </div>
     </>
   );

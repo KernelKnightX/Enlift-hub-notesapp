@@ -1,14 +1,12 @@
 export const publicNavigation = [
   { label: 'Home', href: '/' },
-  
+  { label: 'Current Affairs', href: '/current-affairs' },
   {
     label: 'Study Material',
     href: '/study-material',
     children: [
       { label: 'UPSC Syllabus', href: '/study-material/upsc-syllabus' },
-      { label: 'NCERT Books', href: '/study-material/ncert-books' },
       { label: 'Monthly Magazines', href: '/study-material/standard-books' },
-      { label: 'Current Affairs', href: '/current-affairs' },
     ],
   },
   {
@@ -20,7 +18,6 @@ export const publicNavigation = [
       { label: 'Mountain Ranges', href: '/maps/upsc-maps/mountain-ranges' },
       { label: 'National Parks', href: '/maps/upsc-maps/national-parks' },
       { label: 'Biosphere Reserves', href: '/maps/upsc-maps/biosphere-reserves' },
-      { label: 'Important Locations', href: '/maps/upsc-maps/important-locations' },
     ],
   },
   {
@@ -30,9 +27,7 @@ export const publicNavigation = [
       { label: 'Government Schemes', href: '/government/schemes' },
       { label: 'Constitution Articles', href: '/government/constitution-articles' },
       { label: 'Important Acts', href: '/government/important-acts' },
-      { label: 'Committees', href: '/government/committees' },
       { label: 'Ministries', href: '/government/ministries' },
-      { label: 'Reports & Indices', href: '/government/reports-and-indices' },
     ],
   },
   {
@@ -42,9 +37,8 @@ export const publicNavigation = [
       { label: 'UPSC Calendar', href: '/planning-tools/upsc-calendar' },
       { label: 'Study Planner', href: '/planning-tools/study-planner' },
       { label: 'Pomodoro Timer', href: '/planning-tools/pomodoro-timer' },
-      { label: 'Revision Planner', href: '/planning-tools/revision-planner' },
+      { label: 'Study Timetable', href: '/planning-tools/study-timetable' },
     ],
   },
   { label: 'About', href: '/about' },
-  { label: 'Contact', href: '/contact' },
 ];

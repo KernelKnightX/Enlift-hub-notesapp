@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import StudentLayout from '@/layouts/StudentLayout';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ArrowLeft, Lock, Search } from 'lucide-react';
+import { ArrowLeft, Search } from 'lucide-react';
 import useFirestoreCollection from '@/hooks/shared/useFirestoreCollection';
 
 const s = (v, fallback = '') => (typeof v === 'string' || typeof v === 'number' ? v : fallback);
@@ -132,11 +132,6 @@ export default function CurrentAffairsPage() {
                   <div className="ca-lead__meta">
                     <span>{lead.date}</span>
                     <span className="ca-read-time">{readTime(lead)} min read</span>
-                    {lead.premium && (
-                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-                        <Lock size={11} /> Plus
-                      </span>
-                    )}
                   </div>
                 </div>
                 {lead.imageUrl && (
@@ -164,7 +159,6 @@ export default function CurrentAffairsPage() {
                         <span>{it.date}</span>
                         <span>·</span>
                         <span className="ca-read-time">{readTime(it)} min</span>
-                        {it.premium && <Lock size={10} style={{ marginLeft: 2 }} />}
                       </div>
                       <h3 className="ca-story__title">{it.title}</h3>
                       <p className="ca-story__snippet">{it.snippet}</p>
@@ -244,11 +238,6 @@ export default function CurrentAffairsPage() {
                 <div className="ca-reader__meta">
                   <span>{activeArticle.date}</span>
                   <span className="ca-read-time">{readTime(activeArticle)} min read</span>
-                  {activeArticle.premium && (
-                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-                      <Lock size={11} /> Plus
-                    </span>
-                  )}
                 </div>
 
                 {activeArticle.imageUrl && (

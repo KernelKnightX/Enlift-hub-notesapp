@@ -19,7 +19,7 @@ export default function WeaknessSummaryCard() {
           strokeWidth={1.6}
           style={{ color: 'var(--color-primary)' }}
         />
-        <span className="eyebrow">Weakness analyzer</span>
+        <span className="eyebrow">Performance</span>
       </div>
 
       {loading ? (
@@ -66,7 +66,7 @@ export default function WeaknessSummaryCard() {
           className="text-[13px] font-medium flex items-center gap-1"
           style={{ color: 'var(--color-primary)' }}
         >
-          Open weakness analyzer <ArrowRight size={14} />
+          Open performance <ArrowRight size={14} />
         </Link>
       </div>
     </motion.div>

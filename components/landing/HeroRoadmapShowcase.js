@@ -25,9 +25,9 @@ const HERO_STAGES = [
 
 const HERO_STATS = [
   { icon: Layers, value: '6 Stages', label: 'Zero to Mains' },
-  { icon: BookOpen, value: '1000+', label: 'Topics Covered' },
-  { icon: Newspaper, value: '10 Years', label: 'PYQs' },
-  { icon: ClipboardCheck, value: 'Unlimited', label: 'Mock Tests' },
+  { icon: BookOpen, value: 'Syllabus-led', label: 'Structured path' },
+  { icon: Newspaper, value: 'Daily CA', label: 'Public desk' },
+  { icon: ClipboardCheck, value: 'Student desk', label: 'Mocks & PYQs' },
 ];
 
 const GLOW_FEATURES = [
@@ -39,22 +39,22 @@ const GLOW_FEATURES = [
     href: '/current-affairs',
   },
   {
-    title: '10 Years PYQs',
-    sub: 'Topic-wise & exam-wise',
+    title: 'PYQ Papers',
+    sub: 'Sign in to download',
     icon: FileText,
     tone: 'green',
-    href: '/pyq',
+    href: '/login',
   },
   {
     title: 'Mock Tests',
-    sub: 'Real exam experience',
+    sub: 'Sign in to practice',
     icon: BarChart3,
     tone: 'orange',
-    href: '/mock-tests',
+    href: '/login',
   },
   {
-    title: 'Trusted by Aspirants',
-    sub: 'Across India',
+    title: 'Free student account',
+    sub: 'Notes, planner & more',
     icon: Users,
     tone: 'pink',
     href: '/register',
@@ -159,7 +159,7 @@ export function HeroFirstStepCard({ compact = false }) {
           <span />
         </div>
         <p className="hero-first-step__social-text">
-          <strong style={{ color: 'var(--color-ink)' }}>10,000+</strong> aspirants already on their journey
+          Create a free account to unlock mocks, PYQs, and your study desk.
         </p>
       </div>
     </div>

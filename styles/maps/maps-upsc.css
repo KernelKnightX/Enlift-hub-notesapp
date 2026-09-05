@@ -422,12 +422,23 @@
 }
 
 .maps-upsc__empty-note {
-  display: inline-flex;
+  display: flex;
+  flex-direction: column;
   align-items: center;
+  justify-content: center;
+  text-align: center;
   gap: 8px;
   margin-top: 14px;
-  color: #667085;
+  padding: 3rem 1.5rem;
+  border: 1px dashed var(--color-border);
+  border-radius: 16px;
+  color: var(--color-ink-muted);
+  font-size: 14px;
+}
+
+.maps-upsc__empty-sub {
   font-size: 13px;
+  color: var(--color-ink-faint);
 }
 
 /* =========================================================

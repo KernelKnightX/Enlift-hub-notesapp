@@ -5,7 +5,7 @@ import StudentLayout from '@/layouts/StudentLayout';
 import { motion } from 'framer-motion';
 import {
   Landmark, Clock, Globe, TrendingUp, FlaskConical, Leaf, Shield, Newspaper,
-  Scale, Users, Network, Brain, Sigma, FileText, ExternalLink, Library
+  Scale, Users, Network, Brain, Sigma, FileText,
 } from 'lucide-react';
 import useFirestoreCollection from '@/hooks/shared/useFirestoreCollection';
 
@@ -22,15 +22,6 @@ const PALETTE = {
   teal:    { bg: '#E1F5F2', ink: '#2AA893' },
   purple:  { bg: '#F1E9FB', ink: '#8A5CD6' },
 };
-
-const toCollection = (d) => ({
-  id: d.id,
-  name: String(ss(d.name, 'Collection')),
-  description: String(ss(d.description, '')).trim(),
-  count: nn(d.count, 0),
-  color: String(ss(d.color, '#7C5CFC')),
-  imageUrl: String(ss(d.imageUrl, '')),
-});
 
 const ss = (v, fallback = '') => {
   if (v == null) return fallback;
@@ -83,16 +74,7 @@ export default function NotesPage() {
     name: 'htmlNoteSubjects',
     orderBy: ['order', 'asc'],
     limit: 100,
-    fallback: [],
     transform: (docs) => docs.map(toSubject),
-  });
-
-  const { data: COLLECTIONS } = useFirestoreCollection({
-    name: 'noteCollections',
-    orderBy: ['order', 'asc'],
-    limit: 100,
-    fallback: [],
-    transform: (docs) => docs.map(toCollection),
   });
 
   const visibleSubjects = q.trim() === ''
@@ -112,7 +94,15 @@ export default function NotesPage() {
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {visibleSubjects.map((subj, i) => {
+            {visibleSubjects.length === 0 ? (
+              <div className="col-span-full card p-10 text-center">
+                <FileText size={32} strokeWidth={1.4} style={{ color: 'var(--color-ink-faint)', margin: '0 auto' }} />
+                <p className="mt-4 font-serif text-[22px]">No study notes yet</p>
+                <p className="mt-2 text-[14px]" style={{ color: 'var(--color-ink-muted)' }}>
+                  Notes published from Admin → Study Notes will appear here.
+                </p>
+              </div>
+            ) : visibleSubjects.map((subj, i) => {
               const isEmoji = typeof subj.icon === 'string' && subj.icon.length <= 4;
               const Icon = isEmoji ? FileText : (subj.icon || FileText);
               return (
@@ -150,67 +140,6 @@ export default function NotesPage() {
                 </motion.div>
               );
             })}
-          </div>
-
-          {/* Top Collections */}
-          <div className="mt-10">
-            <div className="flex items-center justify-between mb-4">
-              <div className="font-serif text-[20px]" style={{ letterSpacing: '-0.01em' }}>Top Collections</div>
-              <button className="text-[12.5px] font-medium" style={{ color: 'var(--color-primary)' }} data-testid="collections-view-all">
-                View all
-              </button>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {COLLECTIONS.map((c, i) => {
-                const colors = PALETTE[c.color ?? 'blue'] || PALETTE.blue;
-                return (
-                  <motion.div
-                    key={c.id}
-                    initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: .25, delay: i * 0.03 }}
-                    className="card card-hover relative overflow-hidden"
-                    style={{ minHeight: 190, borderColor: 'transparent' }}
-                    data-testid={`collection-${c.id}`}
-                  >
-                    {c.imageUrl ? (
-                      <>
-                        <div
-                          className="absolute inset-0"
-                          style={{
-                            backgroundImage: `url(${c.imageUrl})`,
-                            backgroundSize: 'cover',
-                            backgroundPosition: 'center',
-                          }}
-                        />
-                        <div
-                          className="absolute inset-0"
-                          style={{ background: 'linear-gradient(180deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.65) 100%)' }}
-                        />
-                      </>
-                    ) : (
-                      <div className="absolute inset-0" style={{ background: colors.bg }} />
-                    )}
-
-                    <div className="relative flex flex-col justify-between h-full p-6">
-                      <div>
-                        <div className="font-serif text-[16px] leading-snug" style={{ letterSpacing: '-0.005em', color: c.imageUrl ? '#fff' : colors.ink }}>{c.name}</div>
-                        <div className="text-[12.5px] mt-1" style={{ color: c.imageUrl ? 'rgba(255,255,255,0.85)' : colors.ink }}>{c.count} Notes</div>
-                      </div>
-                      <div className="flex items-end justify-between mt-6">
-                        <button
-                          className="text-[12.5px] font-semibold flex items-center gap-1"
-                          style={{ color: c.imageUrl ? '#fff' : colors.ink }}
-                          data-testid={`collection-explore-${c.id}`}
-                        >
-                          Explore Collection <ExternalLink size={12} strokeWidth={2} />
-                        </button>
-                        <Library size={34} strokeWidth={1.25} style={{ color: c.imageUrl ? 'rgba(255,255,255,0.75)' : colors.ink, opacity: 0.75 }} />
-                      </div>
-                    </div>
-                  </motion.div>
-                );
-              })}
-            </div>
           </div>
         </div>
       </div>

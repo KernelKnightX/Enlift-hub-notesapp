@@ -1,13 +1,28 @@
-import { BookOpen, Compass, FileText, Newspaper } from 'lucide-react';
+import { Compass, Newspaper } from 'lucide-react';
 
 export const studyMaterialResources = [
-  { title: 'UPSC Syllabus', description: 'Understand the full exam landscape and build a more intentional prep path.', href: '/study-material/upsc-syllabus', meta: '8 min read', tags: ['Exam map', 'Strategy'], icon: Compass, accent: 'primary' },
-  { title: 'NCERT Books', description: 'Foundational reading that keeps your preparation grounded and clear.', href: '/study-material/ncert-books', meta: '12 min read', tags: ['Foundation', 'Classic'], icon: BookOpen, accent: 'primary' },
-  { title: 'Monthly Magazines', description: 'Download the latest monthly current affairs magazines for UPSC preparation.', href: '/study-material/standard-books', meta: 'Updated monthly', tags: ['Current Affairs', 'PDF'], icon: Newspaper, accent: 'gold' },
-  { title: 'Government Reports', description: 'Useful reports and references that support policy and mains preparation.', href: '/study-material/government-reports', meta: '7 min read', tags: ['Reports', 'Policy'], icon: FileText, accent: 'gold' },
+  {
+    title: 'UPSC Syllabus',
+    description: 'The official exam map for Prelims and Mains — know what to cover before anything else.',
+    href: '/study-material/upsc-syllabus',
+    meta: 'Official map',
+    tags: ['Exam map', 'Strategy'],
+    icon: Compass,
+    accent: 'primary',
+  },
+  {
+    title: 'Monthly Magazines',
+    description: 'Download Notes Cafe monthly current affairs magazines for prelims and mains revision.',
+    href: '/study-material/standard-books',
+    meta: 'Updated monthly',
+    tags: ['Current Affairs', 'PDF'],
+    icon: Newspaper,
+    accent: 'gold',
+  },
 ];
 
 export const studyMaterialFaqs = [
-  { q: 'What makes this study material useful?', a: 'It is organised around the actual need of an aspirant — clarity, structure, relevance, and practical next steps.' },
-  { q: 'Is this the same as the dashboard?', a: 'No. This is the public-facing content layer that helps visitors discover the platform before signing up.' },
+  { q: 'What should I start with?', a: 'Begin with the official UPSC syllabus. Once your map is clear, use monthly magazines for current affairs revision.' },
+  { q: 'Where are NCERT books?', a: 'For this beta we are keeping the public library focused on syllabus and magazines. NCERT and deeper booklists can return once content is ready.' },
+  { q: 'Is this the same as the student desk?', a: 'No. This is the public reference library. Sign in for study notes, mocks, performance tracking, and your planner.' },
 ];

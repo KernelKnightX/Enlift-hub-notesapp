@@ -1,0 +1,291 @@
+/* About — compact company page */
+
+.about-page {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 48px 24px 80px;
+}
+
+@media (min-width: 768px) {
+  .about-page {
+    padding: 56px 40px 96px;
+  }
+}
+
+.about-page__head {
+  padding-bottom: 32px;
+  margin-bottom: 32px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.about-page__eyebrow {
+  font-size: 11px;
+  font-family: var(--font-mono);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-ink-faint);
+  margin-bottom: 10px;
+}
+
+.about-page__title {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: clamp(1.85rem, 4vw, 2.5rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  color: var(--color-ink);
+}
+
+.about-page__lead {
+  margin: 12px 0 0;
+  max-width: 560px;
+  font-size: 15px;
+  line-height: 1.65;
+  color: var(--color-ink-muted);
+}
+
+/* Story */
+.about-story {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+  margin-bottom: 36px;
+}
+
+@media (min-width: 700px) {
+  .about-story {
+    grid-template-columns: 1fr 1fr;
+    gap: 28px;
+  }
+}
+
+.about-block {
+  padding: 22px 24px;
+  border-radius: 16px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+}
+
+.about-block__label {
+  font-size: 11px;
+  font-family: var(--font-mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-primary);
+  margin-bottom: 10px;
+}
+
+.about-block__title {
+  margin: 0 0 10px;
+  font-family: var(--font-serif);
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--color-ink);
+}
+
+.about-block__text {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--color-ink-muted);
+}
+
+/* Vision + Mission */
+.about-vm {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+  margin-bottom: 40px;
+}
+
+@media (min-width: 640px) {
+  .about-vm {
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+}
+
+.about-vm__card {
+  padding: 24px;
+  border-radius: 16px;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg);
+}
+
+.about-vm__card--vision {
+  border-color: rgba(79, 70, 229, 0.25);
+  background: linear-gradient(145deg, #f5f3ff 0%, var(--color-bg) 100%);
+}
+
+.about-vm__card--mission {
+  border-color: rgba(16, 185, 129, 0.25);
+  background: linear-gradient(145deg, #ecfdf5 0%, var(--color-bg) 100%);
+}
+
+.about-vm__icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 14px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  color: var(--color-ink);
+}
+
+.about-vm__card--vision .about-vm__icon {
+  color: #4f46e5;
+  border-color: rgba(79, 70, 229, 0.2);
+  background: #ede9fe;
+}
+
+.about-vm__card--mission .about-vm__icon {
+  color: #059669;
+  border-color: rgba(16, 185, 129, 0.2);
+  background: #d1fae5;
+}
+
+/* Team */
+.about-team {
+  margin-bottom: 36px;
+}
+
+.about-section-title {
+  margin: 0 0 6px;
+  font-family: var(--font-serif);
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--color-ink);
+}
+
+.about-section-sub {
+  margin: 0 0 20px;
+  font-size: 13px;
+  color: var(--color-ink-muted);
+}
+
+.about-team__grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+@media (min-width: 640px) {
+  .about-team__grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+  }
+}
+
+.about-team__card {
+  padding: 18px 14px;
+  border-radius: 14px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  text-align: center;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.about-team__card:hover {
+  border-color: var(--color-ink);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+}
+
+.about-team__avatar {
+  width: 52px;
+  height: 52px;
+  margin: 0 auto 12px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-serif);
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #fff;
+}
+
+.about-team__avatar--founder { background: linear-gradient(145deg, #f97066, #ea580c); }
+.about-team__avatar--ceo { background: linear-gradient(145deg, #6366f1, #4338ca); }
+.about-team__avatar--cfo { background: linear-gradient(145deg, #10b981, #059669); }
+.about-team__avatar--cto { background: linear-gradient(145deg, #1b1b22, #374151); }
+
+.about-team__role {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-ink);
+}
+
+.about-team__name {
+  margin-top: 4px;
+  font-size: 13px;
+  color: var(--color-ink-muted);
+}
+
+/* Address */
+.about-contact {
+  padding: 22px 24px;
+  border-radius: 16px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface-alt);
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+}
+
+@media (min-width: 640px) {
+  .about-contact {
+    grid-template-columns: 1fr 1fr;
+    align-items: start;
+  }
+}
+
+.about-contact__company {
+  font-family: var(--font-serif);
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--color-ink);
+  margin-bottom: 10px;
+}
+
+.about-contact__lines {
+  font-size: 14px;
+  line-height: 1.75;
+  color: var(--color-ink-muted);
+  font-style: normal;
+}
+
+.about-contact__lines a {
+  color: var(--color-primary);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.about-contact__lines a:hover {
+  text-decoration: underline;
+}
+
+.about-contact__meta {
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--color-ink-muted);
+}
+
+.about-contact__meta strong {
+  display: block;
+  font-size: 11px;
+  font-family: var(--font-mono);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-ink-faint);
+  margin-bottom: 6px;
+  font-weight: 600;
+}

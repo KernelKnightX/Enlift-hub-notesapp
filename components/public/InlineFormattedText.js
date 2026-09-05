@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { renderInlineFormattedText } from "@/lib/upscCalendarContent";
+import { isExternalHref, sanitizeHref } from "@/lib/safeUrl";
 
 export default function InlineFormattedText({ text, className }) {
   const parts = renderInlineFormattedText(text);
@@ -11,16 +12,19 @@ export default function InlineFormattedText({ text, className }) {
           return <strong key={part.key}>{part.value}</strong>;
         }
         if (part.type === "link") {
-          const isExternal = /^https?:\/\//i.test(part.href);
-          if (isExternal) {
+          const href = sanitizeHref(part.href);
+          if (!href) {
+            return <span key={part.key}>{part.label}</span>;
+          }
+          if (isExternalHref(href)) {
             return (
-              <a key={part.key} href={part.href} target="_blank" rel="noopener noreferrer">
+              <a key={part.key} href={href} target="_blank" rel="noopener noreferrer">
                 {part.label}
               </a>
             );
           }
           return (
-            <Link key={part.key} href={part.href}>
+            <Link key={part.key} href={href}>
               {part.label}
             </Link>
           );

@@ -125,8 +125,8 @@ export default function PublicPageLayout({ page, children, hideHero = false }) {
                     <Lucide.ArrowRight size={15} strokeWidth={2} />
                   </Link>
 
-                  <Link href="/contact" className="btn btn-ghost">
-                    Ask for support
+                  <Link href="/about" className="btn btn-ghost">
+                    About us
                   </Link>
                 </div>
 
@@ -165,71 +165,26 @@ export default function PublicPageLayout({ page, children, hideHero = false }) {
                     'linear-gradient(135deg, #fff 0%, var(--color-surface-alt) 100%)',
                 }}
               >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="eyebrow">Search</div>
-
-                    <div className="font-serif text-[24px] mt-2">
-                      Find the right resource faster
-                    </div>
-                  </div>
-
-                  <div
-                    className="rounded-2xl p-3"
-                    style={{
-                      background: 'var(--color-primary-tint)',
-                      color: 'var(--color-primary)',
-                    }}
-                  >
-                    <Lucide.Search size={18} strokeWidth={1.8} />
-                  </div>
+                <div className="eyebrow">Explore</div>
+                <div className="font-serif text-[24px] mt-2">
+                  Continue your prep
                 </div>
-
-                <div
-                  className="mt-6 rounded-2xl border p-4"
-                  style={{
-                    borderColor: 'var(--color-border)',
-                    background: 'var(--color-surface)',
-                  }}
-                >
-                  <div
-                    className="flex items-center gap-3 rounded-xl border px-3 py-3"
-                    style={{
-                      borderColor: 'var(--color-border)',
-                    }}
-                  >
-                    <Lucide.Search
-                      size={16}
-                      strokeWidth={1.8}
-                      style={{
-                        color: 'var(--color-ink-muted)',
-                      }}
-                    />
-
-                    <input
-                      aria-label="Search resources"
-                      className="w-full border-0 outline-none bg-transparent text-[14px]"
-                      placeholder={`Search ${
-                        page.eyebrow?.toLowerCase() || 'resources'
-                      }...`}
-                    />
-                  </div>
-
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    {[
-                      'Free',
-                      'PDF',
-                      'Beginner Friendly',
-                      'Trusted',
-                    ].map((pill) => (
-                      <span
-                        key={pill}
-                        className="chip chip-primary"
-                      >
-                        {pill}
-                      </span>
-                    ))}
-                  </div>
+                <div className="mt-6 space-y-3">
+                  {[
+                    { label: 'UPSC syllabus', href: '/study-material/upsc-syllabus' },
+                    { label: 'Current affairs', href: '/current-affairs' },
+                    { label: 'Planning tools', href: '/planning-tools' },
+                  ].map((item) => (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      className="flex items-center justify-between rounded-2xl border px-4 py-3"
+                      style={{ borderColor: 'var(--color-border)', background: 'var(--color-surface)' }}
+                    >
+                      <span className="font-medium">{item.label}</span>
+                      <Lucide.ArrowRight size={14} strokeWidth={1.9} style={{ color: 'var(--color-primary)' }} />
+                    </Link>
+                  ))}
                 </div>
 
                 <div className="mt-6 space-y-3">

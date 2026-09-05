@@ -9,16 +9,12 @@ import {
   BookOpen,
   Filter,
 } from 'lucide-react';
-import StudentLayout from '@/layouts/StudentLayout';
 import useMistakes from '@/hooks/student/useMistakes';
-import {
-  markMistakeMastered,
-  recordMistakeReview,
-} from '@/lib/weaknessMastery';
+import { markMistakeMastered } from '@/lib/weaknessMastery';
 import { useAuth } from '@/contexts/AuthContext';
 
-function MistakeRow({ mistake, userId, defaultOpen = false }) {
-  const [open, setOpen] = useState(defaultOpen);
+function MistakeRow({ mistake, userId }) {
+  const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
 
   const handleMastered = async () => {
@@ -110,10 +106,10 @@ function MistakeRow({ mistake, userId, defaultOpen = false }) {
   );
 }
 
-export default function MistakeNotebookPage() {
+export default function MistakeNotebookPanel() {
   const router = useRouter();
   const { user } = useAuth();
-  const { mistakes, active, mastered, subjects, loading } = useMistakes();
+  const { active, mastered, subjects, loading } = useMistakes();
   const [tab, setTab] = useState('active');
   const [subjectFilter, setSubjectFilter] = useState('all');
 
@@ -149,7 +145,7 @@ export default function MistakeNotebookPage() {
   }, [filtered]);
 
   return (
-    <StudentLayout title="Mistake Notebook">
+    <>
       <div className="flex flex-wrap items-center gap-3 mb-6">
         <div className="flex gap-2">
           {['active', 'mastered'].map((key) => (
@@ -221,6 +217,6 @@ export default function MistakeNotebookPage() {
           ))}
         </div>
       )}
-    </StudentLayout>
+    </>
   );
 }

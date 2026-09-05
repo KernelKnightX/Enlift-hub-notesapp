@@ -11,60 +11,7 @@ import {
   ClipboardCheck, Loader2, RotateCcw, Home, Trophy, Circle
 } from 'lucide-react';
 
-// Sample mock so users without published tests can still try the flow
-const DEMO_TEST = {
-  id: 'demo',
-  title: 'Prelims Practice — GS I (Demo)',
-  subject: 'General Studies I',
-  duration: 30,
-  questions: [
-    {
-      id: 'q1',
-      question: 'Which Article of the Indian Constitution guarantees the Right to Constitutional Remedies?',
-      options: ['Article 19', 'Article 21', 'Article 32', 'Article 44'],
-      correctAnswer: 2,
-      explanation: 'Article 32 gives citizens the right to move the Supreme Court for enforcement of Fundamental Rights. Dr. B. R. Ambedkar called it the "heart and soul" of the Constitution.',
-      subject: 'polity',
-      topic: 'Fundamental Rights',
-    },
-    {
-      id: 'q2',
-      question: 'The Tropic of Cancer does NOT pass through which of the following Indian states?',
-      options: ['Rajasthan', 'Odisha', 'Chhattisgarh', 'Tripura'],
-      correctAnswer: 1,
-      explanation: 'The Tropic of Cancer passes through 8 Indian states — Gujarat, Rajasthan, Madhya Pradesh, Chhattisgarh, Jharkhand, West Bengal, Tripura and Mizoram. Odisha is NOT one of them.',
-      subject: 'geography',
-      topic: 'Indian Geography',
-    },
-    {
-      id: 'q3',
-      question: 'Which of the following was the immediate cause of the Revolt of 1857?',
-      options: ['Doctrine of Lapse', 'Introduction of the Enfield rifle', 'Annexation of Awadh', 'Economic policies of Dalhousie'],
-      correctAnswer: 1,
-      explanation: 'The greased cartridges of the new Enfield rifle, rumoured to be laced with cow and pig fat, sparked the mutiny at Meerut in May 1857.',
-      subject: 'history',
-      topic: 'Modern India',
-    },
-    {
-      id: 'q4',
-      question: 'Repo rate is a monetary policy tool used by which of the following?',
-      options: ['SEBI', 'Ministry of Finance', 'RBI', 'NITI Aayog'],
-      correctAnswer: 2,
-      explanation: 'Repo rate is the rate at which RBI lends short-term money to commercial banks; it is a key MPC tool for inflation control.',
-      subject: 'economy',
-      topic: 'Monetary Policy',
-    },
-    {
-      id: 'q5',
-      question: 'The Ramsar Convention deals primarily with:',
-      options: ['Migratory birds', 'Wetlands', 'Wildlife trade', 'Ocean acidification'],
-      correctAnswer: 1,
-      explanation: 'The Ramsar Convention on Wetlands of International Importance was signed in Ramsar, Iran (1971) and is the intergovernmental treaty focused on wetland conservation.',
-      subject: 'environment',
-      topic: 'Conventions',
-    },
-  ],
-};
+// Sample questions removed — tests load only from Firestore (Admin → Mock Tests).
 
 const s = (v, f = '') => (typeof v === 'string' || typeof v === 'number' ? v : f);
 const n = (v, f = 0) => (Number.isFinite(Number(v)) ? Number(v) : f);
@@ -113,23 +60,28 @@ export default function TakeTest() {
     let cancelled = false;
     (async () => {
       try {
-        if (id === 'demo') {
-          if (!cancelled) { setTest(normalizeTest(DEMO_TEST)); setLoading(false); }
-          return;
-        }
         const snap = await getDoc(doc(db, 'mockTests', String(id)));
         if (!snap.exists()) {
-          if (!cancelled) { setTest(normalizeTest(DEMO_TEST, 'Demo Test')); setError('Test not found — showing demo test instead.'); setLoading(false); }
+          if (!cancelled) {
+            setError('This mock test was not found. It may have been removed.');
+            setLoading(false);
+          }
           return;
         }
         const t = normalizeTest({ id: snap.id, ...snap.data() });
         if (t.questions.length === 0) {
-          if (!cancelled) { setTest(normalizeTest(DEMO_TEST, 'Demo Test')); setError('This test has no questions yet — showing demo test.'); setLoading(false); }
+          if (!cancelled) {
+            setError('This test has no questions yet. Check back after your team publishes it.');
+            setLoading(false);
+          }
           return;
         }
         if (!cancelled) { setTest(t); setLoading(false); }
       } catch (e) {
-        if (!cancelled) { setTest(normalizeTest(DEMO_TEST, 'Demo Test')); setError('Could not load test — showing demo.'); setLoading(false); }
+        if (!cancelled) {
+          setError('Could not load this test. Please try again.');
+          setLoading(false);
+        }
       }
     })();
     return () => { cancelled = true; };
@@ -171,8 +123,7 @@ export default function TakeTest() {
     if (!submitted || !test || attemptSavedRef.current) return;
     attemptSavedRef.current = true;
 
-    // Don't log demo runs or tests we couldn't resolve to a real doc
-    if (!auth.currentUser || test.id === 'demo' || test.id === 'unknown') return;
+    if (!auth.currentUser || test.id === 'unknown') return;
 
     const obtainedMarks = Math.round((stats.correct / test.questions.length) * test.totalMarks);
     const scorePct = test.questions.length
@@ -228,7 +179,23 @@ export default function TakeTest() {
       </div>
     );
   }
-  if (!test) return null;
+
+  if (!test) {
+    return (
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--color-bg)', padding: '2rem' }}>
+        <div className="card p-10 text-center max-w-md">
+          <ClipboardCheck size={32} style={{ color: 'var(--color-ink-faint)', margin: '0 auto' }} />
+          <p className="mt-4 font-serif text-[22px]">Test unavailable</p>
+          <p className="mt-2 text-[14px]" style={{ color: 'var(--color-ink-muted)' }}>
+            {error || 'This mock test could not be loaded.'}
+          </p>
+          <Link href="/student-desk/mock-tests" className="btn btn-primary mt-6 inline-flex">
+            <ArrowLeft size={14} /> Back to mock tests
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   const q = test.questions[current];
   const total = test.questions.length;
@@ -310,7 +277,7 @@ export default function TakeTest() {
 
           <div className="mt-8 flex flex-wrap gap-3">
             {stats.wrong > 0 && (
-              <Link href="/student-desk/mistake-notebook" className="btn btn-accent" data-testid="view-mistakes">
+              <Link href="/student-desk/analytics?tab=mistakes" className="btn btn-accent" data-testid="view-mistakes">
                 <XCircle size={14} /> Review {stats.wrong} mistake{stats.wrong === 1 ? '' : 's'}
               </Link>
             )}

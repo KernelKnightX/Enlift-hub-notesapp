@@ -45,11 +45,11 @@ export default function MistakeReviewPage() {
   return (
     <StudentLayout title="Spaced mistake review">
       <Link
-        href="/student-desk/mistake-notebook"
+        href="/student-desk/analytics?tab=mistakes"
         className="text-[13px] flex items-center gap-1.5 mb-6"
         style={{ color: 'var(--color-ink-muted)' }}
       >
-        <ArrowLeft size={14} /> Back to notebook
+        <ArrowLeft size={14} /> Back to performance
       </Link>
 
       {loading ? (

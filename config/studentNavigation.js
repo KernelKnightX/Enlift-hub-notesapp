@@ -1,4 +1,4 @@
-import { LayoutDashboard, Newspaper, FileText, ClipboardCheck, BookOpen, Calendar as CalendarIcon, User as UserIcon, RotateCcw, BarChart3, Target, Clock } from 'lucide-react';
+import { LayoutDashboard, Newspaper, FileText, ClipboardCheck, BookOpen, Calendar as CalendarIcon, User as UserIcon, BarChart3 } from 'lucide-react';
 
 export const studentNavigation = [
   { label: 'Dashboard', icon: LayoutDashboard, href: '/student-desk/dashboard' },
@@ -6,10 +6,7 @@ export const studentNavigation = [
   { label: 'PYQ Papers', icon: FileText, href: '/student-desk/pyq' },
   { label: 'Mock Tests', icon: ClipboardCheck, href: '/student-desk/mock-tests' },
   { label: 'Study Notes', icon: BookOpen, href: '/student-desk/notes' },
-  { label: 'Mistake Notebook', icon: RotateCcw, href: '/student-desk/mistake-notebook' },
-  { label: 'Weakness Analyzer', icon: BarChart3, href: '/student-desk/analytics' },
+  { label: 'Performance', icon: BarChart3, href: '/student-desk/analytics' },
   { label: 'Planner', icon: CalendarIcon, href: '/student-desk/planner' },
-  { label: 'Timetable', icon: Clock, href: '/student-desk/timetable' },
-  { label: 'Goals', icon: Target, href: '/student-desk/goals' },
   { label: 'Profile', icon: UserIcon, href: '/student-desk/profile' },
 ];

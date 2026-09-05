@@ -1,8 +1,9 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { Menu, X, ChevronDown } from "lucide-react";
 import { publicNavigation } from "@/config/publicNavigation";
+import { useAuth } from "@/contexts/AuthContext";
 
 const NAV_ITEMS = publicNavigation;
 
@@ -32,6 +33,12 @@ export default function NavBar({ showOnLanding = false }) {
   const [mobileOpenLabel, setMobileOpenLabel] = useState(null);
   const router = useRouter();
   const navRef = useRef(null);
+  const { user } = useAuth();
+
+  const navItems = useMemo(
+    () => (user ? NAV_ITEMS.filter((item) => item.label !== "Planning Tools") : NAV_ITEMS),
+    [user],
+  );
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -114,7 +121,7 @@ export default function NavBar({ showOnLanding = false }) {
           </Link>
 
           <div className="hidden lg:flex items-center gap-7">
-            {NAV_ITEMS.map((item) => {
+            {navItems.map((item) => {
               const isActive =
                 item.href === "/"
                   ? router.pathname === "/"
@@ -208,20 +215,32 @@ export default function NavBar({ showOnLanding = false }) {
           </div>
 
           <div className="hidden md:flex items-center gap-3">
-            <Link
-              href="/login"
-              className="site-navbar__link text-[14px] font-medium transition-colors"
-              style={{ color: NAV_COLORS.text }}
-            >
-              Login
-            </Link>
-            <Link
-              href="/register"
-              className="btn btn-primary"
-              style={{ padding: "0.5rem 1rem", fontSize: 13 }}
-            >
-              Sign Up
-            </Link>
+            {user ? (
+              <Link
+                href="/student-desk/dashboard"
+                className="btn btn-primary"
+                style={{ padding: "0.5rem 1rem", fontSize: 13 }}
+              >
+                Student Desk
+              </Link>
+            ) : (
+              <>
+                <Link
+                  href="/login"
+                  className="site-navbar__link text-[14px] font-medium transition-colors"
+                  style={{ color: NAV_COLORS.text }}
+                >
+                  Login
+                </Link>
+                <Link
+                  href="/register"
+                  className="btn btn-primary"
+                  style={{ padding: "0.5rem 1rem", fontSize: 13 }}
+                >
+                  Sign Up
+                </Link>
+              </>
+            )}
           </div>
 
           <button
@@ -254,7 +273,7 @@ export default function NavBar({ showOnLanding = false }) {
             }}
           >
             <div className="px-6 py-4 flex flex-col gap-1">
-              {NAV_ITEMS.map((item) => {
+              {navItems.map((item) => {
                 const isMobileOpen = mobileOpenLabel === item.label;
 
                 return (
@@ -312,21 +331,33 @@ export default function NavBar({ showOnLanding = false }) {
               })}
 
               <div className="my-2" style={{ borderTop: `1px solid ${NAV_COLORS.border}` }} />
-              <Link
-                href="/login"
-                onClick={() => setOpen(false)}
-                className="btn btn-ghost justify-center"
-                style={{ color: NAV_COLORS.textActive, borderColor: NAV_COLORS.border }}
-              >
-                Login
-              </Link>
-              <Link
-                href="/register"
-                onClick={() => setOpen(false)}
-                className="btn btn-primary justify-center"
-              >
-                Sign Up
-              </Link>
+              {user ? (
+                <Link
+                  href="/student-desk/dashboard"
+                  onClick={() => setOpen(false)}
+                  className="btn btn-primary justify-center"
+                >
+                  Student Desk
+                </Link>
+              ) : (
+                <>
+                  <Link
+                    href="/login"
+                    onClick={() => setOpen(false)}
+                    className="btn btn-ghost justify-center"
+                    style={{ color: NAV_COLORS.textActive, borderColor: NAV_COLORS.border }}
+                  >
+                    Login
+                  </Link>
+                  <Link
+                    href="/register"
+                    onClick={() => setOpen(false)}
+                    className="btn btn-primary justify-center"
+                  >
+                    Sign Up
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         )}

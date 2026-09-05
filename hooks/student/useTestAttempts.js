@@ -25,22 +25,24 @@ export default function useTestAttempts() {
     setLoading(true);
     const q = query(
       collection(db, 'users', uid, 'mockTestAttempts'),
-      orderBy('attemptedAt', 'asc')
+      orderBy('attemptedAt', 'asc'),
     );
 
     const unsub = onSnapshot(
       q,
       (snap) => {
         const grouped = {};
-        snap.forEach((doc) => {
-          const d = doc.data();
+        snap.forEach((docSnap) => {
+          const d = docSnap.data();
           if (!d.testId) return;
           const attemptedAt = d.attemptedAt?.toDate
             ? d.attemptedAt.toDate()
             : new Date(d.attemptedAt);
           (grouped[d.testId] ??= []).push({
+            id: docSnap.id,
             score: Number(d.obtainedMarks ?? 0),
-            total: Number(d.totalMarks ?? 0),
+            total: Number(d.totalMarks ?? d.maxMarks ?? 0),
+            scorePct: Number(d.scorePct ?? 0),
             attemptedAt,
           });
         });
@@ -50,8 +52,8 @@ export default function useTestAttempts() {
           const sorted = attempts.sort((a, b) => a.attemptedAt - b.attemptedAt);
           const last = sorted[sorted.length - 1];
           const prev = sorted.length > 1 ? sorted[sorted.length - 2] : null;
-          const lastPct = last.total ? (last.score / last.total) * 100 : 0;
-          const prevPct = prev?.total ? (prev.score / prev.total) * 100 : null;
+          const lastPct = last.total ? (last.score / last.total) * 100 : (last.scorePct || 0);
+          const prevPct = prev?.total ? (prev.score / prev.total) * 100 : (prev?.scorePct ?? null);
 
           summary[testId] = {
             count: sorted.length,
@@ -60,6 +62,7 @@ export default function useTestAttempts() {
             lastPct,
             trend: prevPct != null ? Math.round((lastPct - prevPct) * 10) / 10 : null,
             lastDate: last.attemptedAt,
+            lastAttemptId: last.id,
           };
         });
 
@@ -72,7 +75,7 @@ export default function useTestAttempts() {
         }
         setAttemptsByTest({});
         setLoading(false);
-      }
+      },
     );
 
     return unsub;

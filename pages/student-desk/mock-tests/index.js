@@ -1,13 +1,16 @@
 import { useState, useMemo } from 'react';
+import { useRouter } from 'next/router';
+import Link from 'next/link';
 import StudentLayout from '@/layouts/StudentLayout';
 import { motion } from 'framer-motion';
 import {
-  Play, RotateCcw, Search,
+  Play, RotateCcw, Search, Eye,
   ClipboardList, Landmark, Globe2, FileText, Leaf, BookOpen, TrendingUp, TrendingDown,
 } from 'lucide-react';
 import useFirestoreCollection from '@/hooks/shared/useFirestoreCollection';
 import useTestAttempts from '@/hooks/student/useTestAttempts';
 import { useAuth } from '@/contexts/AuthContext';
+import ConfirmDialog from '@/components/student/mock/ConfirmDialog';
 
 const EXAM_TABS = ['CSE Prelims'];
 const DIFFICULTIES = ['Easy', 'Medium', 'Hard'];
@@ -76,10 +79,22 @@ function typeMeta(m) {
 
 const EMPTY_FILTERS = { search: '', subject: 'all', types: new Set(), difficulties: new Set(), duration: 'all' };
 
+const SORT_OPTIONS = [
+  { key: 'recommended', label: 'Recommended' },
+  { key: 'not-attempted', label: 'Not attempted first' },
+  { key: 'newest', label: 'Newest' },
+  { key: 'difficulty', label: 'Difficulty' },
+];
+
+const DIFFICULTY_ORDER = { Easy: 1, Medium: 2, Hard: 3 };
+
 export default function MockTestsPage() {
+  const router = useRouter();
   const { user } = useAuth();
   const [tab, setTab] = useState('CSE Prelims');
   const [filters, setFilters] = useState(EMPTY_FILTERS);
+  const [sortBy, setSortBy] = useState('recommended');
+  const [premiumMock, setPremiumMock] = useState(null);
 
   const { data: liveMocks, isLoading, loaded } = useFirestoreCollection({
     name: 'mockTests',
@@ -99,7 +114,7 @@ export default function MockTestsPage() {
 
   const list = useMemo(() => {
     const q = filters.search.trim().toLowerCase();
-    return examMocks.filter((m) => {
+    const filtered = examMocks.filter((m) => {
       if (q && !`${m.name} ${m.subj}`.toLowerCase().includes(q)) return false;
       if (filters.subject !== 'all' && m.subj !== filters.subject) return false;
       if (filters.types.size && !filters.types.has(inferType(m))) return false;
@@ -110,7 +125,32 @@ export default function MockTestsPage() {
       }
       return true;
     });
-  }, [examMocks, filters]);
+
+    const sorted = [...filtered];
+    sorted.sort((a, b) => {
+      const aAttempt = attemptsByTest[a.id];
+      const bAttempt = attemptsByTest[b.id];
+
+      if (sortBy === 'not-attempted') {
+        if (!aAttempt && bAttempt) return -1;
+        if (aAttempt && !bAttempt) return 1;
+        return a.name.localeCompare(b.name);
+      }
+      if (sortBy === 'difficulty') {
+        return (DIFFICULTY_ORDER[a.level] || 2) - (DIFFICULTY_ORDER[b.level] || 2);
+      }
+      if (sortBy === 'newest') {
+        return b.id.localeCompare(a.id);
+      }
+      // recommended: not attempted first, then lower last score
+      if (!aAttempt && bAttempt) return -1;
+      if (aAttempt && !bAttempt) return 1;
+      if (aAttempt && bAttempt) return (aAttempt.lastPct || 0) - (bAttempt.lastPct || 0);
+      return a.name.localeCompare(b.name);
+    });
+
+    return sorted;
+  }, [examMocks, filters, sortBy, attemptsByTest]);
 
   const toggleSetFilter = (key, value) => {
     setFilters((prev) => {
@@ -124,10 +164,10 @@ export default function MockTestsPage() {
 
   const startTest = (mock) => {
     if (mock.isPremium && !user?.isPremium) {
-      window.alert('This is a Plus mock. Ask the office to grant Plus on your student account.');
+      setPremiumMock(mock);
       return;
     }
-    window.location.assign(`/student-desk/mock-tests/take/${encodeURIComponent(mock.id)}`);
+    router.push(`/student-desk/mock-tests/take/${encodeURIComponent(mock.id)}`);
   };
 
   const showEmpty = loaded && liveMocks.length === 0;
@@ -168,8 +208,24 @@ export default function MockTestsPage() {
         </div>
       ) : (
         <>
-          <div className="mt-6 text-[14px]" style={{ color: 'var(--color-ink-muted)' }}>
-            <strong style={{ color: 'var(--color-ink)' }}>{list.length}</strong> test{list.length === 1 ? '' : 's'}
+          <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
+            <div className="text-[14px]" style={{ color: 'var(--color-ink-muted)' }}>
+              <strong style={{ color: 'var(--color-ink)' }}>{list.length}</strong> test{list.length === 1 ? '' : 's'}
+            </div>
+            <div className="mock-sort-row">
+              <label className="eyebrow" htmlFor="mock-sort">Sort</label>
+              <select
+                id="mock-sort"
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="mock-sort-select"
+                data-testid="mock-sort"
+              >
+                {SORT_OPTIONS.map((opt) => (
+                  <option key={opt.key} value={opt.key}>{opt.label}</option>
+                ))}
+              </select>
+            </div>
           </div>
 
           <div className="card p-4 mt-4" data-testid="mock-filters">
@@ -357,15 +413,26 @@ export default function MockTestsPage() {
                               {attempt.lastDate.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
                             </div>
 
-                            <button
-                              type="button"
-                              onClick={() => startTest(m)}
-                              className="btn w-full mt-3"
-                              style={{ padding: '0.55rem 0.8rem', fontSize: 12.5, background: 'var(--color-primary-dark, #6d28d9)', color: '#fff', border: 'none' }}
-                              data-testid={`mock-reattempt-${i}`}
-                            >
-                              <RotateCcw size={12} /> Reattempt
-                            </button>
+                            <div className="mock-card-actions">
+                              {attempt.lastAttemptId ? (
+                                <Link
+                                  href={`/student-desk/mock-tests/review?attempt=${encodeURIComponent(attempt.lastAttemptId)}&test=${encodeURIComponent(m.id)}`}
+                                  className="btn btn-ghost"
+                                  data-testid={`mock-review-${i}`}
+                                >
+                                  <Eye size={12} /> View last attempt
+                                </Link>
+                              ) : null}
+                              <button
+                                type="button"
+                                onClick={() => startTest(m)}
+                                className="btn"
+                                style={{ background: 'var(--color-primary-dark, #6d28d9)', color: '#fff', border: 'none' }}
+                                data-testid={`mock-reattempt-${i}`}
+                              >
+                                <RotateCcw size={12} /> Reattempt
+                              </button>
+                            </div>
                           </>
                         ) : (
                           <button
@@ -387,6 +454,16 @@ export default function MockTestsPage() {
           </div>
         </>
       )}
+
+      <ConfirmDialog
+        open={!!premiumMock}
+        title="Plus mock test"
+        message="This mock is part of the Plus plan. Ask your coaching office to enable Plus on your student account to unlock it."
+        confirmLabel="Got it"
+        cancelLabel="Close"
+        onConfirm={() => setPremiumMock(null)}
+        onCancel={() => setPremiumMock(null)}
+      />
     </StudentLayout>
   );
 }

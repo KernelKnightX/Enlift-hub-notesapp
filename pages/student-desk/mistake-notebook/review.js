@@ -43,10 +43,7 @@ export default function MistakeReviewPage() {
   };
 
   return (
-    <StudentLayout
-      title="Spaced mistake review"
-      subtitle="Review mistakes due today — intervals: 1, 3, 7, 14, 30 days."
-    >
+    <StudentLayout title="Spaced mistake review">
       <Link
         href="/student-desk/mistake-notebook"
         className="text-[13px] flex items-center gap-1.5 mb-6"

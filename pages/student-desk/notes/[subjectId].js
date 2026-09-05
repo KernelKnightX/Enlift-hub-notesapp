@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import {
@@ -6,12 +6,9 @@ import {
 } from 'firebase/firestore';
 import { db } from '@/firebase/config';
 import { useAuth } from '@/contexts/AuthContext';
-import { trackPdfOpen } from '@/lib/officeAnalytics';
-import SecurePdfViewer from '@/components/notes/SecurePdfViewer';
 import SubjectNotesEditor from '@/components/notes/SubjectNotesEditor';
-import {
-  ArrowLeft, FileText, Loader2,
-} from 'lucide-react';
+import ChapterViewer from '@/components/notes/ChapterViewer';
+import { ArrowLeft, BookOpen, ChevronRight, FileText, Loader2 } from 'lucide-react';
 
 const s = (v, f = '') => (typeof v === 'string' || typeof v === 'number' ? v : f);
 const getTimestampMs = (value) => {
@@ -28,24 +25,23 @@ export default function SubjectNotesPage() {
   const { user } = useAuth();
 
   const [subject, setSubject] = useState(null);
-  const [pdfs, setPdfs] = useState([]);
-  const [activePdf, setActivePdf] = useState(null);
+  const [chapters, setChapters] = useState([]);
+  const [activeChapter, setActiveChapter] = useState(null);
   const [loading, setLoading] = useState(true);
 
   const [noteId, setNoteId] = useState(null);
   const [remoteContent, setRemoteContent] = useState('');
   const [noteLoaded, setNoteLoaded] = useState(false);
 
-  const trackedOpens = useRef(new Set());
-
   const name = s(subject?.name, 'Study Notes');
 
   useEffect(() => {
     if (!subjectId) return;
     let cancelled = false;
+
     (async () => {
       try {
-        const snap = await getDoc(doc(db, 'pdfSubjects', String(subjectId)));
+        const snap = await getDoc(doc(db, 'htmlNoteSubjects', String(subjectId)));
         if (!snap.exists()) {
           if (!cancelled) {
             setSubject({ id: subjectId, name: 'Study Notes' });
@@ -55,40 +51,41 @@ export default function SubjectNotesPage() {
         }
         if (!cancelled) setSubject({ id: snap.id, ...snap.data() });
 
-        const pdfsRef = collection(db, 'pdfs');
-        let psnap;
+        const chaptersRef = collection(db, 'htmlChapters');
+        let csnap;
         try {
-          psnap = await getDocs(query(pdfsRef, where('subjectId', '==', String(subjectId))));
+          csnap = await getDocs(query(chaptersRef, where('subjectId', '==', String(subjectId))));
         } catch (err) {
-          console.warn('[notes] subject pdf query failed, falling back to client filter:', err);
-          psnap = await getDocs(pdfsRef);
+          console.warn('[notes] chapter query failed, falling back:', err);
+          csnap = await getDocs(chaptersRef);
         }
 
-        const list = psnap.docs
+        const list = csnap.docs
           .map((d) => ({ id: d.id, ...d.data() }))
-          .filter((pdf) => String(pdf.subjectId ?? pdf.subject_id ?? '') === String(subjectId))
+          .filter((ch) => String(ch.subjectId ?? '') === String(subjectId))
           .sort((a, b) => getTimestampMs(b.createdAt) - getTimestampMs(a.createdAt));
 
-        if (!cancelled) setPdfs(list);
+        if (!cancelled) setChapters(list);
       } catch (error) {
         console.warn('[notes] load failed:', error);
       } finally {
         if (!cancelled) setLoading(false);
       }
     })();
+
     return () => { cancelled = true; };
   }, [subjectId]);
 
   useEffect(() => {
-    if (pdfs.length && !activePdf) setActivePdf(pdfs[0]);
-  }, [pdfs, activePdf]);
-
-  useEffect(() => {
-    if (!user || !activePdf?.id) return;
-    if (trackedOpens.current.has(activePdf.id)) return;
-    trackedOpens.current.add(activePdf.id);
-    trackPdfOpen(activePdf, { userName: user.fullName || user.name });
-  }, [user, activePdf]);
+    if (!chapters.length) {
+      setActiveChapter(null);
+      return;
+    }
+    setActiveChapter((current) => {
+      if (current && chapters.some((ch) => ch.id === current.id)) return current;
+      return chapters[0];
+    });
+  }, [chapters]);
 
   useEffect(() => {
     if (!user || !subjectId) {
@@ -102,7 +99,7 @@ export default function SubjectNotesPage() {
       const qref = query(
         collection(db, 'userNotes'),
         where('userId', '==', user.uid),
-        where('subjectId', '==', String(subjectId))
+        where('subjectId', '==', String(subjectId)),
       );
       unsub = onSnapshot(
         qref,
@@ -120,7 +117,7 @@ export default function SubjectNotesPage() {
         (error) => {
           console.warn('[notes] snapshot error:', error);
           setNoteLoaded(true);
-        }
+        },
       );
     } catch (error) {
       console.warn('[notes] listener setup failed:', error);
@@ -137,51 +134,61 @@ export default function SubjectNotesPage() {
     );
   }
 
-  const activeTitle = s(activePdf?.title, s(activePdf?.name, 'Untitled PDF'));
+  const activeTitle = s(activeChapter?.title, 'Untitled');
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--color-bg)' }} data-testid="subject-notes">
-      <div className="hairline-b sticky top-0 z-30" style={{ background: 'rgba(250,250,247,0.9)', backdropFilter: 'blur(14px)' }}>
-        <div className="max-w-[1440px] mx-auto px-4 md:px-8 py-3.5 flex items-center gap-3">
-          <Link href="/student-desk/notes" className="flex items-center gap-1.5 text-[13px]" style={{ color: 'var(--color-ink-muted)' }}>
-            <ArrowLeft size={14} /> All subjects
+    <div className="notes-subject-page" data-testid="subject-notes">
+      <header className="notes-subject-nav">
+        <div className="notes-subject-nav__inner">
+          <Link href="/student-desk/notes" className="notes-subject-nav__back" aria-label="Back to all subjects">
+            <ArrowLeft size={16} strokeWidth={2} />
+            <span className="notes-subject-nav__back-label">Study Notes</span>
           </Link>
-          <div className="ml-2">
-            <div className="text-[10.5px] font-mono" style={{ color: 'var(--color-ink-faint)', letterSpacing: '0.14em' }}>SUBJECT</div>
-            <div className="font-sans text-[16px]" style={{ fontWeight: 700, letterSpacing: '-0.01em' }}>{name}</div>
-          </div>
-        </div>
-      </div>
 
-      <div className="max-w-[1440px] mx-auto px-4 md:px-6 py-6 grid grid-cols-12 gap-4">
+          <div className="notes-subject-nav__center">
+            <div className="notes-subject-nav__breadcrumb">
+              <BookOpen size={13} strokeWidth={1.75} />
+              <span>Study Notes</span>
+              <ChevronRight size={12} strokeWidth={2} />
+              <span className="notes-subject-nav__subject">{name}</span>
+            </div>
+          </div>
+
+          {activeChapter && (
+            <div className="notes-subject-nav__chapter" title={activeTitle}>
+              {activeTitle}
+            </div>
+          )}
+        </div>
+      </header>
+
+      <div className="notes-subject-workspace max-w-[1440px] mx-auto px-4 md:px-6 py-5 grid grid-cols-12 gap-4">
         <aside className="col-span-12 lg:col-span-2 order-2 lg:order-1">
-          <div className="card p-3 h-full">
-            <div className="eyebrow mb-2 px-1">PDFs · {pdfs.length}</div>
-            {pdfs.length === 0 && (
+          <div className="card notes-subject-chapters p-3">
+            <div className="eyebrow mb-2 px-1">Chapters · {chapters.length}</div>
+            {chapters.length === 0 && (
               <div className="p-3 text-[12.5px]" style={{ color: 'var(--color-ink-muted)' }}>
-                No PDFs yet for this subject.
-                <br /><br />
-                Add PDFs from Admin → Notes → {name}.
+                Chapters for this subject will appear here soon.
               </div>
             )}
             <div className="flex flex-col gap-1">
-              {pdfs.map((p) => (
+              {chapters.map((ch) => (
                 <button
-                  key={p.id}
+                  key={ch.id}
                   type="button"
-                  onClick={() => setActivePdf(p)}
+                  onClick={() => setActiveChapter(ch)}
                   className="text-left p-2.5 rounded-lg flex items-start gap-2"
-                  data-testid={`pdf-${p.id}`}
+                  data-testid={`note-${ch.id}`}
                   style={{
-                    background: activePdf?.id === p.id ? 'var(--color-primary-tint)' : 'transparent',
-                    border: '1px solid ' + (activePdf?.id === p.id ? 'rgba(79,70,229,0.25)' : 'transparent'),
+                    background: activeChapter?.id === ch.id ? 'var(--color-primary-tint)' : 'transparent',
+                    border: `1px solid ${activeChapter?.id === ch.id ? 'rgba(79,70,229,0.25)' : 'transparent'}`,
                   }}
                 >
                   <FileText
                     size={14}
                     strokeWidth={1.6}
                     style={{
-                      color: activePdf?.id === p.id ? 'var(--color-primary)' : 'var(--color-ink-muted)',
+                      color: activeChapter?.id === ch.id ? 'var(--color-primary)' : 'var(--color-ink-muted)',
                       marginTop: 1,
                       flexShrink: 0,
                     }}
@@ -190,11 +197,11 @@ export default function SubjectNotesPage() {
                     <div
                       className="text-[12.5px] leading-tight clamp-2"
                       style={{
-                        color: activePdf?.id === p.id ? 'var(--color-primary)' : 'var(--color-ink)',
-                        fontWeight: activePdf?.id === p.id ? 600 : 500,
+                        color: activeChapter?.id === ch.id ? 'var(--color-primary)' : 'var(--color-ink)',
+                        fontWeight: activeChapter?.id === ch.id ? 600 : 500,
                       }}
                     >
-                      {s(p.title, s(p.name, 'Untitled PDF'))}
+                      {s(ch.title, 'Untitled')}
                     </div>
                   </div>
                 </button>
@@ -205,16 +212,17 @@ export default function SubjectNotesPage() {
 
         <section className="col-span-12 lg:col-span-6 order-1 lg:order-2">
           <div className="card overflow-hidden p-0">
-            {activePdf ? (
-              <SecurePdfViewer pdf={activePdf} title={activeTitle} />
+            {activeChapter ? (
+              <ChapterViewer chapter={activeChapter} title={activeTitle} />
             ) : (
-              <EmptyPdf name={name} />
+              <EmptyNotes />
             )}
           </div>
         </section>
 
         <section className="col-span-12 lg:col-span-4 order-3">
           <SubjectNotesEditor
+            className="notes-editor--tall"
             user={user}
             subjectId={String(subjectId)}
             subjectName={name}
@@ -228,12 +236,11 @@ export default function SubjectNotesPage() {
   );
 }
 
-function EmptyPdf({ name }) {
+function EmptyNotes() {
   return (
-    <div className="notes-pdf-empty" style={{ minHeight: '52vh' }}>
+    <div className="notes-pdf-empty notes-pdf-empty--workspace">
       <FileText size={28} strokeWidth={1.5} />
-      <p><strong>No PDF selected</strong></p>
-      <p>Pick a PDF from the left panel, or upload to <b>{name}</b> in Admin → Notes.</p>
+      <p>Choose a chapter from the list to begin reading.</p>
     </div>
   );
 }

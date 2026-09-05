@@ -152,10 +152,7 @@ export default function AnalyticsPage() {
   const subjects = Object.keys(bySubject).sort();
 
   return (
-    <StudentLayout
-      title="Weakness Analyzer"
-      subtitle="Topic accuracy from your mock attempts — sorted by lowest first."
-    >
+    <StudentLayout title="Weakness Analyzer">
       <div className="grid grid-cols-12 gap-4 md:gap-6 mb-6">
         <motion.div
           initial={{ opacity: 0, y: 8 }}

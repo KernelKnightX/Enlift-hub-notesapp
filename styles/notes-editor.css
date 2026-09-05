@@ -1,10 +1,130 @@
 /* Subject notes — PDF viewer + editor */
 
-.notes-pdf-viewer {
+.notes-subject-page {
+  min-height: 100vh;
+  background: var(--color-bg);
+}
+
+.notes-subject-nav {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  border-bottom: 1px solid #2a3631;
+  background: var(--color-ink);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.notes-subject-nav__inner {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 64px;
+}
+
+.notes-subject-nav__back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid #2a3631;
+  background: rgba(255, 255, 255, 0.04);
+  color: #b7bfb8;
+  font-size: 13px;
+  font-weight: 500;
+  flex-shrink: 0;
+  transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+}
+
+.notes-subject-nav__back:hover {
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.notes-subject-nav__back-label {
+  display: none;
+}
+
+.notes-subject-nav__center {
+  flex: 1;
+  min-width: 0;
+}
+
+.notes-subject-nav__breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  font-size: 13px;
+  color: #b7bfb8;
+}
+
+.notes-subject-nav__breadcrumb svg {
+  flex-shrink: 0;
+  opacity: 0.85;
+}
+
+.notes-subject-nav__subject {
+  font-family: var(--font-serif);
+  font-size: 18px;
+  color: #ffffff;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.notes-subject-nav__chapter {
+  max-width: 220px;
+  padding: 7px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid #2a3631;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex-shrink: 0;
+}
+
+.notes-subject-workspace {
+  --notes-panel-height: calc(100vh - 64px);
+}
+
+.notes-subject-chapters {
+  height: var(--notes-panel-height);
+  min-height: 560px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.notes-subject-chapters .flex.flex-col.gap-1 {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+.notes-html-viewer {
   display: flex;
   flex-direction: column;
   height: 78vh;
   min-height: 420px;
+  background: var(--color-surface);
+}
+
+.notes-pdf-viewer {
+  display: flex;
+  flex-direction: column;
+  height: var(--notes-panel-height, 78vh);
+  min-height: 560px;
   background: var(--color-surface);
 }
 
@@ -46,6 +166,23 @@
   white-space: nowrap;
 }
 
+.notes-chapter-viewer__title-bar {
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--color-border);
+  flex-shrink: 0;
+}
+
+.notes-chapter-viewer__title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-ink);
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .notes-pdf-viewer__frame-wrap {
   position: relative;
   flex: 1;
@@ -80,13 +217,23 @@
   opacity: 0.85;
 }
 
+.notes-pdf-empty--workspace {
+  min-height: var(--notes-panel-height, 560px);
+}
+
 /* Editor */
 
 .notes-editor {
   position: relative;
   display: flex;
   flex-direction: column;
-  min-height: 78vh;
+  min-height: var(--notes-panel-height, 78vh);
+  height: var(--notes-panel-height, 78vh);
+}
+
+.notes-editor--tall {
+  min-height: var(--notes-panel-height, calc(100vh - 64px));
+  height: var(--notes-panel-height, calc(100vh - 64px));
 }
 
 .notes-editor__head {
@@ -213,7 +360,7 @@
 
 .notes-editor__body {
   flex: 1;
-  min-height: 280px;
+  min-height: 420px;
   padding: 18px 20px;
   outline: none;
   font-size: 14.5px;
@@ -272,15 +419,40 @@
   pointer-events: none;
 }
 
+@media (min-width: 640px) {
+  .notes-subject-nav__back-label {
+    display: inline;
+  }
+
+  .notes-subject-nav__inner {
+    padding: 14px 24px;
+  }
+}
+
 @media (max-width: 1024px) {
-  .notes-pdf-viewer,
-  .notes-editor {
-    min-height: 52vh;
+  .notes-subject-workspace {
+    --notes-panel-height: auto;
+  }
+
+  .notes-subject-chapters {
     height: auto;
+    min-height: 0;
+    max-height: 280px;
+  }
+
+  .notes-pdf-viewer,
+  .notes-editor,
+  .notes-editor--tall {
+    min-height: 52vh;
+    height: 52vh;
   }
 
   .notes-pdf-viewer {
     height: 52vh;
+  }
+
+  .notes-subject-nav__chapter {
+    display: none;
   }
 }
 

@@ -27,7 +27,8 @@ export const adminNavigationGroups = [
     items: [
       { label: 'NCERT Books', icon: BookOpen, href: '/admin/books/ncert-books' },
       { label: 'Books Library', icon: BookOpen, href: '/admin/books' },
-      { label: 'Notes & PDFs', icon: FileText, href: '/admin/notes' },
+      { label: 'Notes & PDFs (legacy)', icon: FileText, href: '/admin/notes' },
+      { label: 'Study Notes', icon: FileText, href: '/admin/notes-2' },
       { label: 'UPSC Syllabus', icon: GraduationCap, href: '/admin/study-material/upsc-syllabus' },
     ],
   },

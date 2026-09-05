@@ -44,10 +44,7 @@ export default function StudentGoalsPage() {
   const doneCount = goals.filter((g) => g.done).length;
 
   return (
-    <StudentLayout
-      title="Monthly goals"
-      subtitle="Track a few meaningful milestones — not endless checkboxes."
-    >
+    <StudentLayout title="Monthly goals">
       <div className="grid grid-cols-12 gap-4 md:gap-6">
         <div className="col-span-12 lg:col-span-8 card p-6 md:p-8">
           <div className="flex items-center justify-between gap-4 mb-6">

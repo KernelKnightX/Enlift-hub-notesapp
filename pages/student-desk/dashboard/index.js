@@ -176,10 +176,7 @@ export default function Dashboard() {
   const ringPct = Math.round((1 - secondsLeft / DURATIONS[mode]) * 100);
 
   return (
-    <StudentLayout
-      title="Welcome back"
-      subtitle="Your desk, quietly organised."
-    >
+    <StudentLayout title="Welcome back">
       {/* Countdown + Progress row */}
       <div className="grid grid-cols-12 gap-4 md:gap-6">
         <motion.div

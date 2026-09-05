@@ -18,7 +18,7 @@ const AUTOSAVE_MS = 1400;
 
 function defaultNoteTemplate(subject) {
   return `<h2 style="font-family:var(--font-sans);font-weight:700;letter-spacing:-0.02em;font-size:22px;margin:0 0 8px 0;">Notes · ${subject}</h2>
-<p style="color:var(--color-ink-muted);margin:0 0 20px 0;font-size:13px;">Start typing — your notes auto-save to the cloud.</p>
+<p style="color:var(--color-ink-muted);margin:0 0 20px 0;font-size:13px;">Start typing — your notes save automatically.</p>
 <ul>
   <li>Key point 1</li>
   <li>Key point 2</li>
@@ -48,6 +48,7 @@ export default function SubjectNotesEditor({
   noteId: initialNoteId,
   remoteContent,
   remoteLoaded,
+  className = '',
 }) {
   const editorRef = useRef(null);
   const saveTimerRef = useRef(null);
@@ -173,13 +174,13 @@ export default function SubjectNotesEditor({
     saveStatus === 'saving'
       ? 'Saving…'
       : saveStatus === 'unsaved'
-        ? 'Unsaved changes'
+        ? 'Unsaved'
         : saveStatus === 'error'
-          ? 'Save failed — retrying on next edit'
+          ? 'Not saved yet'
           : 'Saved';
 
   return (
-    <div className="notes-editor card overflow-hidden" data-testid="notes-editor-panel">
+    <div className={`notes-editor card overflow-hidden ${className}`.trim()} data-testid="notes-editor-panel">
       <div className="notes-editor__head">
         <div className="notes-editor__head-left">
           <BookOpen size={14} />
@@ -241,13 +242,13 @@ export default function SubjectNotesEditor({
         {!user && (
           <span className="notes-editor__signin">
             <Sparkles size={12} />
-            Sign in to save notes to the cloud
+            Sign in to save your notes
           </span>
         )}
       </div>
 
       {!editorReady && remoteLoaded && (
-        <div className="notes-editor__loading">Preparing editor…</div>
+        <div className="notes-editor__loading">One moment…</div>
       )}
     </div>
   );

@@ -47,7 +47,7 @@ const toSubject = (d, i) => {
     id: d.id,
     code: String(ss(d.code, nameStr.split(' ').map(w => w[0]).join('').slice(0, 3))).toUpperCase(),
     name: nameStr,
-    count: nn(d.pdfCount ?? d.count ?? d.notesCount, 0),
+    count: nn(d.chapterCount ?? d.pdfCount ?? d.count ?? d.notesCount, 0),
     tone: TONE_KEYS.includes(ss(d.color)) ? ss(d.color) : TONE_KEYS[i % TONE_KEYS.length],
     icon: d.icon || FileText,
   };
@@ -80,7 +80,7 @@ export default function NotesPage() {
   }, [router.isReady, router.query.q]);
 
   const { data: SUBJECTS } = useFirestoreCollection({
-    name: 'pdfSubjects',
+    name: 'htmlNoteSubjects',
     orderBy: ['order', 'asc'],
     limit: 100,
     fallback: [],
@@ -100,7 +100,7 @@ export default function NotesPage() {
     : SUBJECTS.filter(s => s.name.toLowerCase().includes(q.toLowerCase()));
 
   return (
-    <StudentLayout title="Study Notes" subtitle="A distraction-free notebook that respects your prep.">
+    <StudentLayout title="Study Notes">
       <div className="grid grid-cols-1 gap-8 items-start">
         {/* ---------------- Main column ---------------- */}
         <div className="min-w-0">
@@ -143,7 +143,7 @@ export default function NotesPage() {
                       )}
                       <div className="min-w-0 flex-1">
                         <div className="truncate text-[14px] font-semibold text-[var(--color-ink)]">{subj.name}</div>
-                        <div className="text-[12px] mt-1" style={{ color: 'var(--color-ink-muted)' }}>{subj.count} Notes</div>
+                        <div className="text-[12px] mt-1" style={{ color: 'var(--color-ink-muted)' }}>{subj.count} chapters</div>
                       </div>
                     </div>
                   </Link>

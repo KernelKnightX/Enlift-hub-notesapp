@@ -46,7 +46,7 @@ export default function MockTestLeaderboardPage() {
   }, [attempts, latestTestId, user?.uid]);
 
   return (
-    <StudentLayout title="Mock leaderboard" subtitle="Scores from the most recent shared mock test.">
+    <StudentLayout title="Mock leaderboard">
       <div className="card p-6 md:p-8">
         <div className="flex items-center justify-between mb-6">
           <p className="text-[13px]" style={{ color: "var(--color-ink-muted)" }}>

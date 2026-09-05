@@ -149,10 +149,7 @@ export default function MistakeNotebookPage() {
   }, [filtered]);
 
   return (
-    <StudentLayout
-      title="Mistake Notebook"
-      subtitle="Every wrong answer becomes a revision opportunity."
-    >
+    <StudentLayout title="Mistake Notebook">
       <div className="flex flex-wrap items-center gap-3 mb-6">
         <div className="flex gap-2">
           {['active', 'mastered'].map((key) => (

@@ -106,7 +106,7 @@ export default function PlannerPage() {
   };
 
   return (
-    <StudentLayout title="Study Planner" subtitle="Rule-based daily plans from your weaknesses, mistakes, and syllabus gaps.">
+    <StudentLayout title="Study Planner">
       <TaskModal
         open={modalOpen}
         onClose={closeModal}

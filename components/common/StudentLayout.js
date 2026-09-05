@@ -6,7 +6,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import {
   LayoutDashboard, Newspaper, FileText, ClipboardCheck, BookOpen,
   Calendar as CalendarIcon, User as UserIcon,
-  Coffee, Menu, X, LogOut, Search, Bell, ChevronRight, Command,
+  Coffee, Menu, X, LogOut,
   RotateCcw, BarChart3, Target, Clock,
 } from 'lucide-react';
 
@@ -34,7 +34,7 @@ const DEMO_USER = {
   isPlus: false,
 };
 
-export default function StudentLayout({ children, title, subtitle }) {
+export default function StudentLayout({ children, title, hideTopbar = false, plainHeader = false }) {
   const router = useRouter();
   const { user: realUser, logout, authLoading } = useAuth();
   const [open, setOpen] = useState(false);
@@ -65,16 +65,18 @@ export default function StudentLayout({ children, title, subtitle }) {
     try { await logout(); router.push('/login'); } catch (e) { console.error(e); }
   };
 
-  const [searchValue, setSearchValue] = useState('');
   const today = useMemo(() => new Date().toLocaleDateString('en-IN', {
     weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
   }), []);
 
+  const pageTitle = plainHeader
+    ? (title || 'Student Desk')
+    : `${title || 'Welcome back'}${user?.fullName ? `, ${user.fullName.split(' ')[0]}` : ''}.`;
+
   if (!user) return null;
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--color-bg)', display: 'flex' }}>
-      {/* Sidebar backdrop (mobile) */}
+    <div style={{ minHeight: '100vh', background: 'var(--color-bg)' }}>
       <AnimatePresence>
         {open && isMobile && (
           <motion.div
@@ -85,22 +87,23 @@ export default function StudentLayout({ children, title, subtitle }) {
         )}
       </AnimatePresence>
 
-      {/* Sidebar */}
       <aside
         data-testid="app-sidebar"
         style={{
-          width: 264, flexShrink: 0,
+          width: 264,
           background: 'var(--color-surface)',
-          borderRight: '1px solid var(--color-border)',
+          borderRight: '1px solid var(--color-ink)',
           padding: '20px 16px',
-          position: isMobile ? 'fixed' : 'sticky',
-          top: 0, left: 0,
+          position: 'fixed',
+          top: 0,
+          left: 0,
           height: '100vh',
           overflowY: 'auto',
           zIndex: 50,
           transform: isMobile ? (open ? 'translateX(0)' : 'translateX(-100%)') : 'none',
           transition: 'transform .28s cubic-bezier(.2,.7,.2,1)',
-          display: 'flex', flexDirection: 'column'
+          display: 'flex',
+          flexDirection: 'column',
         }}
       >
         <div className="flex items-center justify-between px-2 py-1">
@@ -151,80 +154,55 @@ export default function StudentLayout({ children, title, subtitle }) {
         </div>
       </aside>
 
-      {/* MAIN */}
-      <main style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
-        {/* Topbar */}
-        <header
-          className="sticky top-0 z-30"
-          style={{
-            background: 'rgba(253,252,247,0.85)',
-            backdropFilter: 'saturate(140%) blur(12px)',
-            WebkitBackdropFilter: 'saturate(140%) blur(12px)',
-            borderBottom: '1px solid var(--color-border)',
-            padding: '14px 20px'
-          }}
-        >
-          <div className="flex items-center gap-3">
-            {isMobile && (
-              <button onClick={() => setOpen(true)} data-testid="topbar-menu"
-                      style={{ background: 'transparent', border: 'none', color: 'var(--color-ink)' }}>
-                <Menu size={20} strokeWidth={1.5} />
-              </button>
-            )}
-            <div>
-              <div className="text-[11.5px] font-mono" style={{ color: 'var(--color-ink-faint)', letterSpacing: '0.14em' }}>
-                {today.toUpperCase()}
+      <main style={{
+        minHeight: '100vh',
+        marginLeft: isMobile ? 0 : 264,
+        minWidth: 0,
+        display: 'flex',
+        flexDirection: 'column',
+      }}>
+        {!hideTopbar ? (
+          <header className="student-topbar">
+            <div className="student-topbar__row">
+              {isMobile && (
+                <button
+                  type="button"
+                  onClick={() => setOpen(true)}
+                  className="student-topbar__menu"
+                  data-testid="topbar-menu"
+                  aria-label="Open menu"
+                >
+                  <Menu size={20} strokeWidth={1.5} />
+                </button>
+              )}
+              <div className="student-topbar__text">
+                {!plainHeader && (
+                  <div className="student-topbar__date">{today.toUpperCase()}</div>
+                )}
+                <div className="student-topbar__title" data-testid="topbar-title">{pageTitle}</div>
               </div>
-              <div className="font-serif text-[19px] md:text-[21px]" style={{ letterSpacing: '-0.01em' }} data-testid="topbar-title">
-                {title || 'Welcome back'}{user?.fullName ? `, ${user.fullName.split(' ')[0]}` : ''}.
-              </div>
+              <Link href="/student-desk/profile" className="student-topbar__avatar" data-testid="topbar-avatar">
+                {initials}
+              </Link>
             </div>
-
-            <div className="ml-auto flex items-center gap-2 md:gap-3">
-              <div className="hidden md:flex items-center gap-2 px-3 py-2 rounded-xl"
-                   style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', width: 280 }}>
-                <Search size={15} strokeWidth={1.5} style={{ color: 'var(--color-ink-muted)' }} />
-                <input
-                  value={searchValue}
-                  onChange={(e) => setSearchValue(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault();
-                      const query = searchValue.trim();
-                      if (query) router.push(`/student-desk/notes?q=${encodeURIComponent(query)}`);
-                    }
-                  }}
-                  placeholder="Search notes, mocks, current affairs…"
-                  className="bg-transparent outline-none text-[13px] flex-1"
-                  style={{ color: 'var(--color-ink)' }}
-                  data-testid="topbar-search"
-                />
-                <span className="kbd">⌘K</span>
-              </div>
-              <button className="p-2 rounded-xl"
-                      onClick={() => router.push('/student-desk/notifications')}
-                      style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', color: 'var(--color-ink-muted)' }}
-                      data-testid="topbar-bell">
-                <Bell size={16} strokeWidth={1.5} />
-              </button>
-              <div className="flex items-center gap-2 pl-2 md:pl-3">
-                <div style={{
-                  width: 36, height: 36, borderRadius: 999,
-                  background: 'var(--color-primary)', color: 'var(--color-bg)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontFamily: 'var(--font-serif)', fontWeight: 500, fontSize: 14
-                }} data-testid="topbar-avatar">
-                  {initials}
-                </div>
-              </div>
-            </div>
+          </header>
+        ) : isMobile ? (
+          <div className="student-topbar student-topbar--mobile-only">
+            <button
+              type="button"
+              onClick={() => setOpen(true)}
+              className="student-topbar__menu"
+              data-testid="topbar-menu"
+              aria-label="Open menu"
+            >
+              <Menu size={20} strokeWidth={1.5} />
+            </button>
           </div>
-          {subtitle && (
-            <div className="mt-2 text-[13.5px]" style={{ color: 'var(--color-ink-muted)' }}>{subtitle}</div>
-          )}
-        </header>
+        ) : null}
 
-        <div className="p-5 md:p-8 lg:p-10 max-w-[1240px] w-full mx-auto flex-1 w-full">
+        <div
+          className={`max-w-[1240px] w-full mx-auto flex-1 w-full ${hideTopbar ? 'px-4 py-5 md:px-8 md:py-8' : 'p-5 md:p-8 lg:p-10'}`}
+        >
           {children}
         </div>
       </main>

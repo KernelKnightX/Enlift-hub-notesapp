@@ -1,0 +1,45 @@
+rules_version = '2';
+
+// Enlift Hub — Firebase Storage rules
+// Deploy: Firebase Console → Storage → Rules → Publish
+// Or: firebase deploy --only storage
+
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // PDF files (Study Notes)
+    match /pdfs/{allPaths=**} {
+      allow read, write: if request.auth != null;
+    }
+
+    // HTML files (Study Notes 2) — NEW
+    match /html-notes/{allPaths=**} {
+      allow read, write: if request.auth != null;
+    }
+
+    // Subject files
+    match /subjects/{allPaths=**} {
+      allow read, write: if request.auth != null;
+    }
+
+    // Map files
+    match /maps/{allPaths=**} {
+      allow read, write: if request.auth != null;
+    }
+
+    // Collection cover images
+    match /collections/{allPaths=**} {
+      allow read, write: if request.auth != null;
+    }
+
+    // Monthly magazine files
+    match /monthly-magazines/{allPaths=**} {
+      allow read, write: if request.auth != null;
+    }
+
+    // Deny everything else
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

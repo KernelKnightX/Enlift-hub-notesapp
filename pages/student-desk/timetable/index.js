@@ -53,10 +53,7 @@ export default function StudentTimetablePage() {
   };
 
   return (
-    <StudentLayout
-      title="Daily timetable"
-      subtitle="Your saved routine — synced across devices."
-    >
+    <StudentLayout title="Daily timetable">
       <div className="card p-6 md:p-8">
         <div className="flex flex-wrap gap-2 mb-6">
           {Object.entries(TIMETABLE_TEMPLATES).map(([key, tpl]) => (

@@ -4,7 +4,7 @@ import StudentLayout from "@/layouts/StudentLayout";
 
 export default function StudentNotificationsPage() {
   return (
-    <StudentLayout title="Notifications" subtitle="Exam updates, planner reminders, and desk alerts.">
+    <StudentLayout title="Notifications">
       <div className="card p-10 md:p-14 text-center max-w-lg mx-auto">
         <div
           className="w-14 h-14 rounded-full mx-auto mb-5 flex items-center justify-center"

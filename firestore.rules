@@ -1,81 +1,67 @@
 rules_version = '2';
 
+// =============================================================================
+// Enlift Hub — complete Firestore security rules (source of truth)
+// Deploy: firebase deploy --only firestore:rules
+// =============================================================================
+
 service cloud.firestore {
   match /databases/{database}/documents {
+
+    // ── Helpers ───────────────────────────────────────────────────────────────
 
     function isAuthenticated() {
       return request.auth != null;
     }
 
     function isOwner(userId) {
-      return request.auth != null
-        && request.auth.uid == userId;
+      return request.auth != null && request.auth.uid == userId;
     }
 
     function isAdmin() {
       return request.auth != null
-        && get(
-          /databases/$(database)/documents/users/$(request.auth.uid)
-        ).data.isAdmin == true;
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
     }
 
     function ownsResource() {
-      return request.auth != null
-        && resource.data.userId == request.auth.uid;
+      return request.auth != null && resource.data.userId == request.auth.uid;
     }
 
     function willOwnResource() {
-      return request.auth != null
-        && request.resource.data.userId == request.auth.uid;
+      return request.auth != null && request.resource.data.userId == request.auth.uid;
     }
 
-    match /users/{userId} {
+    // ── Users & per-user subcollections ───────────────────────────────────────
 
-      // Students see themselves. Admins see the full registered roster.
+    match /users/{userId} {
       allow read: if isOwner(userId) || isAdmin();
 
       allow create: if isOwner(userId)
-        && request.resource.data.keys().hasAll([
-          'email',
-          'fullName'
-        ])
+        && request.resource.data.keys().hasAll(['email', 'fullName'])
         && request.resource.data.email is string
         && request.resource.data.fullName is string;
 
-      // Students may only bump streak fields.
-      // Admins may update any field (including isAdmin).
+      // Students may only bump streak fields; admins may update anything.
       allow update: if isAdmin()
         || (isOwner(userId)
-          && request.resource.data.diff(resource.data)
-            .affectedKeys()
-            .hasOnly([
-              'studyStreak',
-              'bestStreak',
-              'lastStudyDate',
-              'streakUpdatedAt'
-            ]));
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+            'studyStreak', 'bestStreak', 'lastStudyDate', 'streakUpdatedAt'
+          ]));
 
       allow delete: if false;
 
       match /stats/{statId} {
-        allow read: if isOwner(userId);
-        allow create, update, delete: if isOwner(userId);
+        allow read, create, update, delete: if isOwner(userId);
       }
 
       match /pdfNotes/{noteId} {
         allow read, create: if isOwner(userId);
-
-        allow update, delete:
-          if isOwner(userId)
-          && resource.data.userId == userId;
+        allow update, delete: if isOwner(userId) && resource.data.userId == userId;
       }
 
       match /standaloneNotes/{noteId} {
         allow read, create: if isOwner(userId);
-
-        allow update, delete:
-          if isOwner(userId)
-          && resource.data.userId == userId;
+        allow update, delete: if isOwner(userId) && resource.data.userId == userId;
       }
 
       match /mockTests/{testId} {
@@ -95,27 +81,35 @@ service cloud.firestore {
       }
 
       match /plannerTasks/{taskId} {
-        allow read: if isOwner(userId);
-        allow create, update, delete: if isOwner(userId);
+        allow read, create, update, delete: if isOwner(userId);
       }
 
       match /mockTestAttempts/{attemptId} {
         allow read, write: if isOwner(userId);
       }
 
+      // Mistake notebook
       match /mistakes/{mistakeId} {
         allow read, create, update, delete: if isOwner(userId);
       }
 
+      // Weakness analyzer
       match /topicStats/{topicId} {
         allow read, create, update, delete: if isOwner(userId);
       }
 
+      // Study planner (daily plan docs)
       match /studyPlan/{dateId} {
         allow read, create, update, delete: if isOwner(userId);
       }
 
+      // Timetable / goals settings
       match /studySettings/{settingsId} {
+        allow read, create, update, delete: if isOwner(userId);
+      }
+
+      // Legacy task path (firebase/tasks.js)
+      match /tasks/{taskId} {
         allow read, create, update, delete: if isOwner(userId);
       }
     }
@@ -124,11 +118,11 @@ service cloud.firestore {
       allow read, write: if isAdmin();
     }
 
+    // ── Study Notes (PDF) ─────────────────────────────────────────────────────
+
     match /subjects/{subjectId} {
       allow read: if isAuthenticated();
-
       allow create, update, delete: if isAdmin();
-
       match /pdfs/{pdfId} {
         allow read: if isAuthenticated();
         allow write: if isAdmin();
@@ -148,24 +142,49 @@ service cloud.firestore {
     match /pdfs/{pdfId} {
       allow read: if isAuthenticated();
       allow create, delete: if isAdmin();
+      // Students may bump analytics counters when opening/downloading PDFs
       allow update: if isAdmin()
         || (isAuthenticated()
           && request.resource.data.diff(resource.data).affectedKeys()
             .hasOnly(['downloadCount', 'openCount', 'updatedAt']));
     }
 
+    // ── Study Notes 2 (HTML) ──────────────────────────────────────────────────
+
+    match /htmlNoteSubjects/{subjectId} {
+      allow read: if isAuthenticated();
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /htmlChapters/{chapterId} {
+      allow read: if isAuthenticated();
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ── Shared notes (legacy top-level) ───────────────────────────────────────
+
     match /notes/{noteId} {
       allow read: if isAuthenticated();
-
-      allow create:
-        if willOwnResource()
-        && request.resource.data.keys().hasAll([
-          'title',
-          'userId'
-        ]);
-
+      allow create: if willOwnResource()
+        && request.resource.data.keys().hasAll(['title', 'userId']);
       allow update, delete: if ownsResource();
     }
+
+    // Subject notes editor (PDF + Notes 2 right panel)
+    match /userNotes/{noteId} {
+      allow read: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if request.auth != null && resource.data.userId == request.auth.uid;
+
+      match /versions/{versionId} {
+        allow read, create: if request.auth != null
+          && get(/databases/$(database)/documents/userNotes/$(noteId)).data.userId == request.auth.uid;
+        allow delete: if request.auth != null
+          && get(/databases/$(database)/documents/userNotes/$(noteId)).data.userId == request.auth.uid;
+      }
+    }
+
+    // ── Mock tests & analytics ────────────────────────────────────────────────
 
     match /mockTests/{testId} {
       allow read: if isAuthenticated();
@@ -176,10 +195,8 @@ service cloud.firestore {
             .hasOnly(['attemptCount', 'updatedAt']));
     }
 
-    // Office-visible mock results. Students write their own row; admins read everyone.
     match /mockAttempts/{attemptId} {
-      allow create: if isAuthenticated()
-        && request.resource.data.userId == request.auth.uid;
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
       allow read: if isAuthenticated();
       allow update, delete: if isAdmin();
     }
@@ -191,6 +208,13 @@ service cloud.firestore {
       allow read, update, delete: if isAdmin();
     }
 
+    match /leaderboard/{entryId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    // ── PYQ ───────────────────────────────────────────────────────────────────
+
     match /pyqSubjects/{subjectId} {
       allow read: if isAuthenticated();
       allow create, update, delete: if isAdmin();
@@ -199,7 +223,6 @@ service cloud.firestore {
     match /pyqs/{pyqId} {
       allow read: if isAuthenticated();
       allow create, update, delete: if isAdmin();
-
       match /pdfs/{pdfId} {
         allow read: if isAuthenticated();
         allow write: if isAdmin();
@@ -214,24 +237,14 @@ service cloud.firestore {
 
     match /user_pyq_progress/{progressId} {
       allow read: if isAuthenticated();
-
-      allow create:
-        if request.auth != null
-        && request.resource.data.userId == request.auth.uid;
-
-      allow update, delete:
-        if request.auth != null
-        && resource.data.userId == request.auth.uid;
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if request.auth != null && resource.data.userId == request.auth.uid;
     }
 
-    match /leaderboard/{entryId} {
-      allow read: if isAuthenticated();
-      allow write: if isAdmin();
-    }
+    // ── Content: current affairs, maps, government, books ─────────────────────
 
-    // Motivational quotes shown on the student dashboard
-    match /topperTips/{tipId} {
-      allow read: if isAuthenticated();
+    match /currentAffairs/{affairId} {
+      allow read: if resource.data.isActive == true || isAdmin();
       allow create, update, delete: if isAdmin();
     }
 
@@ -240,9 +253,14 @@ service cloud.firestore {
       allow create, update, delete: if isAdmin();
     }
 
+    match /topperTips/{tipId} {
+      allow read: if isAuthenticated();
+      allow create, update, delete: if isAdmin();
+    }
+
     match /adminNotifications/{notificationId} {
-      allow read:
-        if isAuthenticated()
+      // Logged-in users + public homepage ticker for active notices
+      allow read: if isAuthenticated()
         || (
           resource.data.isActive == true
           && resource.data.href is string
@@ -256,18 +274,66 @@ service cloud.firestore {
       allow create, update, delete: if isAdmin();
     }
 
-    match /currentAffairs/{affairId} {
-      allow read: if resource.data.isActive == true || isAdmin();
+    match /notices/{noticeId} {
+      allow read: if resource.data.active == true || isAdmin();
       allow create, update, delete: if isAdmin();
     }
 
     match /maps/{mapId} {
-      allow read:
-        if resource.data.status == 'published'
-        || isAdmin();
-
+      allow read: if resource.data.status == 'published' || isAdmin();
       allow create, update, delete: if isAdmin();
     }
+
+    match /government/{itemId} {
+      allow read: if resource.data.status == 'published' || isAdmin();
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /monthlyMagazines/{magazineId} {
+      allow read: if resource.data.isActive == true || isAdmin();
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /ncertBooks/{bookId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /bookSubjects/{subjectId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /books/{bookId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    // CMS pages: planning tools, UPSC syllabus, calendar, etc.
+    match /publicPages/{pageId} {
+      allow read: if resource.data.status == 'published' || isAdmin();
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ── Planner (top-level /tasks — used by usePlannerTasks) ─────────────────
+
+    match /tasks/{taskId} {
+      allow read: if isAuthenticated();
+      allow create: if willOwnResource();
+      allow update, delete: if ownsResource();
+    }
+
+    // ── Activity logging (login streaks, ActivityService) ─────────────────────
+
+    match /activities/{activityId} {
+      allow create: if isAuthenticated()
+        && request.resource.data.userId == request.auth.uid;
+      allow read: if isAuthenticated()
+        && (resource.data.userId == request.auth.uid || isAdmin());
+      allow update, delete: if isAdmin();
+    }
+
+    // ── SSB prep ──────────────────────────────────────────────────────────────
 
     match /ssb_ppdt_pictures/{pictureId} {
       allow read: if isAuthenticated();
@@ -295,11 +361,7 @@ service cloud.firestore {
       allow update, delete: if ownsResource();
     }
 
-    match /tasks/{taskId} {
-      allow read: if isAuthenticated();
-      allow create: if willOwnResource();
-      allow update, delete: if ownsResource();
-    }
+    // ── Misc / marketing ──────────────────────────────────────────────────────
 
     match /userLogins/{loginId} {
       allow read: if isAuthenticated();
@@ -323,66 +385,6 @@ service cloud.firestore {
 
     match /programs/{programId} {
       allow read: if true;
-      allow create, update, delete: if isAdmin();
-    }
-
-    match /userNotes/{noteId} {
-      allow read:
-        if request.auth != null
-        && resource.data.userId == request.auth.uid;
-
-      allow create:
-        if request.auth != null
-        && request.resource.data.userId == request.auth.uid;
-
-      allow update, delete:
-        if request.auth != null
-        && resource.data.userId == request.auth.uid;
-
-      match /versions/{versionId} {
-        allow read, create:
-          if request.auth != null
-          && get(/databases/$(database)/documents/userNotes/$(noteId)).data.userId == request.auth.uid;
-
-        allow delete:
-          if request.auth != null
-          && get(/databases/$(database)/documents/userNotes/$(noteId)).data.userId == request.auth.uid;
-      }
-    }
-
-    match /monthlyMagazines/{magazineId} {
-      allow read: if resource.data.isActive == true || isAdmin();
-      allow create, update, delete: if isAdmin();
-    }
-
-    match /ncertBooks/{bookId} {
-      allow read: if true;
-      allow create, update, delete: if isAdmin();
-    }
-
-    match /bookSubjects/{subjectId} {
-      allow read: if true;
-      allow create, update, delete: if isAdmin();
-    }
-
-    match /books/{bookId} {
-      allow read: if true;
-      allow create, update, delete: if isAdmin();
-    }
-
-    match /government/{itemId} {
-      allow read:
-        if resource.data.status == 'published'
-        || isAdmin();
-
-      allow create, update, delete: if isAdmin();
-    }
-
-    match /publicPages/{pageId} {
-      allow read:
-        if resource.data.status == 'published'
-        || isAdmin();
-
       allow create, update, delete: if isAdmin();
     }
   }

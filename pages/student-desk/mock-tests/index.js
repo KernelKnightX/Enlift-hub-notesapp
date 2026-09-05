@@ -159,6 +159,16 @@ export default function MockTestsPage() {
     });
   };
 
+  const clearFilters = () => {
+    setFilters({
+      search: '',
+      subject: 'all',
+      types: new Set(),
+      difficulties: new Set(),
+      duration: 'all',
+    });
+  };
+
   const startTest = (mock) => {
     if (mock.isPremium && !user?.isPremium) {
       window.alert('This is a Plus mock. Ask the office to grant Plus on your student account.');
@@ -168,7 +178,7 @@ export default function MockTestsPage() {
   };
 
   return (
-    <StudentLayout title="Mock Tests" subtitle="Calibrated to the real exam — honest analytics, no vanity scores.">
+    <StudentLayout title="Mock Tests">
       {isMock && (
         <div className="mb-4 flex items-center gap-2 chip chip-amber" data-testid="mock-data-source">
           <Database size={11} strokeWidth={1.75} />

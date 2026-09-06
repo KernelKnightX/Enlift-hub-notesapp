@@ -18,6 +18,7 @@ const SECURITY_HEADERS = [
       "img-src 'self' data: blob: https:",
       "font-src 'self' data:",
       "connect-src 'self' https://*.googleapis.com https://*.firebaseio.com https://firestore.googleapis.com https://www.google-analytics.com wss://*.firebaseio.com",
+      "frame-src 'self' blob: https://firebasestorage.googleapis.com https://storage.googleapis.com https://docs.google.com https://drive.google.com",
       "frame-ancestors 'self'",
       "base-uri 'self'",
       "form-action 'self'",
